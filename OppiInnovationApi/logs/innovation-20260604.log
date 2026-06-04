@@ -1,0 +1,351 @@
+2026-06-04 17:41:25.777 +05:30 [INF] User profile is available. Using '/Users/shivamsangal/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+2026-06-04 17:41:25.884 +05:30 [INF] Now listening on: http://localhost:5233
+2026-06-04 17:41:25.885 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2026-06-04 17:41:25.885 +05:30 [INF] Hosting environment: Development
+2026-06-04 17:41:25.885 +05:30 [INF] Content root path: /Users/shivamsangal/projects/nivyam/awards-backend/OppiInnovationApi
+2026-06-04 17:43:12.091 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/auth/login - null null
+2026-06-04 17:43:12.140 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:12.141 +05:30 [INF] HTTP OPTIONS /auth/login responded 204 in 11.2948 ms
+2026-06-04 17:43:12.144 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/auth/login - 204 null null 55.782ms
+2026-06-04 17:43:12.147 +05:30 [INF] Request starting HTTP/1.1 POST http://localhost:5233/auth/login - application/json 52
+2026-06-04 17:43:12.148 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:12.164 +05:30 [INF] Executing endpoint 'HTTP: POST /auth/login'
+2026-06-04 17:43:13.079 +05:30 [WRN] Entity 'User' has a global query filter defined and is the required end of a relationship with the entity 'Application'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-06-04 17:43:13.079 +05:30 [WRN] Entity 'User' has a global query filter defined and is the required end of a relationship with the entity 'RefreshToken'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-06-04 17:43:13.559 +05:30 [INF] Executed DbCommand (58ms) [Parameters=[@__dto_Email_0='?' (Size = 255)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+FROM `users` AS `u`
+WHERE NOT (`u`.`is_deleted`) AND (`u`.`email` = @__dto_Email_0)
+LIMIT 1
+2026-06-04 17:43:13.936 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[@__user_Id_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `r`.`id`, `r`.`created_at`, `r`.`device_info`, `r`.`expires_at`, `r`.`revoked_at`, `r`.`token`, `r`.`user_id`
+FROM `refresh_tokens` AS `r`
+WHERE (`r`.`user_id` = @__user_Id_0) AND `r`.`revoked_at` IS NULL
+2026-06-04 17:43:14.112 +05:30 [INF] Executed DbCommand (38ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = DateTime), @p2='?' (DbType = DateTime), @p3='?' (Size = 4000), @p4='?' (DbType = DateTime), @p5='?' (DbType = DateTime), @p6='?' (Size = 500), @p7='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+UPDATE `refresh_tokens` SET `revoked_at` = @p0
+WHERE `id` = @p1;
+SELECT ROW_COUNT();
+
+INSERT INTO `refresh_tokens` (`created_at`, `device_info`, `expires_at`, `revoked_at`, `token`, `user_id`)
+VALUES (@p2, @p3, @p4, @p5, @p6, @p7);
+SELECT `id`
+FROM `refresh_tokens`
+WHERE ROW_COUNT() = 1 AND `id` = LAST_INSERT_ID();
+2026-06-04 17:43:14.294 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[@p0='?' (Size = 100), @p1='?' (DbType = DateTime), @p2='?' (Size = 4000), @p3='?' (DbType = Int32), @p4='?' (Size = 4000), @p5='?' (Size = 4000), @p6='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO `audit_logs` (`action`, `created_at`, `details`, `entity_id`, `entity_type`, `ip_address`, `user_id`)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+SELECT `id`
+FROM `audit_logs`
+WHERE ROW_COUNT() = 1 AND `id` = LAST_INSERT_ID();
+2026-06-04 17:43:14.340 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:14.349 +05:30 [INF] Writing value of type '<>f__AnonymousType3`3' as Json.
+2026-06-04 17:43:14.353 +05:30 [INF] Executed endpoint 'HTTP: POST /auth/login'
+2026-06-04 17:43:14.354 +05:30 [INF] HTTP POST /auth/login responded 200 in 2206.4480 ms
+2026-06-04 17:43:14.360 +05:30 [INF] Request finished HTTP/1.1 POST http://localhost:5233/auth/login - 200 null application/json; charset=utf-8 2213.3064ms
+2026-06-04 17:43:14.371 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/application/mine - null null
+2026-06-04 17:43:14.371 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/application/mine - null null
+2026-06-04 17:43:14.372 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:14.372 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:14.373 +05:30 [INF] HTTP OPTIONS /application/mine responded 204 in 1.0597 ms
+2026-06-04 17:43:14.373 +05:30 [INF] HTTP OPTIONS /application/mine responded 204 in 1.1644 ms
+2026-06-04 17:43:14.373 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/application/mine - 204 null null 1.6355ms
+2026-06-04 17:43:14.373 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/application/mine - 204 null null 1.9152ms
+2026-06-04 17:43:14.374 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/application/mine - null null
+2026-06-04 17:43:14.379 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:14.407 +05:30 [INF] Executing endpoint 'HTTP: GET /application/mine'
+2026-06-04 17:43:14.767 +05:30 [INF] Executed DbCommand (38ms) [Parameters=[@__uid_Value_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `s`.`id`, `s`.`created_at`, `s`.`jury_action_at`, `s`.`jury_id`, `s`.`status`, `s`.`submitted_at`, `s`.`user_id`, `s`.`validator_action_at`, `s`.`validator_id`, `s`.`id0`, `s`.`application_id`, `s`.`category_of_work`, `s`.`company_brief`, `s`.`company_name`, `s`.`company_website`, `s`.`competitive_analysis`, `s`.`designation`, `s`.`innovation`, `s`.`marketability`, `s`.`need_analysis`, `s`.`other_category`, `s`.`id1`, `s`.`app_details`, `s`.`application_id0`, `s`.`future_expansion`, `s`.`marketing_strategy`, `s`.`physical_outlets`, `s`.`social_media`, `s`.`website_details`, `s`.`id2`, `s`.`application_id1`, `s`.`board_of_directors`, `s`.`customer_benefit`, `s`.`employee_count`, `s`.`investors_details`, `s`.`media_mentions`, `s`.`patents`, `s`.`product_benefits`, `s`.`testimonial`, `f`.`id`, `f`.`application_id`, `f`.`created_at`, `f`.`file_name`, `f`.`file_path`, `f`.`file_size`, `f`.`file_type`, `f`.`section`
+FROM (
+    SELECT `a`.`id`, `a`.`created_at`, `a`.`jury_action_at`, `a`.`jury_id`, `a`.`status`, `a`.`submitted_at`, `a`.`user_id`, `a`.`validator_action_at`, `a`.`validator_id`, `p`.`id` AS `id0`, `p`.`application_id`, `p`.`category_of_work`, `p`.`company_brief`, `p`.`company_name`, `p`.`company_website`, `p`.`competitive_analysis`, `p`.`designation`, `p`.`innovation`, `p`.`marketability`, `p`.`need_analysis`, `p`.`other_category`, `c`.`id` AS `id1`, `c`.`app_details`, `c`.`application_id` AS `application_id0`, `c`.`future_expansion`, `c`.`marketing_strategy`, `c`.`physical_outlets`, `c`.`social_media`, `c`.`website_details`, `c0`.`id` AS `id2`, `c0`.`application_id` AS `application_id1`, `c0`.`board_of_directors`, `c0`.`customer_benefit`, `c0`.`employee_count`, `c0`.`investors_details`, `c0`.`media_mentions`, `c0`.`patents`, `c0`.`product_benefits`, `c0`.`testimonial`
+    FROM `applications` AS `a`
+    LEFT JOIN `personal_info` AS `p` ON `a`.`id` = `p`.`application_id`
+    LEFT JOIN `company_reach` AS `c` ON `a`.`id` = `c`.`application_id`
+    LEFT JOIN `company_details` AS `c0` ON `a`.`id` = `c0`.`application_id`
+    WHERE `a`.`user_id` = @__uid_Value_0
+    LIMIT 1
+) AS `s`
+LEFT JOIN `file_uploads` AS `f` ON `s`.`id` = `f`.`application_id`
+ORDER BY `s`.`id`, `s`.`id0`, `s`.`id1`, `s`.`id2`
+2026-06-04 17:43:14.816 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:14.821 +05:30 [INF] Writing value of type '<>f__AnonymousType10`7' as Json.
+2026-06-04 17:43:14.824 +05:30 [INF] Executed endpoint 'HTTP: GET /application/mine'
+2026-06-04 17:43:14.824 +05:30 [INF] HTTP GET /application/mine responded 200 in 448.8865 ms
+2026-06-04 17:43:14.824 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/application/mine - 200 null application/json; charset=utf-8 450.1313ms
+2026-06-04 17:43:14.824 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/application/mine - null null
+2026-06-04 17:43:14.824 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:14.827 +05:30 [INF] Executing endpoint 'HTTP: GET /application/mine'
+2026-06-04 17:43:15.122 +05:30 [INF] Executed DbCommand (36ms) [Parameters=[@__uid_Value_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `s`.`id`, `s`.`created_at`, `s`.`jury_action_at`, `s`.`jury_id`, `s`.`status`, `s`.`submitted_at`, `s`.`user_id`, `s`.`validator_action_at`, `s`.`validator_id`, `s`.`id0`, `s`.`application_id`, `s`.`category_of_work`, `s`.`company_brief`, `s`.`company_name`, `s`.`company_website`, `s`.`competitive_analysis`, `s`.`designation`, `s`.`innovation`, `s`.`marketability`, `s`.`need_analysis`, `s`.`other_category`, `s`.`id1`, `s`.`app_details`, `s`.`application_id0`, `s`.`future_expansion`, `s`.`marketing_strategy`, `s`.`physical_outlets`, `s`.`social_media`, `s`.`website_details`, `s`.`id2`, `s`.`application_id1`, `s`.`board_of_directors`, `s`.`customer_benefit`, `s`.`employee_count`, `s`.`investors_details`, `s`.`media_mentions`, `s`.`patents`, `s`.`product_benefits`, `s`.`testimonial`, `f`.`id`, `f`.`application_id`, `f`.`created_at`, `f`.`file_name`, `f`.`file_path`, `f`.`file_size`, `f`.`file_type`, `f`.`section`
+FROM (
+    SELECT `a`.`id`, `a`.`created_at`, `a`.`jury_action_at`, `a`.`jury_id`, `a`.`status`, `a`.`submitted_at`, `a`.`user_id`, `a`.`validator_action_at`, `a`.`validator_id`, `p`.`id` AS `id0`, `p`.`application_id`, `p`.`category_of_work`, `p`.`company_brief`, `p`.`company_name`, `p`.`company_website`, `p`.`competitive_analysis`, `p`.`designation`, `p`.`innovation`, `p`.`marketability`, `p`.`need_analysis`, `p`.`other_category`, `c`.`id` AS `id1`, `c`.`app_details`, `c`.`application_id` AS `application_id0`, `c`.`future_expansion`, `c`.`marketing_strategy`, `c`.`physical_outlets`, `c`.`social_media`, `c`.`website_details`, `c0`.`id` AS `id2`, `c0`.`application_id` AS `application_id1`, `c0`.`board_of_directors`, `c0`.`customer_benefit`, `c0`.`employee_count`, `c0`.`investors_details`, `c0`.`media_mentions`, `c0`.`patents`, `c0`.`product_benefits`, `c0`.`testimonial`
+    FROM `applications` AS `a`
+    LEFT JOIN `personal_info` AS `p` ON `a`.`id` = `p`.`application_id`
+    LEFT JOIN `company_reach` AS `c` ON `a`.`id` = `c`.`application_id`
+    LEFT JOIN `company_details` AS `c0` ON `a`.`id` = `c0`.`application_id`
+    WHERE `a`.`user_id` = @__uid_Value_0
+    LIMIT 1
+) AS `s`
+LEFT JOIN `file_uploads` AS `f` ON `s`.`id` = `f`.`application_id`
+ORDER BY `s`.`id`, `s`.`id0`, `s`.`id1`, `s`.`id2`
+2026-06-04 17:43:15.123 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:15.123 +05:30 [INF] Writing value of type '<>f__AnonymousType10`7' as Json.
+2026-06-04 17:43:15.123 +05:30 [INF] Executed endpoint 'HTTP: GET /application/mine'
+2026-06-04 17:43:15.123 +05:30 [INF] HTTP GET /application/mine responded 200 in 298.7653 ms
+2026-06-04 17:43:15.123 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/application/mine - 200 null application/json; charset=utf-8 299.0682ms
+2026-06-04 17:43:15.124 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/application/mine - null null
+2026-06-04 17:43:15.124 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:15.126 +05:30 [INF] Executing endpoint 'HTTP: GET /application/mine'
+2026-06-04 17:43:15.436 +05:30 [INF] Executed DbCommand (36ms) [Parameters=[@__uid_Value_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `s`.`id`, `s`.`created_at`, `s`.`jury_action_at`, `s`.`jury_id`, `s`.`status`, `s`.`submitted_at`, `s`.`user_id`, `s`.`validator_action_at`, `s`.`validator_id`, `s`.`id0`, `s`.`application_id`, `s`.`category_of_work`, `s`.`company_brief`, `s`.`company_name`, `s`.`company_website`, `s`.`competitive_analysis`, `s`.`designation`, `s`.`innovation`, `s`.`marketability`, `s`.`need_analysis`, `s`.`other_category`, `s`.`id1`, `s`.`app_details`, `s`.`application_id0`, `s`.`future_expansion`, `s`.`marketing_strategy`, `s`.`physical_outlets`, `s`.`social_media`, `s`.`website_details`, `s`.`id2`, `s`.`application_id1`, `s`.`board_of_directors`, `s`.`customer_benefit`, `s`.`employee_count`, `s`.`investors_details`, `s`.`media_mentions`, `s`.`patents`, `s`.`product_benefits`, `s`.`testimonial`, `f`.`id`, `f`.`application_id`, `f`.`created_at`, `f`.`file_name`, `f`.`file_path`, `f`.`file_size`, `f`.`file_type`, `f`.`section`
+FROM (
+    SELECT `a`.`id`, `a`.`created_at`, `a`.`jury_action_at`, `a`.`jury_id`, `a`.`status`, `a`.`submitted_at`, `a`.`user_id`, `a`.`validator_action_at`, `a`.`validator_id`, `p`.`id` AS `id0`, `p`.`application_id`, `p`.`category_of_work`, `p`.`company_brief`, `p`.`company_name`, `p`.`company_website`, `p`.`competitive_analysis`, `p`.`designation`, `p`.`innovation`, `p`.`marketability`, `p`.`need_analysis`, `p`.`other_category`, `c`.`id` AS `id1`, `c`.`app_details`, `c`.`application_id` AS `application_id0`, `c`.`future_expansion`, `c`.`marketing_strategy`, `c`.`physical_outlets`, `c`.`social_media`, `c`.`website_details`, `c0`.`id` AS `id2`, `c0`.`application_id` AS `application_id1`, `c0`.`board_of_directors`, `c0`.`customer_benefit`, `c0`.`employee_count`, `c0`.`investors_details`, `c0`.`media_mentions`, `c0`.`patents`, `c0`.`product_benefits`, `c0`.`testimonial`
+    FROM `applications` AS `a`
+    LEFT JOIN `personal_info` AS `p` ON `a`.`id` = `p`.`application_id`
+    LEFT JOIN `company_reach` AS `c` ON `a`.`id` = `c`.`application_id`
+    LEFT JOIN `company_details` AS `c0` ON `a`.`id` = `c0`.`application_id`
+    WHERE `a`.`user_id` = @__uid_Value_0
+    LIMIT 1
+) AS `s`
+LEFT JOIN `file_uploads` AS `f` ON `s`.`id` = `f`.`application_id`
+ORDER BY `s`.`id`, `s`.`id0`, `s`.`id1`, `s`.`id2`
+2026-06-04 17:43:15.437 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:15.437 +05:30 [INF] Writing value of type '<>f__AnonymousType10`7' as Json.
+2026-06-04 17:43:15.437 +05:30 [INF] Executed endpoint 'HTTP: GET /application/mine'
+2026-06-04 17:43:15.437 +05:30 [INF] HTTP GET /application/mine responded 200 in 312.5363 ms
+2026-06-04 17:43:15.437 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/application/mine - 200 null application/json; charset=utf-8 312.874ms
+2026-06-04 17:43:15.438 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/application/mine - null null
+2026-06-04 17:43:15.438 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:15.438 +05:30 [INF] Executing endpoint 'HTTP: GET /application/mine'
+2026-06-04 17:43:15.725 +05:30 [INF] Executed DbCommand (34ms) [Parameters=[@__uid_Value_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `s`.`id`, `s`.`created_at`, `s`.`jury_action_at`, `s`.`jury_id`, `s`.`status`, `s`.`submitted_at`, `s`.`user_id`, `s`.`validator_action_at`, `s`.`validator_id`, `s`.`id0`, `s`.`application_id`, `s`.`category_of_work`, `s`.`company_brief`, `s`.`company_name`, `s`.`company_website`, `s`.`competitive_analysis`, `s`.`designation`, `s`.`innovation`, `s`.`marketability`, `s`.`need_analysis`, `s`.`other_category`, `s`.`id1`, `s`.`app_details`, `s`.`application_id0`, `s`.`future_expansion`, `s`.`marketing_strategy`, `s`.`physical_outlets`, `s`.`social_media`, `s`.`website_details`, `s`.`id2`, `s`.`application_id1`, `s`.`board_of_directors`, `s`.`customer_benefit`, `s`.`employee_count`, `s`.`investors_details`, `s`.`media_mentions`, `s`.`patents`, `s`.`product_benefits`, `s`.`testimonial`, `f`.`id`, `f`.`application_id`, `f`.`created_at`, `f`.`file_name`, `f`.`file_path`, `f`.`file_size`, `f`.`file_type`, `f`.`section`
+FROM (
+    SELECT `a`.`id`, `a`.`created_at`, `a`.`jury_action_at`, `a`.`jury_id`, `a`.`status`, `a`.`submitted_at`, `a`.`user_id`, `a`.`validator_action_at`, `a`.`validator_id`, `p`.`id` AS `id0`, `p`.`application_id`, `p`.`category_of_work`, `p`.`company_brief`, `p`.`company_name`, `p`.`company_website`, `p`.`competitive_analysis`, `p`.`designation`, `p`.`innovation`, `p`.`marketability`, `p`.`need_analysis`, `p`.`other_category`, `c`.`id` AS `id1`, `c`.`app_details`, `c`.`application_id` AS `application_id0`, `c`.`future_expansion`, `c`.`marketing_strategy`, `c`.`physical_outlets`, `c`.`social_media`, `c`.`website_details`, `c0`.`id` AS `id2`, `c0`.`application_id` AS `application_id1`, `c0`.`board_of_directors`, `c0`.`customer_benefit`, `c0`.`employee_count`, `c0`.`investors_details`, `c0`.`media_mentions`, `c0`.`patents`, `c0`.`product_benefits`, `c0`.`testimonial`
+    FROM `applications` AS `a`
+    LEFT JOIN `personal_info` AS `p` ON `a`.`id` = `p`.`application_id`
+    LEFT JOIN `company_reach` AS `c` ON `a`.`id` = `c`.`application_id`
+    LEFT JOIN `company_details` AS `c0` ON `a`.`id` = `c0`.`application_id`
+    WHERE `a`.`user_id` = @__uid_Value_0
+    LIMIT 1
+) AS `s`
+LEFT JOIN `file_uploads` AS `f` ON `s`.`id` = `f`.`application_id`
+ORDER BY `s`.`id`, `s`.`id0`, `s`.`id1`, `s`.`id2`
+2026-06-04 17:43:15.725 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:15.725 +05:30 [INF] Writing value of type '<>f__AnonymousType10`7' as Json.
+2026-06-04 17:43:15.726 +05:30 [INF] Executed endpoint 'HTTP: GET /application/mine'
+2026-06-04 17:43:15.726 +05:30 [INF] HTTP GET /application/mine responded 200 in 287.8935 ms
+2026-06-04 17:43:15.726 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/application/mine - 200 null application/json; charset=utf-8 288.1492ms
+2026-06-04 17:43:36.177 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/auth/login - null null
+2026-06-04 17:43:36.179 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:36.179 +05:30 [INF] HTTP OPTIONS /auth/login responded 204 in 0.7843 ms
+2026-06-04 17:43:36.179 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/auth/login - 204 null null 2.0192ms
+2026-06-04 17:43:36.180 +05:30 [INF] Request starting HTTP/1.1 POST http://localhost:5233/auth/login - application/json 52
+2026-06-04 17:43:36.181 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:36.181 +05:30 [INF] Executing endpoint 'HTTP: POST /auth/login'
+2026-06-04 17:43:36.487 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[@__dto_Email_0='?' (Size = 255)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+FROM `users` AS `u`
+WHERE NOT (`u`.`is_deleted`) AND (`u`.`email` = @__dto_Email_0)
+LIMIT 1
+2026-06-04 17:43:36.799 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[@__user_Id_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `r`.`id`, `r`.`created_at`, `r`.`device_info`, `r`.`expires_at`, `r`.`revoked_at`, `r`.`token`, `r`.`user_id`
+FROM `refresh_tokens` AS `r`
+WHERE (`r`.`user_id` = @__user_Id_0) AND `r`.`revoked_at` IS NULL
+2026-06-04 17:43:36.906 +05:30 [INF] Executed DbCommand (36ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = DateTime), @p2='?' (DbType = DateTime), @p3='?' (Size = 4000), @p4='?' (DbType = DateTime), @p5='?' (DbType = DateTime), @p6='?' (Size = 500), @p7='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+UPDATE `refresh_tokens` SET `revoked_at` = @p0
+WHERE `id` = @p1;
+SELECT ROW_COUNT();
+
+INSERT INTO `refresh_tokens` (`created_at`, `device_info`, `expires_at`, `revoked_at`, `token`, `user_id`)
+VALUES (@p2, @p3, @p4, @p5, @p6, @p7);
+SELECT `id`
+FROM `refresh_tokens`
+WHERE ROW_COUNT() = 1 AND `id` = LAST_INSERT_ID();
+2026-06-04 17:43:37.047 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[@p0='?' (Size = 100), @p1='?' (DbType = DateTime), @p2='?' (Size = 4000), @p3='?' (DbType = Int32), @p4='?' (Size = 4000), @p5='?' (Size = 4000), @p6='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO `audit_logs` (`action`, `created_at`, `details`, `entity_id`, `entity_type`, `ip_address`, `user_id`)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+SELECT `id`
+FROM `audit_logs`
+WHERE ROW_COUNT() = 1 AND `id` = LAST_INSERT_ID();
+2026-06-04 17:43:37.084 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:37.084 +05:30 [INF] Writing value of type '<>f__AnonymousType3`3' as Json.
+2026-06-04 17:43:37.085 +05:30 [INF] Executed endpoint 'HTTP: POST /auth/login'
+2026-06-04 17:43:37.085 +05:30 [INF] HTTP POST /auth/login responded 200 in 904.1116 ms
+2026-06-04 17:43:37.085 +05:30 [INF] Request finished HTTP/1.1 POST http://localhost:5233/auth/login - 200 null application/json; charset=utf-8 904.6692ms
+2026-06-04 17:43:37.101 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/validator/applications - null null
+2026-06-04 17:43:37.101 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/validator/applications - null null
+2026-06-04 17:43:37.102 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:37.102 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:37.102 +05:30 [INF] HTTP OPTIONS /validator/applications responded 204 in 0.1695 ms
+2026-06-04 17:43:37.102 +05:30 [INF] HTTP OPTIONS /validator/applications responded 204 in 0.3379 ms
+2026-06-04 17:43:37.103 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/validator/applications - 204 null null 1.2872ms
+2026-06-04 17:43:37.103 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/validator/applications - 204 null null 1.6671ms
+2026-06-04 17:43:37.104 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/validator/applications - null null
+2026-06-04 17:43:37.106 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:37.107 +05:30 [INF] Executing endpoint 'HTTP: GET /validator/applications'
+2026-06-04 17:43:37.393 +05:30 [INF] Executed DbCommand (34ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+FROM `users` AS `u`
+WHERE NOT (`u`.`is_deleted`) AND (`u`.`id` = @__p_0)
+LIMIT 1
+2026-06-04 17:43:37.505 +05:30 [INF] Executed DbCommand (68ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT `a`.`id` AS `Id`, `a`.`status` AS `Status`, `a`.`submitted_at` AS `SubmittedAt`, CONCAT(CONCAT(`u0`.`first_name`, ' '), `u0`.`last_name`) AS `user_name`, `u0`.`email` AS `user_email`, `p`.`company_name` AS `company`
+FROM `applications` AS `a`
+INNER JOIN (
+    SELECT `u`.`id`, `u`.`email`, `u`.`first_name`, `u`.`last_name`
+    FROM `users` AS `u`
+    WHERE NOT (`u`.`is_deleted`)
+) AS `u0` ON `a`.`user_id` = `u0`.`id`
+LEFT JOIN `personal_info` AS `p` ON `a`.`id` = `p`.`application_id`
+WHERE `a`.`status` = 'SUBMITTED'
+2026-06-04 17:43:37.506 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:37.508 +05:30 [INF] Writing value of type 'List`1' as Json.
+2026-06-04 17:43:37.510 +05:30 [INF] Executed endpoint 'HTTP: GET /validator/applications'
+2026-06-04 17:43:37.510 +05:30 [INF] HTTP GET /validator/applications responded 200 in 404.0449 ms
+2026-06-04 17:43:37.510 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/validator/applications - 200 null application/json; charset=utf-8 406.5623ms
+2026-06-04 17:43:37.511 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/validator/applications - null null
+2026-06-04 17:43:37.511 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:37.512 +05:30 [INF] Executing endpoint 'HTTP: GET /validator/applications'
+2026-06-04 17:43:37.957 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+FROM `users` AS `u`
+WHERE NOT (`u`.`is_deleted`) AND (`u`.`id` = @__p_0)
+LIMIT 1
+2026-06-04 17:43:38.025 +05:30 [INF] Executed DbCommand (34ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT `a`.`id` AS `Id`, `a`.`status` AS `Status`, `a`.`submitted_at` AS `SubmittedAt`, CONCAT(CONCAT(`u0`.`first_name`, ' '), `u0`.`last_name`) AS `user_name`, `u0`.`email` AS `user_email`, `p`.`company_name` AS `company`
+FROM `applications` AS `a`
+INNER JOIN (
+    SELECT `u`.`id`, `u`.`email`, `u`.`first_name`, `u`.`last_name`
+    FROM `users` AS `u`
+    WHERE NOT (`u`.`is_deleted`)
+) AS `u0` ON `a`.`user_id` = `u0`.`id`
+LEFT JOIN `personal_info` AS `p` ON `a`.`id` = `p`.`application_id`
+WHERE `a`.`status` = 'SUBMITTED'
+2026-06-04 17:43:38.025 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:38.026 +05:30 [INF] Writing value of type 'List`1' as Json.
+2026-06-04 17:43:38.026 +05:30 [INF] Executed endpoint 'HTTP: GET /validator/applications'
+2026-06-04 17:43:38.026 +05:30 [INF] HTTP GET /validator/applications responded 200 in 514.8182 ms
+2026-06-04 17:43:38.026 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/validator/applications - 200 null application/json; charset=utf-8 515.6134ms
+2026-06-04 17:43:40.073 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/application/review/6 - null null
+2026-06-04 17:43:40.073 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/application/review/6 - null null
+2026-06-04 17:43:40.074 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:40.074 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:40.074 +05:30 [INF] HTTP OPTIONS /application/review/6 responded 204 in 0.4140 ms
+2026-06-04 17:43:40.074 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/application/review/6 - 204 null null 1.0752ms
+2026-06-04 17:43:40.074 +05:30 [INF] HTTP OPTIONS /application/review/6 responded 204 in 0.5942 ms
+2026-06-04 17:43:40.075 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/application/review/6 - 204 null null 1.615ms
+2026-06-04 17:43:40.077 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/application/review/6 - null null
+2026-06-04 17:43:40.078 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:40.079 +05:30 [INF] Executing endpoint 'HTTP: GET /application/review/{id}'
+2026-06-04 17:43:40.393 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+FROM `users` AS `u`
+WHERE NOT (`u`.`is_deleted`) AND (`u`.`id` = @__p_0)
+LIMIT 1
+2026-06-04 17:43:40.480 +05:30 [INF] Executed DbCommand (43ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `s`.`id`, `s`.`created_at`, `s`.`jury_action_at`, `s`.`jury_id`, `s`.`status`, `s`.`submitted_at`, `s`.`user_id`, `s`.`validator_action_at`, `s`.`validator_id`, `s`.`id0`, `s`.`application_id`, `s`.`category_of_work`, `s`.`company_brief`, `s`.`company_name`, `s`.`company_website`, `s`.`competitive_analysis`, `s`.`designation`, `s`.`innovation`, `s`.`marketability`, `s`.`need_analysis`, `s`.`other_category`, `s`.`id1`, `s`.`app_details`, `s`.`application_id0`, `s`.`future_expansion`, `s`.`marketing_strategy`, `s`.`physical_outlets`, `s`.`social_media`, `s`.`website_details`, `s`.`id2`, `s`.`application_id1`, `s`.`board_of_directors`, `s`.`customer_benefit`, `s`.`employee_count`, `s`.`investors_details`, `s`.`media_mentions`, `s`.`patents`, `s`.`product_benefits`, `s`.`testimonial`, `s`.`id3`, `f`.`id`, `f`.`application_id`, `f`.`created_at`, `f`.`file_name`, `f`.`file_path`, `f`.`file_size`, `f`.`file_type`, `f`.`section`, `s`.`created_at0`, `s`.`email`, `s`.`first_name`, `s`.`is_active`, `s`.`is_deleted`, `s`.`last_name`, `s`.`mobile`, `s`.`password_hash`, `s`.`role`
+FROM (
+    SELECT `a`.`id`, `a`.`created_at`, `a`.`jury_action_at`, `a`.`jury_id`, `a`.`status`, `a`.`submitted_at`, `a`.`user_id`, `a`.`validator_action_at`, `a`.`validator_id`, `p`.`id` AS `id0`, `p`.`application_id`, `p`.`category_of_work`, `p`.`company_brief`, `p`.`company_name`, `p`.`company_website`, `p`.`competitive_analysis`, `p`.`designation`, `p`.`innovation`, `p`.`marketability`, `p`.`need_analysis`, `p`.`other_category`, `c`.`id` AS `id1`, `c`.`app_details`, `c`.`application_id` AS `application_id0`, `c`.`future_expansion`, `c`.`marketing_strategy`, `c`.`physical_outlets`, `c`.`social_media`, `c`.`website_details`, `c0`.`id` AS `id2`, `c0`.`application_id` AS `application_id1`, `c0`.`board_of_directors`, `c0`.`customer_benefit`, `c0`.`employee_count`, `c0`.`investors_details`, `c0`.`media_mentions`, `c0`.`patents`, `c0`.`product_benefits`, `c0`.`testimonial`, `u0`.`id` AS `id3`, `u0`.`created_at` AS `created_at0`, `u0`.`email`, `u0`.`first_name`, `u0`.`is_active`, `u0`.`is_deleted`, `u0`.`last_name`, `u0`.`mobile`, `u0`.`password_hash`, `u0`.`role`
+    FROM `applications` AS `a`
+    LEFT JOIN `personal_info` AS `p` ON `a`.`id` = `p`.`application_id`
+    LEFT JOIN `company_reach` AS `c` ON `a`.`id` = `c`.`application_id`
+    LEFT JOIN `company_details` AS `c0` ON `a`.`id` = `c0`.`application_id`
+    INNER JOIN (
+        SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+        FROM `users` AS `u`
+        WHERE NOT (`u`.`is_deleted`)
+    ) AS `u0` ON `a`.`user_id` = `u0`.`id`
+    WHERE `a`.`id` = @__id_0
+    LIMIT 1
+) AS `s`
+LEFT JOIN `file_uploads` AS `f` ON `s`.`id` = `f`.`application_id`
+ORDER BY `s`.`id`, `s`.`id0`, `s`.`id1`, `s`.`id2`, `s`.`id3`
+2026-06-04 17:43:40.485 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:40.485 +05:30 [INF] Writing value of type '<>f__AnonymousType15`10' as Json.
+2026-06-04 17:43:40.487 +05:30 [INF] Executed endpoint 'HTTP: GET /application/review/{id}'
+2026-06-04 17:43:40.487 +05:30 [INF] HTTP GET /application/review/6 responded 200 in 408.8679 ms
+2026-06-04 17:43:40.487 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/application/review/6 - 200 null application/json; charset=utf-8 410.1464ms
+2026-06-04 17:43:40.488 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/application/review/6 - null null
+2026-06-04 17:43:40.488 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:40.488 +05:30 [INF] Executing endpoint 'HTTP: GET /application/review/{id}'
+2026-06-04 17:43:40.779 +05:30 [INF] Executed DbCommand (36ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+FROM `users` AS `u`
+WHERE NOT (`u`.`is_deleted`) AND (`u`.`id` = @__p_0)
+LIMIT 1
+2026-06-04 17:43:40.850 +05:30 [INF] Executed DbCommand (36ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `s`.`id`, `s`.`created_at`, `s`.`jury_action_at`, `s`.`jury_id`, `s`.`status`, `s`.`submitted_at`, `s`.`user_id`, `s`.`validator_action_at`, `s`.`validator_id`, `s`.`id0`, `s`.`application_id`, `s`.`category_of_work`, `s`.`company_brief`, `s`.`company_name`, `s`.`company_website`, `s`.`competitive_analysis`, `s`.`designation`, `s`.`innovation`, `s`.`marketability`, `s`.`need_analysis`, `s`.`other_category`, `s`.`id1`, `s`.`app_details`, `s`.`application_id0`, `s`.`future_expansion`, `s`.`marketing_strategy`, `s`.`physical_outlets`, `s`.`social_media`, `s`.`website_details`, `s`.`id2`, `s`.`application_id1`, `s`.`board_of_directors`, `s`.`customer_benefit`, `s`.`employee_count`, `s`.`investors_details`, `s`.`media_mentions`, `s`.`patents`, `s`.`product_benefits`, `s`.`testimonial`, `s`.`id3`, `f`.`id`, `f`.`application_id`, `f`.`created_at`, `f`.`file_name`, `f`.`file_path`, `f`.`file_size`, `f`.`file_type`, `f`.`section`, `s`.`created_at0`, `s`.`email`, `s`.`first_name`, `s`.`is_active`, `s`.`is_deleted`, `s`.`last_name`, `s`.`mobile`, `s`.`password_hash`, `s`.`role`
+FROM (
+    SELECT `a`.`id`, `a`.`created_at`, `a`.`jury_action_at`, `a`.`jury_id`, `a`.`status`, `a`.`submitted_at`, `a`.`user_id`, `a`.`validator_action_at`, `a`.`validator_id`, `p`.`id` AS `id0`, `p`.`application_id`, `p`.`category_of_work`, `p`.`company_brief`, `p`.`company_name`, `p`.`company_website`, `p`.`competitive_analysis`, `p`.`designation`, `p`.`innovation`, `p`.`marketability`, `p`.`need_analysis`, `p`.`other_category`, `c`.`id` AS `id1`, `c`.`app_details`, `c`.`application_id` AS `application_id0`, `c`.`future_expansion`, `c`.`marketing_strategy`, `c`.`physical_outlets`, `c`.`social_media`, `c`.`website_details`, `c0`.`id` AS `id2`, `c0`.`application_id` AS `application_id1`, `c0`.`board_of_directors`, `c0`.`customer_benefit`, `c0`.`employee_count`, `c0`.`investors_details`, `c0`.`media_mentions`, `c0`.`patents`, `c0`.`product_benefits`, `c0`.`testimonial`, `u0`.`id` AS `id3`, `u0`.`created_at` AS `created_at0`, `u0`.`email`, `u0`.`first_name`, `u0`.`is_active`, `u0`.`is_deleted`, `u0`.`last_name`, `u0`.`mobile`, `u0`.`password_hash`, `u0`.`role`
+    FROM `applications` AS `a`
+    LEFT JOIN `personal_info` AS `p` ON `a`.`id` = `p`.`application_id`
+    LEFT JOIN `company_reach` AS `c` ON `a`.`id` = `c`.`application_id`
+    LEFT JOIN `company_details` AS `c0` ON `a`.`id` = `c0`.`application_id`
+    INNER JOIN (
+        SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+        FROM `users` AS `u`
+        WHERE NOT (`u`.`is_deleted`)
+    ) AS `u0` ON `a`.`user_id` = `u0`.`id`
+    WHERE `a`.`id` = @__id_0
+    LIMIT 1
+) AS `s`
+LEFT JOIN `file_uploads` AS `f` ON `s`.`id` = `f`.`application_id`
+ORDER BY `s`.`id`, `s`.`id0`, `s`.`id1`, `s`.`id2`, `s`.`id3`
+2026-06-04 17:43:40.852 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:40.853 +05:30 [INF] Writing value of type '<>f__AnonymousType15`10' as Json.
+2026-06-04 17:43:40.853 +05:30 [INF] Executed endpoint 'HTTP: GET /application/review/{id}'
+2026-06-04 17:43:40.853 +05:30 [INF] HTTP GET /application/review/6 responded 200 in 365.4429 ms
+2026-06-04 17:43:40.853 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/application/review/6 - 200 null application/json; charset=utf-8 365.9286ms
+2026-06-04 17:43:43.906 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/validator/applications - null null
+2026-06-04 17:43:43.906 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:43.906 +05:30 [INF] HTTP OPTIONS /validator/applications responded 204 in 0.2054 ms
+2026-06-04 17:43:43.906 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/validator/applications - 204 null null 0.8305ms
+2026-06-04 17:43:43.908 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/validator/applications - null null
+2026-06-04 17:43:43.908 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:43.909 +05:30 [INF] HTTP OPTIONS /validator/applications responded 204 in 0.3955 ms
+2026-06-04 17:43:43.909 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/validator/applications - 204 null null 1.0729ms
+2026-06-04 17:43:43.914 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/validator/applications - null null
+2026-06-04 17:43:43.915 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:43.916 +05:30 [INF] Executing endpoint 'HTTP: GET /validator/applications'
+2026-06-04 17:43:44.310 +05:30 [INF] Executed DbCommand (34ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+FROM `users` AS `u`
+WHERE NOT (`u`.`is_deleted`) AND (`u`.`id` = @__p_0)
+LIMIT 1
+2026-06-04 17:43:44.383 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT `a`.`id` AS `Id`, `a`.`status` AS `Status`, `a`.`submitted_at` AS `SubmittedAt`, CONCAT(CONCAT(`u0`.`first_name`, ' '), `u0`.`last_name`) AS `user_name`, `u0`.`email` AS `user_email`, `p`.`company_name` AS `company`
+FROM `applications` AS `a`
+INNER JOIN (
+    SELECT `u`.`id`, `u`.`email`, `u`.`first_name`, `u`.`last_name`
+    FROM `users` AS `u`
+    WHERE NOT (`u`.`is_deleted`)
+) AS `u0` ON `a`.`user_id` = `u0`.`id`
+LEFT JOIN `personal_info` AS `p` ON `a`.`id` = `p`.`application_id`
+WHERE `a`.`status` = 'SUBMITTED'
+2026-06-04 17:43:44.384 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:44.384 +05:30 [INF] Writing value of type 'List`1' as Json.
+2026-06-04 17:43:44.385 +05:30 [INF] Executed endpoint 'HTTP: GET /validator/applications'
+2026-06-04 17:43:44.385 +05:30 [INF] HTTP GET /validator/applications responded 200 in 469.7789 ms
+2026-06-04 17:43:44.385 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/validator/applications - 200 null application/json; charset=utf-8 470.6253ms
+2026-06-04 17:43:44.386 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/validator/applications - null null
+2026-06-04 17:43:44.386 +05:30 [INF] CORS policy execution successful.
+2026-06-04 17:43:44.387 +05:30 [INF] Executing endpoint 'HTTP: GET /validator/applications'
+2026-06-04 17:43:44.668 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+FROM `users` AS `u`
+WHERE NOT (`u`.`is_deleted`) AND (`u`.`id` = @__p_0)
+LIMIT 1
+2026-06-04 17:43:44.738 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT `a`.`id` AS `Id`, `a`.`status` AS `Status`, `a`.`submitted_at` AS `SubmittedAt`, CONCAT(CONCAT(`u0`.`first_name`, ' '), `u0`.`last_name`) AS `user_name`, `u0`.`email` AS `user_email`, `p`.`company_name` AS `company`
+FROM `applications` AS `a`
+INNER JOIN (
+    SELECT `u`.`id`, `u`.`email`, `u`.`first_name`, `u`.`last_name`
+    FROM `users` AS `u`
+    WHERE NOT (`u`.`is_deleted`)
+) AS `u0` ON `a`.`user_id` = `u0`.`id`
+LEFT JOIN `personal_info` AS `p` ON `a`.`id` = `p`.`application_id`
+WHERE `a`.`status` = 'SUBMITTED'
+2026-06-04 17:43:44.738 +05:30 [INF] Setting HTTP status code 200.
+2026-06-04 17:43:44.738 +05:30 [INF] Writing value of type 'List`1' as Json.
+2026-06-04 17:43:44.738 +05:30 [INF] Executed endpoint 'HTTP: GET /validator/applications'
+2026-06-04 17:43:44.738 +05:30 [INF] HTTP GET /validator/applications responded 200 in 351.9730 ms
+2026-06-04 17:43:44.738 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/validator/applications - 200 null application/json; charset=utf-8 352.7912ms

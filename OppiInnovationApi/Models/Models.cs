@@ -1,0 +1,124 @@
+namespace OppiInnovationApi.Models;
+public class User
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; } = null!;
+    public string LastName { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string? Mobile { get; set; }
+    public string PasswordHash { get; set; } = null!;
+    public string Role { get; set; } = "USER";
+    public bool IsActive { get; set; } = true;
+    public bool IsDeleted { get; set; } = false;
+    public DateTime CreatedAt { get; set; }
+    public virtual ICollection<Application> Applications { get; set; } = new List<Application>();
+    public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+}
+
+public class AllowedDomain
+{
+    public int Id { get; set; }
+    public string Domain { get; set; } = null!;
+    public bool IsActive { get; set; } = true;
+}
+
+public class Application
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public string Status { get; set; } = "DRAFT";
+    public int? ValidatorId { get; set; }
+    public int? JuryId { get; set; }
+    public DateTime? SubmittedAt { get; set; }
+    public DateTime? ValidatorActionAt { get; set; }
+    public DateTime? JuryActionAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public virtual User User { get; set; } = null!;
+    public virtual PersonalInfo? PersonalInfo { get; set; }
+    public virtual CompanyReach? CompanyReach { get; set; }
+    public virtual CompanyDetail? CompanyDetail { get; set; }
+    public virtual ICollection<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
+}
+
+public class PersonalInfo
+{
+    public int Id { get; set; }
+    public int ApplicationId { get; set; }
+    public string? CompanyName { get; set; }
+    public string? Designation { get; set; }
+    public string? CategoryOfWork { get; set; }
+    public string? OtherCategory { get; set; }
+    public string? CompanyWebsite { get; set; }
+    public string? CompanyBrief { get; set; }
+    public string? Innovation { get; set; }
+    public string? CompetitiveAnalysis { get; set; }
+    public string? NeedAnalysis { get; set; }
+    public string? Marketability { get; set; }
+    public virtual Application Application { get; set; } = null!;
+}
+
+public class CompanyReach
+{
+    public int Id { get; set; }
+    public int ApplicationId { get; set; }
+    public string? MarketingStrategy { get; set; }
+    public string? AppDetails { get; set; }
+    public string? WebsiteDetails { get; set; }
+    public string? SocialMedia { get; set; }
+    public string? PhysicalOutlets { get; set; }
+    public string? FutureExpansion { get; set; }
+    public virtual Application Application { get; set; } = null!;
+}
+
+public class CompanyDetail
+{
+    public int Id { get; set; }
+    public int ApplicationId { get; set; }
+    public string? CustomerBenefit { get; set; }
+    public string? Testimonial { get; set; }
+    public string? EmployeeCount { get; set; }
+    public string? BoardOfDirectors { get; set; }
+    public string? InvestorsDetails { get; set; }
+    public string? MediaMentions { get; set; }
+    public string? Patents { get; set; }
+    public string? ProductBenefits { get; set; }
+    public virtual Application Application { get; set; } = null!;
+}
+
+public class FileUpload
+{
+    public int Id { get; set; }
+    public int ApplicationId { get; set; }
+    public string Section { get; set; } = null!;
+    public string FileName { get; set; } = null!;
+    public string FilePath { get; set; } = null!;
+    public int? FileSize { get; set; }
+    public string? FileType { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public virtual Application Application { get; set; } = null!;
+}
+
+public class RefreshToken
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public string Token { get; set; } = null!;
+    public DateTime ExpiresAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? RevokedAt { get; set; }
+    public string? DeviceInfo { get; set; }
+    public bool IsActive => RevokedAt == null && DateTime.UtcNow < ExpiresAt;
+    public virtual User User { get; set; } = null!;
+}
+
+public class AuditLog
+{
+    public int Id { get; set; }
+    public int? UserId { get; set; }
+    public string Action { get; set; } = null!;
+    public string? EntityType { get; set; }
+    public int? EntityId { get; set; }
+    public string? Details { get; set; }
+    public string? IpAddress { get; set; }
+    public DateTime CreatedAt { get; set; }
+}

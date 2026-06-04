@@ -1,0 +1,105 @@
+2026-05-02 00:09:29.759 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/application/mine - null null
+2026-05-02 00:09:29.759 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/application/mine - null null
+2026-05-02 00:09:29.836 +05:30 [INF] CORS policy execution successful.
+2026-05-02 00:09:29.836 +05:30 [INF] CORS policy execution successful.
+2026-05-02 00:09:29.840 +05:30 [INF] HTTP OPTIONS /application/mine responded 204 in 31.7281 ms
+2026-05-02 00:09:29.840 +05:30 [INF] HTTP OPTIONS /application/mine responded 204 in 31.7331 ms
+2026-05-02 00:09:29.845 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/application/mine - 204 null null 88.4544ms
+2026-05-02 00:09:29.845 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/application/mine - 204 null null 88.4537ms
+2026-05-02 00:09:29.849 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/application/mine - null null
+2026-05-02 00:09:29.849 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5233/application/mine - null null
+2026-05-02 00:09:29.857 +05:30 [INF] CORS policy execution successful.
+2026-05-02 00:09:29.857 +05:30 [INF] CORS policy execution successful.
+2026-05-02 00:09:29.975 +05:30 [INF] Failed to validate the token.
+Microsoft.IdentityModel.Tokens.SecurityTokenSignatureKeyNotFoundException: IDX10517: Signature validation failed. The token's kid is missing. Keys tried: 'Microsoft.IdentityModel.Tokens.SymmetricSecurityKey, KeyId: '', InternalId: 'ywXWYLCQXPNkkeIfu21u5Tm1cbTjl8_phWXVDRhuUI4'. , KeyId: 
+'. Number of keys in TokenValidationParameters: '1'. 
+Number of keys in Configuration: '0'. 
+Exceptions caught:
+ '[PII of type 'System.String' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'.
+token: '[PII of type 'Microsoft.IdentityModel.JsonWebTokens.JsonWebToken' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'. See https://aka.ms/IDX10503 for details.
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateSignature(JsonWebToken jwtToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateSignatureAndIssuerSecurityKey(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-05-02 00:09:29.975 +05:30 [INF] Failed to validate the token.
+Microsoft.IdentityModel.Tokens.SecurityTokenSignatureKeyNotFoundException: IDX10517: Signature validation failed. The token's kid is missing. Keys tried: 'Microsoft.IdentityModel.Tokens.SymmetricSecurityKey, KeyId: '', InternalId: 'ywXWYLCQXPNkkeIfu21u5Tm1cbTjl8_phWXVDRhuUI4'. , KeyId: 
+'. Number of keys in TokenValidationParameters: '1'. 
+Number of keys in Configuration: '0'. 
+Exceptions caught:
+ '[PII of type 'System.String' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'.
+token: '[PII of type 'Microsoft.IdentityModel.JsonWebTokens.JsonWebToken' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'. See https://aka.ms/IDX10503 for details.
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateSignature(JsonWebToken jwtToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateSignatureAndIssuerSecurityKey(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-05-02 00:09:29.988 +05:30 [INF] Bearer was not authenticated. Failure message: IDX10517: Signature validation failed. The token's kid is missing. Keys tried: 'Microsoft.IdentityModel.Tokens.SymmetricSecurityKey, KeyId: '', InternalId: 'ywXWYLCQXPNkkeIfu21u5Tm1cbTjl8_phWXVDRhuUI4'. , KeyId: 
+'. Number of keys in TokenValidationParameters: '1'. 
+Number of keys in Configuration: '0'. 
+Exceptions caught:
+ '[PII of type 'System.String' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'.
+token: '[PII of type 'Microsoft.IdentityModel.JsonWebTokens.JsonWebToken' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'. See https://aka.ms/IDX10503 for details.
+2026-05-02 00:09:29.988 +05:30 [INF] Bearer was not authenticated. Failure message: IDX10517: Signature validation failed. The token's kid is missing. Keys tried: 'Microsoft.IdentityModel.Tokens.SymmetricSecurityKey, KeyId: '', InternalId: 'ywXWYLCQXPNkkeIfu21u5Tm1cbTjl8_phWXVDRhuUI4'. , KeyId: 
+'. Number of keys in TokenValidationParameters: '1'. 
+Number of keys in Configuration: '0'. 
+Exceptions caught:
+ '[PII of type 'System.String' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'.
+token: '[PII of type 'Microsoft.IdentityModel.JsonWebTokens.JsonWebToken' is hidden. For more details, see https://aka.ms/IdentityModel/PII.]'. See https://aka.ms/IDX10503 for details.
+2026-05-02 00:09:29.993 +05:30 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-05-02 00:09:29.993 +05:30 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-05-02 00:09:29.998 +05:30 [INF] AuthenticationScheme: Bearer was challenged.
+2026-05-02 00:09:29.998 +05:30 [INF] AuthenticationScheme: Bearer was challenged.
+2026-05-02 00:09:29.998 +05:30 [INF] HTTP GET /application/mine responded 401 in 147.6124 ms
+2026-05-02 00:09:29.998 +05:30 [INF] HTTP GET /application/mine responded 401 in 147.6125 ms
+2026-05-02 00:09:29.999 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/application/mine - 401 0 null 150.3346ms
+2026-05-02 00:09:29.999 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/application/mine - 401 0 null 150.335ms
+2026-05-02 00:09:30.001 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/auth/refresh - null null
+2026-05-02 00:09:30.002 +05:30 [INF] CORS policy execution successful.
+2026-05-02 00:09:30.002 +05:30 [INF] HTTP OPTIONS /auth/refresh responded 204 in 0.1245 ms
+2026-05-02 00:09:30.002 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/auth/refresh - 204 null null 0.3206ms
+2026-05-02 00:09:30.002 +05:30 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5233/auth/refresh - null null
+2026-05-02 00:09:30.002 +05:30 [INF] Request starting HTTP/1.1 POST http://localhost:5233/auth/refresh - application/json 108
+2026-05-02 00:09:30.004 +05:30 [INF] CORS policy execution successful.
+2026-05-02 00:09:30.004 +05:30 [INF] CORS policy execution successful.
+2026-05-02 00:09:30.004 +05:30 [INF] HTTP OPTIONS /auth/refresh responded 204 in 0.1173 ms
+2026-05-02 00:09:30.004 +05:30 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5233/auth/refresh - 204 null null 2.1595ms
+2026-05-02 00:09:30.005 +05:30 [INF] Request starting HTTP/1.1 POST http://localhost:5233/auth/refresh - application/json 108
+2026-05-02 00:09:30.006 +05:30 [INF] CORS policy execution successful.
+2026-05-02 00:09:30.008 +05:30 [INF] Executing endpoint 'HTTP: POST /auth/refresh'
+2026-05-02 00:09:30.008 +05:30 [INF] Executing endpoint 'HTTP: POST /auth/refresh'
+2026-05-02 00:09:30.958 +05:30 [WRN] Entity 'User' has a global query filter defined and is the required end of a relationship with the entity 'Application'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-02 00:09:30.958 +05:30 [WRN] Entity 'User' has a global query filter defined and is the required end of a relationship with the entity 'RefreshToken'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-02 00:09:31.732 +05:30 [INF] Executed DbCommand (67ms) [Parameters=[@__refreshToken_0='?' (Size = 500)], CommandType='"Text"', CommandTimeout='30']
+SELECT `r`.`id`, `r`.`created_at`, `r`.`device_info`, `r`.`expires_at`, `r`.`revoked_at`, `r`.`token`, `r`.`user_id`, `u0`.`id`, `u0`.`created_at`, `u0`.`email`, `u0`.`first_name`, `u0`.`is_active`, `u0`.`is_deleted`, `u0`.`last_name`, `u0`.`mobile`, `u0`.`password_hash`, `u0`.`role`
+FROM `refresh_tokens` AS `r`
+INNER JOIN (
+    SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+    FROM `users` AS `u`
+    WHERE NOT (`u`.`is_deleted`)
+) AS `u0` ON `r`.`user_id` = `u0`.`id`
+WHERE `r`.`token` = @__refreshToken_0
+LIMIT 1
+2026-05-02 00:09:31.758 +05:30 [INF] Setting HTTP status code 401.
+2026-05-02 00:09:31.758 +05:30 [INF] Executed endpoint 'HTTP: POST /auth/refresh'
+2026-05-02 00:09:31.760 +05:30 [INF] HTTP POST /auth/refresh responded 401 in 1754.9290 ms
+2026-05-02 00:09:31.768 +05:30 [INF] Request finished HTTP/1.1 POST http://localhost:5233/auth/refresh - 401 0 null 1762.6741ms
+2026-05-02 00:09:31.771 +05:30 [INF] Request starting HTTP/1.1 POST http://localhost:5233/application/create - null 0
+2026-05-02 00:09:31.771 +05:30 [INF] CORS policy execution successful.
+2026-05-02 00:09:31.773 +05:30 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-05-02 00:09:31.773 +05:30 [INF] AuthenticationScheme: Bearer was challenged.
+2026-05-02 00:09:31.773 +05:30 [INF] HTTP POST /application/create responded 401 in 1.8579 ms
+2026-05-02 00:09:31.774 +05:30 [INF] Request finished HTTP/1.1 POST http://localhost:5233/application/create - 401 0 null 2.2718ms
+2026-05-02 00:09:32.675 +05:30 [INF] Executed DbCommand (35ms) [Parameters=[@__refreshToken_0='?' (Size = 500)], CommandType='"Text"', CommandTimeout='30']
+SELECT `r`.`id`, `r`.`created_at`, `r`.`device_info`, `r`.`expires_at`, `r`.`revoked_at`, `r`.`token`, `r`.`user_id`, `u0`.`id`, `u0`.`created_at`, `u0`.`email`, `u0`.`first_name`, `u0`.`is_active`, `u0`.`is_deleted`, `u0`.`last_name`, `u0`.`mobile`, `u0`.`password_hash`, `u0`.`role`
+FROM `refresh_tokens` AS `r`
+INNER JOIN (
+    SELECT `u`.`id`, `u`.`created_at`, `u`.`email`, `u`.`first_name`, `u`.`is_active`, `u`.`is_deleted`, `u`.`last_name`, `u`.`mobile`, `u`.`password_hash`, `u`.`role`
+    FROM `users` AS `u`
+    WHERE NOT (`u`.`is_deleted`)
+) AS `u0` ON `r`.`user_id` = `u0`.`id`
+WHERE `r`.`token` = @__refreshToken_0
+LIMIT 1
+2026-05-02 00:09:32.676 +05:30 [INF] Setting HTTP status code 401.
+2026-05-02 00:09:32.676 +05:30 [INF] Executed endpoint 'HTTP: POST /auth/refresh'
+2026-05-02 00:09:32.676 +05:30 [INF] HTTP POST /auth/refresh responded 401 in 2672.3242 ms
+2026-05-02 00:09:32.676 +05:30 [INF] Request finished HTTP/1.1 POST http://localhost:5233/auth/refresh - 499 null null 2673.7471ms

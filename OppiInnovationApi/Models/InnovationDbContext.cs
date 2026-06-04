@@ -1,0 +1,142 @@
+using Microsoft.EntityFrameworkCore;
+
+namespace OppiInnovationApi.Models;
+
+public class InnovationDbContext : DbContext
+{
+    public InnovationDbContext(DbContextOptions<InnovationDbContext> options) : base(options) { }
+
+    public DbSet<User> Users => Set<User>();
+    public DbSet<AllowedDomain> AllowedDomains => Set<AllowedDomain>();
+    public DbSet<Application> Applications => Set<Application>();
+    public DbSet<PersonalInfo> PersonalInfos => Set<PersonalInfo>();
+    public DbSet<CompanyReach> CompanyReaches => Set<CompanyReach>();
+    public DbSet<CompanyDetail> CompanyDetails => Set<CompanyDetail>();
+    public DbSet<FileUpload> FileUploads => Set<FileUpload>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+    protected override void OnModelCreating(ModelBuilder mb)
+    {
+        mb.UseCollation("utf8mb4_unicode_ci").HasCharSet("utf8mb4");
+
+        mb.Entity<User>(e => {
+            e.ToTable("users");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.FirstName).HasColumnName("first_name").HasMaxLength(100);
+            e.Property(x => x.LastName).HasColumnName("last_name").HasMaxLength(100);
+            e.Property(x => x.Email).HasColumnName("email").HasMaxLength(255);
+            e.Property(x => x.Mobile).HasColumnName("mobile").HasMaxLength(15);
+            e.Property(x => x.PasswordHash).HasColumnName("password_hash").HasColumnType("text");
+            e.Property(x => x.Role).HasColumnName("role").HasColumnType("enum('USER','VALIDATOR','JURY','ADMIN')").HasDefaultValue("USER");
+            e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            e.Property(x => x.IsDeleted).HasColumnName("is_deleted").HasDefaultValue(false);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.HasQueryFilter(u => !u.IsDeleted);
+        });
+
+        mb.Entity<AllowedDomain>(e => {
+            e.ToTable("allowed_domains");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.Domain).HasColumnName("domain").HasMaxLength(255);
+            e.Property(x => x.IsActive).HasColumnName("is_active");
+        });
+
+        mb.Entity<Application>(e => {
+            e.ToTable("applications");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.Status).HasColumnName("status").HasColumnType("enum('DRAFT','SUBMITTED','UNDER_VALIDATOR_REVIEW','VALIDATOR_APPROVED','VALIDATOR_REJECTED','UNDER_JURY_REVIEW','JURY_APPROVED','JURY_REJECTED')").HasDefaultValue("DRAFT");
+            e.Property(x => x.ValidatorId).HasColumnName("validator_id");
+            e.Property(x => x.JuryId).HasColumnName("jury_id");
+            e.Property(x => x.SubmittedAt).HasColumnName("submitted_at");
+            e.Property(x => x.ValidatorActionAt).HasColumnName("validator_action_at");
+            e.Property(x => x.JuryActionAt).HasColumnName("jury_action_at");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.HasOne(x => x.User).WithMany(u => u.Applications).HasForeignKey(x => x.UserId);
+        });
+
+        mb.Entity<PersonalInfo>(e => {
+            e.ToTable("personal_info");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.CompanyName).HasColumnName("company_name");
+            e.Property(x => x.Designation).HasColumnName("designation");
+            e.Property(x => x.CategoryOfWork).HasColumnName("category_of_work");
+            e.Property(x => x.OtherCategory).HasColumnName("other_category");
+            e.Property(x => x.CompanyWebsite).HasColumnName("company_website");
+            e.Property(x => x.CompanyBrief).HasColumnName("company_brief").HasColumnType("text");
+            e.Property(x => x.Innovation).HasColumnName("innovation").HasColumnType("text");
+            e.Property(x => x.CompetitiveAnalysis).HasColumnName("competitive_analysis").HasColumnType("text");
+            e.Property(x => x.NeedAnalysis).HasColumnName("need_analysis").HasColumnType("text");
+            e.Property(x => x.Marketability).HasColumnName("marketability").HasColumnType("text");
+            e.HasOne(x => x.Application).WithOne(a => a.PersonalInfo).HasForeignKey<PersonalInfo>(x => x.ApplicationId);
+        });
+
+        mb.Entity<CompanyReach>(e => {
+            e.ToTable("company_reach");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.MarketingStrategy).HasColumnName("marketing_strategy").HasColumnType("text");
+            e.Property(x => x.AppDetails).HasColumnName("app_details").HasColumnType("text");
+            e.Property(x => x.WebsiteDetails).HasColumnName("website_details").HasColumnType("text");
+            e.Property(x => x.SocialMedia).HasColumnName("social_media").HasColumnType("text");
+            e.Property(x => x.PhysicalOutlets).HasColumnName("physical_outlets").HasColumnType("text");
+            e.Property(x => x.FutureExpansion).HasColumnName("future_expansion").HasColumnType("text");
+            e.HasOne(x => x.Application).WithOne(a => a.CompanyReach).HasForeignKey<CompanyReach>(x => x.ApplicationId);
+        });
+
+        mb.Entity<CompanyDetail>(e => {
+            e.ToTable("company_details");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.CustomerBenefit).HasColumnName("customer_benefit").HasColumnType("text");
+            e.Property(x => x.Testimonial).HasColumnName("testimonial").HasColumnType("text");
+            e.Property(x => x.EmployeeCount).HasColumnName("employee_count");
+            e.Property(x => x.BoardOfDirectors).HasColumnName("board_of_directors").HasColumnType("text");
+            e.Property(x => x.InvestorsDetails).HasColumnName("investors_details").HasColumnType("text");
+            e.Property(x => x.MediaMentions).HasColumnName("media_mentions").HasColumnType("text");
+            e.Property(x => x.Patents).HasColumnName("patents").HasColumnType("text");
+            e.Property(x => x.ProductBenefits).HasColumnName("product_benefits").HasColumnType("text");
+            e.HasOne(x => x.Application).WithOne(a => a.CompanyDetail).HasForeignKey<CompanyDetail>(x => x.ApplicationId);
+        });
+
+        mb.Entity<FileUpload>(e => {
+            e.ToTable("file_uploads");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.Section).HasColumnName("section");
+            e.Property(x => x.FileName).HasColumnName("file_name");
+            e.Property(x => x.FilePath).HasColumnName("file_path");
+            e.Property(x => x.FileSize).HasColumnName("file_size");
+            e.Property(x => x.FileType).HasColumnName("file_type");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.HasOne(x => x.Application).WithMany(a => a.FileUploads).HasForeignKey(x => x.ApplicationId);
+        });
+
+        mb.Entity<RefreshToken>(e => {
+            e.ToTable("refresh_tokens");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.Token).HasColumnName("token").HasMaxLength(500);
+            e.Property(x => x.ExpiresAt).HasColumnName("expires_at");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.RevokedAt).HasColumnName("revoked_at");
+            e.Property(x => x.DeviceInfo).HasColumnName("device_info");
+            e.HasOne(x => x.User).WithMany(u => u.RefreshTokens).HasForeignKey(x => x.UserId);
+            e.Ignore(x => x.IsActive);
+        });
+
+        mb.Entity<AuditLog>(e => {
+            e.ToTable("audit_logs");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.Action).HasColumnName("action").HasMaxLength(100);
+            e.Property(x => x.EntityType).HasColumnName("entity_type");
+            e.Property(x => x.EntityId).HasColumnName("entity_id");
+            e.Property(x => x.Details).HasColumnName("details").HasColumnType("text");
+            e.Property(x => x.IpAddress).HasColumnName("ip_address");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+        });
+    }
+}
