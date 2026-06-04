@@ -1,0 +1,59 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Menu, X, ArrowRight } from 'lucide-react';
+import oppiLogo from '../../assets/OPPI-logo-black.png';
+import './Navbar.css';
+import { color } from 'framer-motion';
+
+const Navbar = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navLinks = [
+    { name: 'ABOUT', href: '#about' },
+    { name: 'CATEGORIES', href: '#categories' },
+    { name: 'ELIGIBILITY', href: '#eligibility' },
+    { name: 'JURY', href: '#jury' },
+    { name: 'HELP', href: '#help' },
+  ];
+
+  return (
+    <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
+      <div className="container nav-container">
+        <div className="logo">
+          <img src={oppiLogo} alt="OPPI Logo" className="logo-img" />
+        </div>
+
+        <ul className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`}>
+          {navLinks.map((link) => (
+            <li key={link.name}>
+              {/* Assuming these are anchor links for the homepage */}
+              <a href={link.href.startsWith('/') ? link.href : `/${link.href}`} onClick={() => setIsMobileMenuOpen(false)}>
+                {link.name}
+              </a>
+            </li>
+          ))}
+          <li>
+            <Link to="/auth" className="apply-btn" style={{ color: "white" }} onClick={() => setIsMobileMenuOpen(false)}>
+              APPLY NOW <ArrowRight size={18} />
+            </Link>
+          </li>
+        </ul>
+
+        <div className="mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <X /> : <Menu />}
+        </div>
+      </div>
+    </nav >
+  );
+};
+
+export default Navbar;

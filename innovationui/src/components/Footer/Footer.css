@@ -1,0 +1,163 @@
+.footer {
+  background-color: #eaf2f5;
+  /* Light icy mint/gray background */
+  color: #1a1a1a;
+  padding: 4rem 0 2rem;
+  font-family: 'Outfit', sans-serif;
+}
+
+.footer-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer-brand {
+  flex: 0 0 280px;
+}
+
+.logos-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.footer-logo {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+}
+
+.vertical-divider {
+  width: 1px;
+  height: 45px;
+  background-color: #cccccc;
+  /* Light gray solid divider for logos */
+}
+
+.bharat-logo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bharat-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+  color: #1261b0;
+  /* Blue color for placeholder */
+}
+
+.bharat-icon {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.bharat-text {
+  font-size: 0.6rem;
+  font-weight: 600;
+}
+
+.org-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888888;
+  max-width: 280px;
+  line-height: 1.4;
+}
+
+.footer-col {
+  flex: 1;
+  padding: 0 2rem;
+}
+
+.divider-left {
+  border-left: 2px dotted #00a2e8;
+  /* Bright cyan/blue dotted divider */
+}
+
+.contact-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contact-col h3,
+.address-col h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: #1261b0;
+  /* Bold blue heading */
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.contact-item .icon {
+  color: #333333;
+}
+
+.address-col p {
+  font-size: 0.9rem;
+  font-weight: 600;
+  /* Bold/thick text as seen in image */
+  line-height: 1.6;
+  color: #1a1a1a;
+}
+
+.footer-copyright {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-top: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .footer-main {
+    flex-direction: column;
+    align-items: center;
+    text-align: left;
+    gap: 3rem;
+  }
+
+  .footer-brand {
+    flex: auto;
+    width: 100%;
+    text-align: center;
+  }
+
+  .logos-container {
+    justify-content: center;
+  }
+
+  .org-text {
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .footer-col {
+    padding: 0;
+    width: 100%;
+    border-left: none;
+    border-top: 2px dotted #00a2e8;
+    padding-top: 2rem;
+  }
+
+  .divider-left {
+    border-left: none;
+  }
+}

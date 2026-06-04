@@ -1,0 +1,94 @@
+.cta-section {
+  padding: 3rem 0;
+  /* Very subtle, light radial gradient to match the premium, airy feel of the background */
+  background: radial-gradient(circle at center, #ffffff 0%, #f4f7fa 100%);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Optional: Adding a faint repeating linear gradient to simulate the wavy texture from the image */
+.cta-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(45deg,
+      transparent,
+      transparent 100px,
+      rgba(0, 0, 0, 0.01) 100px,
+      rgba(0, 0, 0, 0.01) 200px);
+  pointer-events: none;
+}
+
+.cta-content {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.cta-title {
+  font-size: 3.8rem;
+  font-weight: 800;
+  color: #1261b0;
+  /* Blue matching the image */
+  line-height: 1.15;
+  margin-bottom: 1.8rem;
+  letter-spacing: -1px;
+}
+
+.cta-subtitle {
+  font-size: 1.15rem;
+  color: #1a1a1a;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  font-weight: 500;
+}
+
+.cta-btn {
+  background: #1764b8;
+  /* Blue matching the title/image */
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.85rem 2.5rem;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  /* White border with a drop shadow creates the glowing/inset effect seen in the image */
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(23, 100, 184, 0.25);
+  background: #13559c;
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .cta-section {
+    padding: 4rem 0;
+  }
+
+  .cta-title {
+    font-size: 2.5rem;
+  }
+
+  .cta-subtitle {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+}

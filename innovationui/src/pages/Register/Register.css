@@ -1,0 +1,371 @@
+/* Register.css - UPDATED VERSION */
+.register-page {
+  background: linear-gradient(135deg, #5edcf2 0%, #4acbe0 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  /* Center vertically */
+  justify-content: center;
+  /* Center horizontally */
+}
+
+.register-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.register-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('../../assets/innovation-header.jpg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.1;
+  mix-blend-mode: overlay;
+  z-index: 0;
+}
+
+.register-content-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.register-card {
+  display: flex;
+  background: var(--white);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  min-height: 550px;
+}
+
+/* Left Image Section */
+.register-image-section {
+  flex: 0 0 42%;
+  background-color: #89d8f3;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  overflow: hidden;
+}
+
+.register-trophy {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Right Form Section */
+.register-form-section {
+  flex: 1;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+.register-header {
+  margin-bottom: 1.5rem;
+}
+
+.register-header h2 {
+  font-size: 2rem;
+  color: #000000;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+}
+
+.register-header p {
+  color: #333333;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.login-link {
+  color: #1261b0;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+/* Form Styles */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #000000;
+}
+
+.required {
+  color: #ff0000;
+}
+
+.form-group input {
+  padding: 0.7rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  transition: border-color 0.2s;
+  background-color: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #63b3ed;
+  box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.2);
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
+}
+
+/* Mobile Input Group */
+.mobile-input-group {
+  display: flex;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #ffffff;
+  width: 100%;
+}
+
+.mobile-input-group .country-code {
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  background-color: #ffffff;
+  color: #000000;
+  border-right: 1px solid #e5e7eb;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.flag-icon {
+  margin-right: 6px;
+  font-style: normal;
+}
+
+.chevron-down {
+  margin-left: 4px;
+  color: #666;
+}
+
+.mobile-input-group input {
+  border: none;
+  border-radius: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-input-group input:focus {
+  box-shadow: none;
+}
+
+/* Form Footer */
+.form-footer {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  margin-top: 1rem;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.recaptcha-placeholder {
+  flex: 0 0 auto;
+}
+
+.recaptcha-mock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fafafa;
+  border: 1px solid #d3d3d3;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-width: 240px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.recaptcha-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.recaptcha-left input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+  margin: 0;
+}
+
+.recaptcha-left label {
+  margin: 0;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+.recaptcha-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.5rem;
+  color: #999;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.recaptcha-right img {
+  width: 20px;
+  margin-bottom: 2px;
+}
+
+.btn-register {
+  background: linear-gradient(135deg, #83e2f5 0%, #6cdaef 100%);
+  color: #000000;
+  border: none;
+  padding: 0 1.5rem;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-register:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(131, 226, 245, 0.4);
+}
+
+.btn-register:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Form Messages */
+.form-error {
+  background: #fff1f0;
+  color: #b42318;
+  border: 1px solid #ffccc7;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-success {
+  background: #ecfdf3;
+  color: #027a48;
+  border: 1px solid #abefc6;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Responsiveness */
+@media (max-width: 900px) {
+  .register-card {
+    flex-direction: column;
+  }
+
+  .register-image-section {
+    flex: none;
+    height: 250px;
+  }
+
+  .register-form-section {
+    padding: 1.5rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .form-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .recaptcha-mock {
+    min-width: 100%;
+  }
+
+  .btn-register {
+    padding: 0.9rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-container {
+    padding: 1rem;
+  }
+
+  .register-form-section {
+    padding: 1.25rem;
+  }
+
+  .register-header h2 {
+    font-size: 1.6rem;
+  }
+}

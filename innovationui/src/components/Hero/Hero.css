@@ -1,0 +1,193 @@
+/* components/Hero/Hero.css */
+.hero-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+}
+
+.hero {
+  width: 100%;
+  min-height: 100vh;
+  background-image: url('../../assets/innovation-header.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hero::before {
+  display: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 7rem;
+}
+
+.hero-title {
+  margin-bottom: 2rem;
+  line-height: 1.1;
+}
+
+.hero-title-blue {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #1f6fb6;
+}
+
+.hero-title-dark {
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: #000000;
+}
+
+.apply-now-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1f6fb6;
+  color: white;
+  padding: 0.8rem 2.5rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  margin-bottom: 2.5rem;
+  border: 2px solid #ffffff;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+.apply-now-btn:hover {
+  background: #11457a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.deadline-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 450px;
+}
+
+.deadline-line {
+  flex: 1;
+  height: 1px;
+  background-color: #333333;
+}
+
+.deadline-text {
+  font-size: 1.1rem;
+  color: #000000;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  justify-content: center;
+}
+
+.countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(230, 245, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 2px solid #73c2ed;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  min-width: 130px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.countdown-number {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #1f6fb6;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.countdown-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f6fb6;
+  text-transform: capitalize;
+}
+
+.countdown-separator {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #1f6fb6;
+  margin-top: -1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-title-blue {
+    font-size: 2.5rem;
+  }
+
+  .hero-title-dark {
+    font-size: 3rem;
+  }
+
+  .countdown-item {
+    padding: 1rem 1.5rem;
+    min-width: 100px;
+  }
+
+  .countdown-number {
+    font-size: 2.5rem;
+  }
+
+  .countdown-label {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title-blue {
+    font-size: 2rem;
+  }
+
+  .hero-title-dark {
+    font-size: 2.2rem;
+  }
+
+  .countdown {
+    gap: 0.8rem;
+  }
+
+  .countdown-item {
+    padding: 0.8rem 1rem;
+    min-width: 80px;
+  }
+
+  .countdown-number {
+    font-size: 1.8rem;
+  }
+
+  .countdown-separator {
+    font-size: 2rem;
+    margin-top: -1rem;
+  }
+}

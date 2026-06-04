@@ -1,0 +1,104 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
+import { api } from '../../services/api';
+import '../Auth/Auth.css'; // Reuse Auth CSS
+import trophyImg from '../../assets/trophy1.png';
+
+const ForgotPassword = () => {
+  const [email, setEmail] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [tempPassword, setTempPassword] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+    
+    try {
+      const response = await api.forgotPassword(email);
+      if (response && response.temp_password) {
+        setTempPassword(response.temp_password);
+      }
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err.message || 'Failed to send reset link. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-content-wrapper">
+          <div className="auth-card">
+            <div className="auth-image-section">
+              <img src={trophyImg} alt="OPPI Excellence in Innovation Award" className="auth-trophy" />
+            </div>
+            
+            <div className="auth-form-section">
+              {!isSubmitted ? (
+                <>
+                  <div className="auth-header">
+                    <h2>Forgot Password?</h2>
+                    <p>Enter your email address and we'll send you a link to reset your password.</p>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="auth-form">
+                    {error && <div className="form-error">{error}</div>}
+
+                    <div className="form-group">
+                      <label>Email Id <span className="required">*</span></label>
+                      <input 
+                        type="email" 
+                        name="email" 
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required 
+                      />
+                    </div>
+
+                    <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                      {isSubmitting ? 'SENDING...' : 'SEND RESET LINK'}
+                    </button>
+
+                    <div className="form-options" style={{ justifyContent: 'center', marginTop: '1rem' }}>
+                      <Link to="/auth" className="forgot-link">Back to Login</Link>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ fontSize: '3rem', color: '#0076BE', margin: '0 auto' }}>✓</div>
+                  <div className="auth-header" style={{ textAlign: 'center', marginBottom: 0 }}>
+                    <h2 style={{ fontSize: '1.8rem' }}>Check Your Email</h2>
+                    <p>We've processed your password reset request for <strong>{email}</strong>.</p>
+                  </div>
+                  {tempPassword && (
+                    <div style={{ background: '#f8fafc', padding: '1.5rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                      <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: '#64748b' }}>Your temporary password is:</p>
+                      <code style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0076BE' }}>{tempPassword}</code>
+                      <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#e53e3e' }}>Please log in and change it immediately.</p>
+                    </div>
+                  )}
+                  <div style={{ marginTop: '1rem' }}>
+                    <Link to="/auth">
+                      <button className="submit-btn">BACK TO LOGIN</button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ForgotPassword;

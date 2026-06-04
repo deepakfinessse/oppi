@@ -1,0 +1,108 @@
+.why-section {
+  padding: 6rem 0 8rem;
+  /* Matching the blue-cyan gradient from the image */
+  background: linear-gradient(135deg, #48d1e3 0%, #2f9cd7 50%, #1a6abf 100%);
+  background-image: url('../../assets/Areas-covered-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+  text-align: center;
+}
+
+.section-title {
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.reasons-grid {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+  padding: 0 1rem;
+}
+
+.reason-card {
+  flex: 1;
+  min-width: 280px;
+  max-width: 320px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.reason-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+}
+
+.reason-top {
+  /* Light blue semi-transparent gradient for the top half */
+  background: linear-gradient(180deg, rgba(162, 229, 248, 0.2) 0%, rgba(132, 203, 245, 0.1) 100%);
+  padding: 3rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.reason-icon-wrapper {
+  background: transparent;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.reason-icon {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+}
+
+.reason-bottom {
+  /* Solid darker blue for the bottom half */
+  background: rgba(23, 90, 166, 0.85);
+  padding: 1.8rem 1.5rem;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reason-title {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+}
+
+@media (max-width: 992px) {
+  .section-title {
+    font-size: 2.5rem;
+  }
+
+  .reasons-grid {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .reason-card {
+    width: 100%;
+    max-width: 350px;
+  }
+}

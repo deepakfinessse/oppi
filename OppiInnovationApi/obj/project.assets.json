@@ -3496,11 +3496,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/shivamsangal/projects/nivyam/awards-backend/OppiInnovationApi/OppiInnovationApi.csproj",
+      "projectUniqueName": "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/OppiInnovationApi.csproj",
       "projectName": "OppiInnovationApi",
-      "projectPath": "/Users/shivamsangal/projects/nivyam/awards-backend/OppiInnovationApi/OppiInnovationApi.csproj",
+      "projectPath": "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/OppiInnovationApi.csproj",
       "packagesPath": "/Users/shivamsangal/.nuget/packages/",
-      "outputPath": "/Users/shivamsangal/projects/nivyam/awards-backend/OppiInnovationApi/obj/",
+      "outputPath": "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/shivamsangal/.nuget/NuGet/NuGet.Config"

@@ -1,0 +1,230 @@
+/* components/Rules/Rules.css */
+.rules-section {
+  position: relative;
+  padding: 5rem 0;
+  /* Full section background image */
+  background-image: url('../../assets/eligibility-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+/* Light overlay - reduced opacity to make background more visible */
+.rules-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.65);
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  /* Increased from 1200px */
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.rules-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.rules-content {
+  flex: 1;
+  min-width: 350px;
+  /* Increased from 300px */
+  max-width: 70%;
+  /* Limit width to leave space for trophy */
+  position: relative;
+  z-index: 2;
+}
+
+.rules-image {
+  position: relative;
+  flex: 0 0 450px;
+  display: flex;
+  justify-content: flex-end;
+  /* Align trophy to the right */
+  align-items: flex-start;
+  margin-right: -2rem;
+  /* Shift further right */
+}
+
+.trophy-image {
+  width: 100%;
+  max-width: 450px;
+  height: auto;
+  object-fit: contain;
+}
+
+.rules-title {
+  font-size: 2.8rem;
+  /* Increased from 2.5rem */
+  font-weight: 800;
+  color: #1264B9;
+  margin-bottom: 2.5rem;
+  text-align: left;
+  /* Changed from center to left */
+}
+
+.rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  /* Increased from 1rem */
+}
+
+.rule-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  padding: 1.25rem 1.8rem;
+  /* Increased padding */
+  border-radius: 16px;
+  /* Increased from 12px */
+  font-size: 1rem;
+  /* Increased from 0.92rem */
+  color: #333;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 118, 190, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.rule-card:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateX(6px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.rule-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  /* Increased from 26px */
+  height: 28px;
+  /* Increased from 26px */
+  border-radius: 50%;
+  background: #1264B9;
+  color: white;
+  margin-top: 0.1rem;
+}
+
+.rule-chevron svg {
+  width: 16px;
+  /* Increased from 14px */
+  height: 16px;
+}
+
+.rule-text {
+  flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .rules-content {
+    max-width: 65%;
+  }
+
+  .rules-image {
+    flex: 0 0 380px;
+  }
+
+  .trophy-image {
+    max-width: 380px;
+  }
+
+  .rules-title {
+    font-size: 2.3rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .rules-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .rules-content {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .rules-title {
+    text-align: center;
+  }
+
+  .rules-image {
+    margin-top: 2rem;
+    flex: 0 0 auto;
+    justify-content: center;
+    margin-right: 0;
+  }
+
+  .trophy-image {
+    max-width: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rules-section {
+    padding: 3rem 0;
+  }
+
+  .rules-title {
+    font-size: 1.8rem;
+  }
+
+  .rule-card {
+    padding: 1rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .rule-chevron {
+    width: 24px;
+    height: 24px;
+  }
+
+  .rule-chevron svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .trophy-image {
+    max-width: 280px;
+  }
+
+  .rules-list {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .rules-title {
+    font-size: 1.5rem;
+  }
+
+  .trophy-image {
+    max-width: 220px;
+  }
+
+  .rule-card {
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+  }
+}

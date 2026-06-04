@@ -1,0 +1,127 @@
+.jury-section {
+  padding: 2rem 0;
+  background: url('../../assets/jury-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  text-align: center;
+  position: relative;
+}
+
+.jury-main-title {
+  color: #ffffff;
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 3rem;
+}
+
+.subtitle-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  /* margin-bottom: 2.5rem; */
+}
+
+.subtitle-line {
+  height: 1px;
+  background-color: #000000;
+  width: 120px;
+}
+
+.jury-subtitle {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #000000;
+  margin: 0;
+}
+
+.validator-section {
+  margin-bottom: 3rem;
+}
+
+.validator-card {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.jury-grid {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.jury-card {
+  flex: 1;
+  min-width: 320px;
+  max-width: 380px;
+  background: linear-gradient(180.09deg, rgba(5, 80, 156, 0.8) 0.07%, rgba(0, 188, 138, 0) 99.93%);
+  backdrop-filter: blur(8px);
+  padding: 0 2rem 3.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 3px solid #ffffff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-top: 60px;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+.jury-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.jury-image {
+  width: 200px;
+  height: 200px;
+  margin: -15px auto 2rem;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jury-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.jury-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.jury-info h4 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.jury-info p {
+  font-size: 1.05rem;
+  color: #ffffff;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .jury-main-title {
+    font-size: 2.5rem;
+  }
+
+  .subtitle-line {
+    width: 60px;
+  }
+
+  .jury-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+}

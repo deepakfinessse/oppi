@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #0076BE;
+  --primary-light: #00A6E6;
+  --primary-dark: #003D7A;
+  --accent: #E0F2FE;
+  --background: #FFFFFF;
+  --text-main: #1A1A1A;
+  --text-secondary: #4A4A4A;
+  --white: #FFFFFF;
+  --glass: rgba(255, 255, 255, 0.8);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  --transition: all 0.3s ease;
+  
+  --gradient-blue: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%);
+  --gradient-soft: linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%);
+  --gradient-hero: radial-gradient(circle at center, #E0F2FE 0%, #FFFFFF 100%);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  color: var(--text-main);
+  background-color: var(--background);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.btn-primary {
+  background: var(--gradient-blue);
+  color: var(--white);
+  padding: 0.8rem 2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(0, 118, 190, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 118, 190, 0.4);
+}
+
+.section-padding {
+  padding: 6rem 0;
+}
+
+@media (max-width: 768px) {
+  .section-padding {
+    padding: 4rem 0;
+  }
+}

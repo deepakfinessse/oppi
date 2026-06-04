@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OppiInnovationApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eed2983baff7edceb16e325a2f001dd9d7869769")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+523c5835e4258c9dfe62b590d68a11cb2df928a1")]
 [assembly: System.Reflection.AssemblyProductAttribute("OppiInnovationApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OppiInnovationApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
