@@ -3466,3 +3466,4 @@ WHERE `j`.`application_id` = @__id_0
 2026-06-09 13:09:00.842 +05:30 [INF] Executed endpoint 'HTTP: GET /application/review/{id}'
 2026-06-09 13:09:00.843 +05:30 [INF] HTTP GET /application/review/2 responded 200 in 419.7930 ms
 2026-06-09 13:09:00.843 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5233/application/review/2 - 200 null application/json; charset=utf-8 420.5344ms
+2026-06-09 13:10:31.152 +05:30 [INF] Application is shutting down...
