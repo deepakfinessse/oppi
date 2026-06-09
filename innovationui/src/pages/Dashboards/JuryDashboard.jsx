@@ -10,6 +10,12 @@ export default function JuryDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Scoring modal state
+  const [showModal, setShowModal] = useState(false);
+  const [selectedAppId, setSelectedAppId] = useState(null);
+  const [scores, setScores] = useState({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
+  const [submitting, setSubmitting] = useState(false);
+
   useEffect(() => {
     fetchApps();
   }, []);
@@ -26,13 +32,47 @@ export default function JuryDashboard() {
   };
 
   const handleAction = async (id, action) => {
-    if (!window.confirm(`Are you sure you want to ${action.toLowerCase()} this application?`)) return;
+    if (action === 'Approve') {
+      setSelectedAppId(id);
+      setScores({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
+      setShowModal(true);
+    } else {
+      if (!window.confirm(`Are you sure you want to reject this application?`)) return;
+      try {
+        await api.juryReject(id);
+        fetchApps();
+      } catch (err) {
+        alert('Failed to reject application');
+      }
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedAppId(null);
+  };
+
+  const calculateWeightedScore = () => {
+    const { innovationIp, teamStrength, businessPlan, impact } = scores;
+    if (!innovationIp || !teamStrength || !businessPlan || !impact) return '0.00';
+    return ((innovationIp + teamStrength + businessPlan + impact) / 4.0).toFixed(2);
+  };
+
+  const submitScores = async () => {
     try {
-      if (action === 'Approve') await api.juryApprove(id);
-      else await api.juryReject(id);
+      setSubmitting(true);
+      await api.juryApprove(selectedAppId, {
+        innovationIpScore: scores.innovationIp,
+        teamStrengthScore: scores.teamStrength,
+        businessPlanScore: scores.businessPlan,
+        impactScore: scores.impact
+      });
+      closeModal();
       fetchApps();
     } catch (err) {
-      alert(`Failed to ${action.toLowerCase()}`);
+      alert(err.message || 'Failed to submit jury review');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -89,6 +129,115 @@ export default function JuryDashboard() {
           </div>
         </div>
       </div>
+
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <div className="modal-header">
+              <h3>Score & Approve Application #{selectedAppId}</h3>
+              <button className="modal-close-btn" onClick={closeModal}>&times;</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="rating-group">
+                <div className="rating-label">
+                  <span>Innovation & IP</span>
+                  <span>{scores.innovationIp || '—'} / 5</span>
+                </div>
+                <div className="rating-desc">Quality and novelty of the innovation and associated IP</div>
+                <div className="rating-selector">
+                  {[1, 2, 3, 4, 5].map(val => (
+                    <button
+                      key={val}
+                      type="button"
+                      className={`rating-btn ${scores.innovationIp === val ? 'active' : ''}`}
+                      onClick={() => setScores(prev => ({ ...prev, innovationIp: val }))}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rating-group">
+                <div className="rating-label">
+                  <span>Founding Team</span>
+                  <span>{scores.teamStrength || '—'} / 5</span>
+                </div>
+                <div className="rating-desc">Strength of the founding team</div>
+                <div className="rating-selector">
+                  {[1, 2, 3, 4, 5].map(val => (
+                    <button
+                      key={val}
+                      type="button"
+                      className={`rating-btn ${scores.teamStrength === val ? 'active' : ''}`}
+                      onClick={() => setScores(prev => ({ ...prev, teamStrength: val }))}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rating-group">
+                <div className="rating-label">
+                  <span>Business Plan</span>
+                  <span>{scores.businessPlan || '—'} / 5</span>
+                </div>
+                <div className="rating-desc">The Business Plan (market potential)</div>
+                <div className="rating-selector">
+                  {[1, 2, 3, 4, 5].map(val => (
+                    <button
+                      key={val}
+                      type="button"
+                      className={`rating-btn ${scores.businessPlan === val ? 'active' : ''}`}
+                      onClick={() => setScores(prev => ({ ...prev, businessPlan: val }))}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rating-group">
+                <div className="rating-label">
+                  <span>Impact</span>
+                  <span>{scores.impact || '—'} / 5</span>
+                </div>
+                <div className="rating-desc">Impact (short term & long term)</div>
+                <div className="rating-selector">
+                  {[1, 2, 3, 4, 5].map(val => (
+                    <button
+                      key={val}
+                      type="button"
+                      className={`rating-btn ${scores.impact === val ? 'active' : ''}`}
+                      onClick={() => setScores(prev => ({ ...prev, impact: val }))}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="weighted-score-display">
+                <span>Calculated Total Score (Weights: 25% each)</span>
+                <span className="weighted-score-val">{calculateWeightedScore()}</span>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-action view" onClick={closeModal}>Cancel</button>
+              <button
+                className="btn-action approve"
+                onClick={submitScores}
+                disabled={submitting || !scores.innovationIp || !scores.teamStrength || !scores.businessPlan || !scores.impact}
+              >
+                {submitting ? 'Submitting...' : 'Submit Approval'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

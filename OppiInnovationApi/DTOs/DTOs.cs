@@ -61,3 +61,11 @@ public class CompanyDetailsDto
     public string? Patents { get; set; }
     public string? Product_Benefits { get; set; }
 }
+
+public class JuryApprovalDto
+{
+    public int InnovationIpScore { get; set; }
+    public int TeamStrengthScore { get; set; }
+    public int BusinessPlanScore { get; set; }
+    public int ImpactScore { get; set; }
+}

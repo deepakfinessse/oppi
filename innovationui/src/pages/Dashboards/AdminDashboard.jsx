@@ -88,6 +88,7 @@ export default function AdminDashboard() {
                   <th>Email</th>
                   <th>Company</th>
                   <th>Status</th>
+                  <th>Jury Approvals / Avg Score</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -100,11 +101,20 @@ export default function AdminDashboard() {
                     <td>{a.company || '—'}</td>
                     <td><span className={`status-badge ${a.status.toLowerCase().replace('_', '-')}`}>{a.status}</span></td>
                     <td>
+                      {a.jury_approval_count > 0 ? (
+                        <span>
+                          <strong>{a.jury_approval_count}/3</strong> ({a.average_score ? a.average_score.toFixed(2) : '0.00'})
+                        </span>
+                      ) : (
+                        <span style={{ color: '#94a3b8' }}>0/3 (—)</span>
+                      )}
+                    </td>
+                    <td>
                       <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)}>View</button>
                     </td>
                   </tr>
                 ))}
-                {apps.length === 0 && <tr><td colSpan="6" className="text-center">No applications found.</td></tr>}
+                {apps.length === 0 && <tr><td colSpan="7" className="text-center">No applications found.</td></tr>}
               </tbody>
             </table>
           </div>

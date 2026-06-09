@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api, clearSession } from '../../services/api';
+import { api, clearSession, getSession } from '../../services/api';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import html2pdf from 'html2pdf.js';
@@ -21,6 +21,9 @@ export default function ViewApplication({ isMine }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(false);
+
+  const session = getSession();
+  const userRole = session?.role;
 
   useEffect(() => {
     const fetchApp = async () => {
@@ -159,6 +162,16 @@ export default function ViewApplication({ isMine }) {
                 <h4>Status Info</h4>
                 <div><strong>Status:</strong> <span className={`status-text ${app.status.toLowerCase().replace('_', '-')}`}>{app.status}</span></div>
                 <div><strong>Submitted:</strong> {new Date(app.submitted_at).toLocaleString()}</div>
+                {(userRole === 'ADMIN' || userRole === 'JURY') && (
+                  <>
+                    <div style={{ borderTop: '1px solid #cbd5e1', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
+                      <strong>Jury Approvals:</strong> {app.jury_approval_count || 0} / 3
+                    </div>
+                    <div>
+                      <strong>Overall Avg Score:</strong> {app.average_score ? app.average_score.toFixed(2) : '—'} / 5.00
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -203,6 +216,40 @@ export default function ViewApplication({ isMine }) {
               <DataRow label="Product Benefits" value={cd.productBenefits || cd.ProductBenefits} />
             </div>
           </div>
+
+          {(userRole === 'ADMIN' || userRole === 'JURY') && app.jury_reviews && app.jury_reviews.length > 0 && (
+            <div className="dashboard-section no-print">
+              <h3>Jury Reviews Breakdown</h3>
+              <div className="table-responsive">
+                <table className="jury-scores-table">
+                  <thead>
+                    <tr>
+                      <th>Jury Member</th>
+                      <th>Innovation & IP (25%)</th>
+                      <th>Team Strength (25%)</th>
+                      <th>Business Plan (25%)</th>
+                      <th>Impact (25%)</th>
+                      <th>Weighted Score</th>
+                      <th>Reviewed At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {app.jury_reviews.map(r => (
+                      <tr key={r.id}>
+                        <td>{r.jury_name}</td>
+                        <td>{r.innovationIpScore} / 5</td>
+                        <td>{r.teamStrengthScore} / 5</td>
+                        <td>{r.businessPlanScore} / 5</td>
+                        <td>{r.impactScore} / 5</td>
+                        <td><strong>{r.weightedScore.toFixed(2)}</strong> / 5.00</td>
+                        <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           <div className="dashboard-section">
             <h3>Attached Files</h3>

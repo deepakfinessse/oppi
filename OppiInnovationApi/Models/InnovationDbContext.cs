@@ -15,6 +15,7 @@ public class InnovationDbContext : DbContext
     public DbSet<FileUpload> FileUploads => Set<FileUpload>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<JuryReview> JuryReviews => Set<JuryReview>();
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
@@ -137,6 +138,23 @@ public class InnovationDbContext : DbContext
             e.Property(x => x.Details).HasColumnName("details").HasColumnType("text");
             e.Property(x => x.IpAddress).HasColumnName("ip_address");
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
+        });
+
+        mb.Entity<JuryReview>(e => {
+            e.ToTable("jury_reviews");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.JuryId).HasColumnName("jury_id");
+            e.Property(x => x.InnovationIpScore).HasColumnName("innovation_ip_score");
+            e.Property(x => x.TeamStrengthScore).HasColumnName("team_strength_score");
+            e.Property(x => x.BusinessPlanScore).HasColumnName("business_plan_score");
+            e.Property(x => x.ImpactScore).HasColumnName("impact_score");
+            e.Property(x => x.WeightedScore).HasColumnName("weighted_score");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+
+            e.HasOne(x => x.Application).WithMany().HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Jury).WithMany().HasForeignKey(x => x.JuryId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.ApplicationId, x.JuryId }).IsUnique();
         });
     }
 }

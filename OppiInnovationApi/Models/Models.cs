@@ -122,3 +122,19 @@ public class AuditLog
     public string? IpAddress { get; set; }
     public DateTime CreatedAt { get; set; }
 }
+
+public class JuryReview
+{
+    public int Id { get; set; }
+    public int ApplicationId { get; set; }
+    public int JuryId { get; set; }
+    public int InnovationIpScore { get; set; }
+    public int TeamStrengthScore { get; set; }
+    public int BusinessPlanScore { get; set; }
+    public int ImpactScore { get; set; }
+    public double WeightedScore { get; set; }
+    public DateTime CreatedAt { get; set; }
+
+    public virtual Application Application { get; set; } = null!;
+    public virtual User Jury { get; set; } = null!;
+}
