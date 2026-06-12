@@ -78,7 +78,7 @@ jobs:
 
       # ✅ Deploy on VM
       - name: Run deployment commands
-        uses: appleboy/scp-action@v0.1.4
+        uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
