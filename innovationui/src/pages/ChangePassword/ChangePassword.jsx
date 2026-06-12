@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import '../Auth/Auth.css';
-import trophyImg from '../../assets/trophy1.png';
+import trophyImg from '../../assets/Trophy1.png';
 
 const ChangePassword = () => {
   const navigate = useNavigate();

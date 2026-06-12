@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import './Register.css';
-import trophyImg from '../../assets/trophy1.png';
+import trophyImg from '../../assets/Trophy1.png';
 
 const Register = () => {
   const navigate = useNavigate();

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, saveSession } from '../../services/api';
 import './Login.css';
-import trophyImg from '../../assets/trophy1.png';
+import trophyImg from '../../assets/Trophy1.png';
 
 const Login = () => {
   const navigate = useNavigate();
