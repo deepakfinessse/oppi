@@ -31,9 +31,13 @@ jobs:
           npm install
           npm run build
 
+      # ✅ Debug (Very Important - SEE FILES)
+      - name: Debug React Output
+        run: ls innovationui
+
       # ✅ Verify React Build Exists
       - name: Check React Build
-        run: ls innovationui/build
+        run: ls innovationui/dist
 
       # ✅ Setup .NET
       - name: Setup .NET
@@ -59,7 +63,7 @@ jobs:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
-          source: "innovationui/build"
+          source: "innovationui/dist"
           target: "/home/avian/oppi"
 
       # ✅ Copy backend publish
@@ -83,7 +87,7 @@ jobs:
             # Move frontend to nginx
             sudo rm -rf /var/www/oppi
             sudo mkdir -p /var/www/oppi
-            sudo cp -r /home/avian/oppi/innovationui/build/* /var/www/oppi/
+            sudo cp -r /home/avian/oppi/innovationui/dist/* /var/www/oppi/
            
             # Move backend
             sudo rm -rf /home/avian/oppi/backend
