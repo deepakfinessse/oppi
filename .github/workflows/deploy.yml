@@ -14,6 +14,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # ✅ Debug (Very Important - SEE FILES)
+      - name: Debug Folder Structure
+        run: ls -R
+
       # ✅ Checkout Node (React)
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -27,6 +31,10 @@ jobs:
           npm install
           npm run build
 
+      # ✅ Verify React Build Exists
+      - name: Check React Build
+        run: ls innovationui/build
+
       # ✅ Setup .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -38,19 +46,31 @@ jobs:
         run: |
           cd OppiInnovationApi
           dotnet restore
-          dotnet publish -c release -o publish
+          dotnet publish -c Release -o publish
 
-      # ✅ Copy files to Azure VM
-      - name: Copy files to VM
+      # ✅ Verify backend publish
+      - name: Check backend publish
+        run: ls OppiInnovationApi/publish
+
+      # ✅ Copy react build
+      - name: Copy React to VM
         uses: appleboy/scp-action@v0.1.3
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_SSH_KEY }}
-          source: |
-            innovationui/build/*
-            OppiInnovationApi/publish/*
-          target: /home/avian/oppi
+          source: "innovationui/build"
+          target: "/home/avian/oppi"
+
+      # ✅ Copy backend publish
+      - name: Copy backend to VM
+        uses: appleboy/scp-action@v0.1.3
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_SSH_KEY }}
+          source: "OppiInnovationApi/publish"
+          target: "/home/avian/oppi"
 
       # ✅ Deploy on VM
       - name: Run deployment commands
@@ -64,6 +84,11 @@ jobs:
             sudo rm -rf /var/www/oppi
             sudo mkdir -p /var/www/oppi
             sudo cp -r /home/avian/oppi/innovationui/build/* /var/www/oppi/
+           
+            # Move backend
+            sudo rm -rf /home/avian/oppi/backend
+            sudo mkdir -p /home/avian/oppi/backend
+            sudo cp -r /home/avian/oppi/OppiInnovationApi/publish/* /home/avian/oppi/backend/
 
             # Restart Backend
             sudo systemctl restart oppi-api
