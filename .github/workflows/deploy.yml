@@ -1,0 +1,72 @@
+name: Deploy Oppi Full Stack App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ✅ Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # ✅ Checkout Node (React)
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      # ✅ Build Frontend
+      - name: Build React App
+        run: |
+          cd innovationui
+          npm install
+          npm run build
+
+      # ✅ Setup .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 10.0
+
+      # ✅ Build Backend
+      - name: Publish .NET API
+        run: |
+          cd OppiInnovationApi
+          dotnet restore
+          dotnet publish -c release -o publish
+
+      # ✅ Copy files to Azure VM
+      - name: Copy files to VM
+        uses: appleboy/scp-action@v0.1.3
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_SSH_KEY }}
+          source: |
+            innovationui/build/*
+            OppiInnovationApi/publish/*
+          target: /home/avian/oppi
+
+      # ✅ Deploy on VM
+      - name: Run deployment commands
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_SSH_KEY }}
+          script: |
+            # Move frontend to nginx
+            sudo rm -rf /var/www/oppi
+            sudo mkdir -p /var/www/oppi
+            sudo cp -r /home/avian/oppi/innovationui/build/* /var/www/oppi/
+
+            # Restart Backend
+            sudo systemctl restart oppi-api
+
+            # Restart nginx
+            sudo systemctl restart nginx
