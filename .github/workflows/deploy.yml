@@ -72,7 +72,7 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key_path: /home/runner/.ssh/id_rsa
+          key: ${{ secrets.AZURE_SSH_KEY }}
           port: 22
           source: "innovationui/dist/*"
           target: "/home/avian/oppi"
@@ -84,7 +84,7 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key_path: /home/runner/.ssh/id_rsa
+          key: ${{ secrets.AZURE_SSH_KEY }}
           port: 22
           source: "OppiInnovationApi/publish/*"
           target: "/home/avian/oppi"
@@ -96,7 +96,7 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key_path: /home/runner/.ssh/id_rsa
+          key: ${{ secrets.AZURE_SSH_KEY }}
           # port: 22
           script: |
             # Move frontend to nginx
