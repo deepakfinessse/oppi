@@ -55,16 +55,16 @@ jobs:
       # ✅ Verify backend publish
       - name: Debug Folders
         run: |
-          ls innovationui
+          # ls innovationui
           ls innovationui/dist
           ls OppiInnovationApi/publish
 
       # ✅ Fix SSH Key
       - name: Fix SSH Key
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          mkdir -p /home/runner/.ssh
+          echo "${{ secrets.AZURE_SSH_KEY }}" > /home/runner/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
 
       # ✅ Copy react build
       - name: Copy Frontend to VM
@@ -72,8 +72,7 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          # key: ${{ secrets.AZURE_SSH_KEY }}
-          key_path: ~/.ssh/id_rsa
+          key_path: /home/runner/.ssh/id_rsa
           port: 22
           source: "innovationui/dist/*"
           target: "/home/avian/oppi"
@@ -85,7 +84,7 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key: ${{ secrets.AZURE_SSH_KEY }}
+          key_path: /home/runner/.ssh/id_rsa
           port: 22
           source: "OppiInnovationApi/publish/*"
           target: "/home/avian/oppi"
@@ -97,8 +96,8 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key: ${{ secrets.AZURE_SSH_KEY }}
-          port: 22
+          key_path: /home/runner/.ssh/id_rsa
+          # port: 22
           script: |
             # Move frontend to nginx
             sudo rm -rf /var/www/oppi
