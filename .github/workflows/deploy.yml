@@ -64,7 +64,9 @@ jobs:
         run: |
           mkdir -p /home/runner/.ssh
           echo "${{ secrets.AZURE_SSH_KEY }}" > /home/runner/.ssh/id_rsa
+          echo "" >> /home/runner/.ssh/id_rsa   # ensure trailing newline
           chmod 600 /home/runner/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.AZURE_VM_HOST }} >> /home/runner/.ssh/known_hosts
 
       # ✅ Copy react build
       - name: Copy Frontend to VM
@@ -72,7 +74,7 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key: ${{ secrets.AZURE_SSH_KEY }}
+          key_path: /home/runner/.ssh/id_rsa   # ← use key_path instead of key
           port: 22
           source: "innovationui/dist/*"
           target: "/home/avian/oppi"
@@ -84,7 +86,7 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key: ${{ secrets.AZURE_SSH_KEY }}
+          key_path: /home/runner/.ssh/id_rsa   # ← use key_path instead of key
           port: 22
           source: "OppiInnovationApi/publish/*"
           target: "/home/avian/oppi"
@@ -96,8 +98,7 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key: ${{ secrets.AZURE_SSH_KEY }}
-          # port: 22
+          key_path: /home/runner/.ssh/id_rsa
           script: |
             # Move frontend to nginx
             sudo rm -rf /var/www/oppi
