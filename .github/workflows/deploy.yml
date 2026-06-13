@@ -14,10 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # ✅ Debug (Very Important - SEE FILES)
-      # - name: Debug Folder Structure
-      #   run: ls -R
-
       # ✅ Checkout Node (React)
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -30,14 +26,6 @@ jobs:
           cd innovationui
           npm install
           npm run build
-
-      # ✅ Debug (Very Important - SEE FILES)
-      # - name: Debug React Output
-      #   run: ls innovationui
-
-      # ✅ Verify React Build Exists
-      # - name: Check React Build
-      #   run: ls innovationui/dist
 
       # ✅ Setup .NET
       - name: Setup .NET
@@ -52,33 +40,31 @@ jobs:
           dotnet restore
           dotnet publish -c Release -o publish
 
-      # ✅ Verify backend publish
+      # ✅ Verify builds exist
       - name: Debug Folders
         run: |
-          # ls innovationui
           ls innovationui/dist
           ls OppiInnovationApi/publish
 
-      # ✅ Fix SSH Key
-      - name: Fix SSH Key
+      # ✅ Add VM to known_hosts (on runner host, for reference only)
+      - name: Add VM to known_hosts
         run: |
           mkdir -p /home/runner/.ssh
-          echo "${{ secrets.AZURE_SSH_KEY }}" > /home/runner/.ssh/id_rsa
-          echo "" >> /home/runner/.ssh/id_rsa   # ensure trailing newline
-          chmod 600 /home/runner/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.AZURE_VM_HOST }} >> /home/runner/.ssh/known_hosts
 
       # ✅ Copy react build
+      # NOTE: scp-action runs in Docker — it cannot access /home/runner/.ssh
+      # Must use key: (raw secret value), NOT key_path:
       - name: Copy Frontend to VM
         uses: appleboy/scp-action@v0.1.3
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key_path: /home/runner/.ssh/id_rsa   # ← use key_path instead of key
+          key: ${{ secrets.AZURE_SSH_KEY }}
           port: 22
           source: "innovationui/dist/*"
           target: "/home/avian/oppi"
-          debug: true
+          strip_components: 2   # strips "innovationui/dist/" prefix on remote
 
       # ✅ Copy backend publish
       - name: Copy Backend to VM
@@ -86,11 +72,11 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key_path: /home/runner/.ssh/id_rsa   # ← use key_path instead of key
+          key: ${{ secrets.AZURE_SSH_KEY }}
           port: 22
           source: "OppiInnovationApi/publish/*"
-          target: "/home/avian/oppi"
-          debug: true
+          target: "/home/avian/oppi/backend"
+          strip_components: 2   # strips "OppiInnovationApi/publish/" prefix on remote
 
       # ✅ Deploy on VM
       - name: Run deployment commands
@@ -98,17 +84,12 @@ jobs:
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
-          key_path: /home/runner/.ssh/id_rsa
+          key: ${{ secrets.AZURE_SSH_KEY }}
           script: |
             # Move frontend to nginx
             sudo rm -rf /var/www/oppi
             sudo mkdir -p /var/www/oppi
-            sudo cp -r /home/avian/oppi/innovationui/dist/* /var/www/oppi/
-           
-            # Move backend
-            sudo rm -rf /home/avian/oppi/backend
-            sudo mkdir -p /home/avian/oppi/backend
-            sudo cp -r /home/avian/oppi/OppiInnovationApi/publish/* /home/avian/oppi/backend/
+            sudo cp -r /home/avian/oppi/* /var/www/oppi/
 
             # Restart Backend
             sudo systemctl restart oppi-api
