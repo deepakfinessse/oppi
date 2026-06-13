@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://74.225.167.29";
+const API_BASE_URL = "http://localhost:5000";
 const SESSION_KEY = 'innovationAwardsSession';
 
 async function request(path, options = {}) {
