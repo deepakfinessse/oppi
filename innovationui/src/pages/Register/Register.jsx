@@ -75,7 +75,7 @@ const Register = () => {
                     <input
                       type="text"
                       name="firstName"
-                      placeholder="Clara"
+                      placeholder="Name"
                       value={formData.firstName}
                       onChange={handleChange}
                       required
