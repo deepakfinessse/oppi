@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Menu, X, ArrowRight } from 'lucide-react';
 import oppiLogo from '../../assets/OPPI-logo-black.png';
 import './Navbar.css';
-import { color } from 'framer-motion';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
