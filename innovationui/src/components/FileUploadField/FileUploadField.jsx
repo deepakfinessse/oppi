@@ -88,7 +88,7 @@ export default function FileUploadField({
       <label>{field.label} {field.required && <span className="required">*</span>}</label>
 
       <div
-        className={`file-dropzone ${isDragging ? 'dragging' : ''} ${isFull ? 'full' : ''} ${disabled ? 'disabled' : ''}`}
+        className={`file-dropzone ${isDragging ? 'dragging' : ''} ${isFull ? 'full' : ''} ${disabled ? 'disabled' : ''} ${displayError ? 'invalid' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}

@@ -86,6 +86,43 @@ function mapUploadedFiles(uploadResult, section, localFiles = []) {
   });
 }
 
+function getFieldError(field, value) {
+  if (field.showIf && !field.showIf({ [field.name]: value })) return '';
+
+  const trimmedValue = typeof value === 'string' ? value.trim() : value;
+
+  if (field.required) {
+    const isEmpty = trimmedValue == null || trimmedValue === '';
+    if (isEmpty) return 'Required';
+  }
+
+  if (!trimmedValue) return '';
+
+  if (field.type === 'email') {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(String(trimmedValue))) return 'Enter a valid email address';
+  }
+
+  if (field.type === 'tel') {
+    const digits = String(trimmedValue).replace(/\D/g, '');
+    if (digits.length < 10 || digits.length > 15) return 'Enter a valid mobile number';
+  }
+
+  if (field.type === 'number' && Number.isNaN(Number(trimmedValue))) {
+    return 'Enter a valid number';
+  }
+
+  if (field.name === 'companyWebsite') {
+    try {
+      new URL(String(trimmedValue).startsWith('http') ? String(trimmedValue) : `https://${trimmedValue}`);
+    } catch {
+      return 'Enter a valid website URL';
+    }
+  }
+
+  return '';
+}
+
 function PreviewNewFile({ file }) {
   const [previewUrl, setPreviewUrl] = useState(null);
 
@@ -281,6 +318,19 @@ function ApplicationForm() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    const field = [...section1Fields, ...section2Fields, ...section3Fields].find((item) => item.name === name);
+    if (field && errors[name]) {
+      const nextError = getFieldError(field, value);
+      setErrors((prev) => ({ ...prev, [name]: nextError || undefined }));
+    }
+  };
+
+  const handleFieldBlur = (field) => {
+    const nextError = getFieldError(field, formData[field.name]);
+    if (nextError || errors[field.name]) {
+      setErrors((prev) => ({ ...prev, [field.name]: nextError || undefined }));
+    }
   };
 
   const handleFilesChange = (name, fileList) => {
@@ -312,8 +362,11 @@ function ApplicationForm() {
         }
       }
 
-      if (field.required && field.type !== 'file' && (!formData[field.name] || String(formData[field.name]).trim() === '')) {
-        newErrors[field.name] = 'Required';
+      if (field.type !== 'file') {
+        const nextError = getFieldError(field, formData[field.name]);
+        if (nextError) {
+          newErrors[field.name] = nextError;
+        }
       }
     });
 
@@ -438,9 +491,11 @@ function ApplicationForm() {
           name={field.name}
           value={formData[field.name] || ''}
           onChange={handleInputChange}
+          onBlur={() => handleFieldBlur(field)}
           required={field.required}
           disabled={field.autoFilled || isSaving}
           rows={4}
+          className={errors[field.name] ? 'invalid' : ''}
         />
       ) : (
         <input
@@ -448,9 +503,11 @@ function ApplicationForm() {
           name={field.name}
           value={formData[field.name] || ''}
           onChange={handleInputChange}
+          onBlur={() => handleFieldBlur(field)}
           required={field.required}
           disabled={field.autoFilled || isSaving}
           autoComplete="off"
+          className={errors[field.name] ? 'invalid' : ''}
         />
       )}
       {errors[field.name] && <span className="error">{errors[field.name]}</span>}
@@ -482,8 +539,10 @@ function ApplicationForm() {
             name={field.name}
             value={formData[field.name] || ''}
             onChange={handleInputChange}
+            onBlur={() => handleFieldBlur(field)}
             required={field.required}
             disabled={isSaving}
+            className={errors[field.name] ? 'invalid' : ''}
           >
             <option value="">Select</option>
             {field.options.map((opt) => (

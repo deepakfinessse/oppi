@@ -117,7 +117,7 @@ const Register = () => {
                     <input
                       type="email"
                       name="emailId"
-                      placeholder="clara.rodricks@indiaoppi.com"
+                      placeholder="xyz@gmail.com"
                       value={formData.emailId}
                       onChange={handleChange}
                       required

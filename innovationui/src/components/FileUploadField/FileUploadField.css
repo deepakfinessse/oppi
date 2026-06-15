@@ -21,6 +21,16 @@
   background: #f0f9ff;
 }
 
+.file-dropzone.invalid {
+  border-color: #ef4444;
+  background: #fff5f5;
+}
+
+.file-dropzone.invalid:hover:not(.disabled):not(.full) {
+  border-color: #dc2626;
+  background: #fff1f2;
+}
+
 .file-dropzone.dragging {
   border-color: var(--primary);
   background: #e0f2fe;

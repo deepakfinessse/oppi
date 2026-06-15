@@ -274,6 +274,21 @@
   box-shadow: 0 0 0 3px rgba(0, 166, 230, 0.15);
 }
 
+.form-group input.invalid,
+.form-group select.invalid,
+.form-group textarea.invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+  background-color: #fff5f5;
+}
+
+.form-group input.invalid:focus,
+.form-group select.invalid:focus,
+.form-group textarea.invalid:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
 .form-group input[disabled],
 .form-group select[disabled],
 .form-group textarea[disabled] {
