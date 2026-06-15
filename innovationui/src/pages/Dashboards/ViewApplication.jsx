@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api, clearSession, getSession } from '../../services/api';
+import { api, clearSession, getSession, getFileUrl } from '../../services/api';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import html2pdf from 'html2pdf.js';
@@ -70,7 +70,7 @@ export default function ViewApplication({ isMine }) {
         const attachmentsFolder = zip.folder('Attachments');
         
         const fetchPromises = app.file_uploads.map(async (file, index) => {
-          const url = file.filePath.startsWith('http') ? file.filePath : `http://localhost:5233${file.filePath}`;
+          const url = getFileUrl(file.filePath || file.FilePath);
           try {
             // Bypass cache to avoid 304 Not Modified responses lacking CORS headers
             const response = await fetch(url, { cache: 'no-store' });
@@ -281,7 +281,7 @@ export default function ViewApplication({ isMine }) {
                   <div key={f.id} className="file-item">
                     <span className="file-section">{f.section || f.Section}</span>
                     <span className="file-name">{f.fileName || f.FileName}</span>
-                    <a href={(f.filePath || f.FilePath).startsWith('http') ? (f.filePath || f.FilePath) : `http://localhost:5233${f.filePath || f.FilePath}`} 
+                    <a href={getFileUrl(f.filePath || f.FilePath)} 
                        target="_blank" rel="noreferrer" className="btn-action view no-print">
                       View File
                     </a>

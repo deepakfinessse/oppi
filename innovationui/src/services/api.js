@@ -4,7 +4,10 @@ const SESSION_KEY = 'innovationAwardsSession';
 
 export function getFileUrl(filePath) {
   if (!filePath) return null;
-  return filePath.startsWith('http') ? filePath : `${API_BASE_URL}${filePath}`;
+  if (filePath.startsWith('http')) return filePath;
+  // Static uploads are served from /uploads (wwwroot/uploads), not under /api
+  const origin = API_BASE_URL.replace(/\/api\/?$/, '');
+  return `${origin}${filePath}`;
 }
 
 async function request(path, options = {}) {
