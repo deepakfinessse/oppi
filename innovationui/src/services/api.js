@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:5233";
+const API_BASE_URL = "http://74.225.167.29/api";
 const SESSION_KEY = 'innovationAwardsSession';
 
 async function request(path, options = {}) {
@@ -61,20 +61,20 @@ export function getApplicationStorageKey(userId) {
 }
 
 export const api = {
-  register: (payload) => request('/auth/register', { 
-    method: 'POST', 
+  register: (payload) => request('/auth/register', {
+    method: 'POST',
     body: {
       First_Name: payload.firstName,
       Last_Name: payload.lastName,
       Email: payload.emailId,
       Mobile: payload.mobileNumber,
       Password: payload.password || payload.createPassword
-    } 
+    }
   }),
   login: async (payload) => {
-    const data = await request('/auth/login', { 
-      method: 'POST', 
-      body: { Email: payload.emailId, Password: payload.password } 
+    const data = await request('/auth/login', {
+      method: 'POST',
+      body: { Email: payload.emailId, Password: payload.password }
     });
     return { token: data.access_token, ...data.user };
   },
@@ -83,8 +83,8 @@ export const api = {
     return { applicationId: data.id, ...data };
   },
   savePersonalInfo: (applicationId, payload) =>
-    request(`/application/page1/${applicationId}`, { 
-      method: 'POST', 
+    request(`/application/page1/${applicationId}`, {
+      method: 'POST',
       body: {
         Company_Name: payload.companyName,
         Designation: payload.designation,
@@ -96,11 +96,11 @@ export const api = {
         Competitive_Analysis: payload.differentiation,
         Need_Analysis: payload.needAnalysis,
         Marketability: payload.commercialization
-      } 
+      }
     }),
   saveCompanyReach: (applicationId, payload) =>
-    request(`/application/page2/${applicationId}`, { 
-      method: 'POST', 
+    request(`/application/page2/${applicationId}`, {
+      method: 'POST',
       body: {
         Marketing_Strategy: payload.businessPresence,
         App_Details: payload.app,
@@ -108,11 +108,11 @@ export const api = {
         Social_Media: payload.socialMedia,
         Physical_Outlets: payload.physicalOutlets,
         Future_Expansion: payload.futurePlans
-      } 
+      }
     }),
   saveCompanyDetails: (applicationId, payload) =>
-    request(`/application/page3/${applicationId}`, { 
-      method: 'POST', 
+    request(`/application/page3/${applicationId}`, {
+      method: 'POST',
       body: {
         Customer_Benefit: payload.customerHelp,
         Testimonial: payload.customerTestimonial,
@@ -122,7 +122,7 @@ export const api = {
         Media_Mentions: payload.mediaMentions,
         Patents: payload.patents,
         Product_Benefits: payload.benefits
-      } 
+      }
     }),
   uploadFiles: (applicationId, fileType, selectedFiles) => {
     const formData = new FormData();
@@ -140,12 +140,12 @@ export const api = {
   juryApprove: (id, payload) => request(`/jury/approve/${id}`, { method: 'POST', body: payload }),
   juryReject: (id) => request(`/jury/reject/${id}`, { method: 'POST' }),
   getAppReview: (id) => request(`/application/review/${id}`),
-  forgotPassword: (email) => request('/auth/forgot-password', { 
-    method: 'POST', 
-    body: { Email: email } 
+  forgotPassword: (email) => request('/auth/forgot-password', {
+    method: 'POST',
+    body: { Email: email }
   }),
-  changePassword: (oldPassword, newPassword) => request('/auth/change-password', { 
-    method: 'POST', 
-    body: { Old_Password: oldPassword, New_Password: newPassword } 
+  changePassword: (oldPassword, newPassword) => request('/auth/change-password', {
+    method: 'POST',
+    body: { Old_Password: oldPassword, New_Password: newPassword }
   }),
 };

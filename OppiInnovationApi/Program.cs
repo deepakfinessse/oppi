@@ -65,7 +65,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(o => {
     o.AddPolicy("Dev", p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-    o.AddPolicy("Prod", p => p.WithOrigins(allowedOrigins.Split(',')).AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+    o.AddPolicy("Prod", p => {
+        if (allowedOrigins == "*") p.SetIsOriginAllowed(_ => true).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        else p.WithOrigins(allowedOrigins.Split(',')).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+    });
 });
 
 var app = builder.Build();
