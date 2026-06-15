@@ -3491,24 +3491,26 @@
     ]
   },
   "packageFolders": {
-    "/Users/shivamsangal/.nuget/packages/": {}
+    "C:\\Users\\Shrey\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/OppiInnovationApi.csproj",
+      "projectUniqueName": "D:\\Shrey\\awards-website\\oppi\\OppiInnovationApi\\OppiInnovationApi.csproj",
       "projectName": "OppiInnovationApi",
-      "projectPath": "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/OppiInnovationApi.csproj",
-      "packagesPath": "/Users/shivamsangal/.nuget/packages/",
-      "outputPath": "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/obj/",
+      "projectPath": "D:\\Shrey\\awards-website\\oppi\\OppiInnovationApi\\OppiInnovationApi.csproj",
+      "packagesPath": "C:\\Users\\Shrey\\.nuget\\packages\\",
+      "outputPath": "D:\\Shrey\\awards-website\\oppi\\OppiInnovationApi\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/shivamsangal/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\Shrey\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -3591,7 +3593,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.203/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.204/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
