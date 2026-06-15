@@ -123,6 +123,28 @@ export default function ViewApplication({ isMine }) {
   const cr = app.company_reach || {};
   const cd = app.company_detail || {};
 
+  // Fix for 'my-application' Applicant Info fields:
+  // If view is 'mine', display current user's info from session if available, otherwise fallback to app object or '—'
+  let applicantName, applicantEmail, applicantMobile;
+  if (isMine) {
+    // For my application, use session info if available
+    applicantName =
+      session?.first_name || session?.last_name
+        ? `${session?.first_name || ''}${session?.last_name ? ' ' + session.last_name : ''}`.trim()
+        : (app.user_name || (app.user_first_name ? `${app.user_first_name} ${app.user_last_name}` : 'You'));
+    applicantEmail = session?.email || app.user_email || '—';
+    applicantMobile = session?.mobile || app.user_mobile || '—';
+    // Clean up all empty string results
+    applicantName = applicantName && applicantName.trim() !== '' ? applicantName : 'You';
+    applicantEmail = applicantEmail && applicantEmail.trim() !== '' ? applicantEmail : '—';
+    applicantMobile = applicantMobile && applicantMobile.trim() !== '' ? applicantMobile : '—';
+  } else {
+    // For other user's app, fall back to existing logic
+    applicantName = app.user_name || (app.user_first_name ? `${app.user_first_name} ${app.user_last_name}` : '—');
+    applicantEmail = app.user_email || '—';
+    applicantMobile = app.user_mobile || '—';
+  }
+
   return (
     <div className="dashboard-page">
       {isMine && (
@@ -153,9 +175,9 @@ export default function ViewApplication({ isMine }) {
           <div className="info-cards">
             <div className="info-card">
               <h4>Applicant Info</h4>
-              <div><strong>Name:</strong> {app.user_name || (app.user_first_name ? `${app.user_first_name} ${app.user_last_name}` : 'You')}</div>
-              <div><strong>Email:</strong> {app.user_email || '—'}</div>
-              <div><strong>Mobile:</strong> {app.user_mobile || '—'}</div>
+              <div><strong>Name:</strong> {applicantName}</div>
+              <div><strong>Email:</strong> {applicantEmail}</div>
+              <div><strong>Mobile:</strong> {applicantMobile}</div>
             </div>
             {!isMine && (
               <div className="info-card highlight">

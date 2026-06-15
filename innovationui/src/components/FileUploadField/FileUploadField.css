@@ -1,0 +1,152 @@
+.file-upload-group {
+  margin-bottom: 1.5rem;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.file-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.file-dropzone:hover:not(.disabled):not(.full) {
+  border-color: var(--primary-light);
+  background: #f0f9ff;
+}
+
+.file-dropzone.dragging {
+  border-color: var(--primary);
+  background: #e0f2fe;
+  box-shadow: 0 0 0 4px rgba(0, 166, 230, 0.15);
+}
+
+.file-dropzone.full {
+  cursor: not-allowed;
+  opacity: 0.75;
+  background: #f1f5f9;
+}
+
+.file-dropzone.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.file-dropzone-icon {
+  color: var(--primary);
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.file-dropzone-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.file-dropzone-subtitle {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.file-browse-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.file-dropzone-hint {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 0.75rem;
+}
+
+.file-dropzone-count {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+  background: var(--accent);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+}
+
+.file-list {
+  list-style: none;
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.file-list-item.existing {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.file-list-item.new {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.file-list-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.file-list-item .file-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #1e293b;
+  word-break: break-all;
+}
+
+.file-list-item .file-meta {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.file-remove-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #fecaca;
+  background: #fff;
+  color: #ef4444;
+  font-size: 1.1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.file-remove-btn:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+}

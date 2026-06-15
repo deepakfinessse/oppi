@@ -1,27 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Shrey\\awards-website\\oppi\\OppiInnovationApi\\OppiInnovationApi.csproj": {}
+    "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/OppiInnovationApi.csproj": {}
   },
   "projects": {
-    "D:\\Shrey\\awards-website\\oppi\\OppiInnovationApi\\OppiInnovationApi.csproj": {
+    "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/OppiInnovationApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Shrey\\awards-website\\oppi\\OppiInnovationApi\\OppiInnovationApi.csproj",
+        "projectUniqueName": "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/OppiInnovationApi.csproj",
         "projectName": "OppiInnovationApi",
-        "projectPath": "D:\\Shrey\\awards-website\\oppi\\OppiInnovationApi\\OppiInnovationApi.csproj",
-        "packagesPath": "C:\\Users\\Shrey\\.nuget\\packages\\",
-        "outputPath": "D:\\Shrey\\awards-website\\oppi\\OppiInnovationApi\\obj\\",
+        "projectPath": "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/OppiInnovationApi.csproj",
+        "packagesPath": "/Users/shivamsangal/.nuget/packages/",
+        "outputPath": "/Users/shivamsangal/projects/nivyam/oppi/OppiInnovationApi/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Shrey\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/shivamsangal/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -104,7 +102,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.204/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.203/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
