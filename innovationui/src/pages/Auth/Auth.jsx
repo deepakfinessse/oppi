@@ -138,7 +138,7 @@ const Auth = () => {
                         <input
                           type="text"
                           name="firstName"
-                          placeholder="Clara"
+                          placeholder="Name"
                           value={formData.firstName}
                           onChange={handleChange}
                           required
@@ -179,7 +179,7 @@ const Auth = () => {
                         <input
                           type="email"
                           name="emailId"
-                          placeholder="clara.rodricks@indiaoppi.com"
+                          placeholder="xyz@gmail.com"
                           value={formData.emailId}
                           onChange={handleChange}
                           required
