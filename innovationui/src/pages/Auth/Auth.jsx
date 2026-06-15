@@ -149,7 +149,7 @@ const Auth = () => {
                         <input
                           type="text"
                           name="lastName"
-                          placeholder="Rodricks"
+                          placeholder="LastName"
                           value={formData.lastName}
                           onChange={handleChange}
                           required
