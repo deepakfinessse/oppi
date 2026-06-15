@@ -23,7 +23,7 @@ const CTA = () => {
             Join India's most distinguished roster of pharmaceutical innovators.<br />
             Applications close on 15th July 2026
           </p>
-          <Link to="/register" className="cta-btn">
+          <Link to="/auth" className="cta-btn">
             APPLY NOW <ArrowRight size={20} />
           </Link>
         </motion.div>
