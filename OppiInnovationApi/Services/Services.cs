@@ -103,7 +103,7 @@ public class LocalFileStorageService : IStorageService
 
     public async Task<string> UploadFileAsync(IFormFile file, string subFolder, string uniqueName)
     {
-        var uploadsDir = Path.Combine(_env.ContentRootPath, "wwwroot", "uploads", subFolder);
+        var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", subFolder);
         Directory.CreateDirectory(uploadsDir);
         var filePath = Path.Combine(uploadsDir, uniqueName);
         using (var stream = new FileStream(filePath, FileMode.Create))
@@ -115,7 +115,7 @@ public class LocalFileStorageService : IStorageService
 
     public Task DeleteFileAsync(string fileUrl)
     {
-        var localPath = Path.Combine(_env.ContentRootPath, "wwwroot", fileUrl.TrimStart('/'));
+        var localPath = Path.Combine(_env.WebRootPath, fileUrl.TrimStart('/'));
         if (File.Exists(localPath)) File.Delete(localPath);
         return Task.CompletedTask;
     }

@@ -66,6 +66,26 @@ function isVideoFile(name, mimeType, fileType) {
   return ['mp4', 'mov'].includes(ext);
 }
 
+function mapUploadedFiles(uploadResult, section, localFiles = []) {
+  return (uploadResult?.files || []).map((file, index) => {
+    const fileName = file.fileName || file.FileName || localFiles[index]?.name;
+    const ext = fileName?.split('.').pop()?.toLowerCase();
+    return {
+      id: file.id ?? file.Id,
+      section,
+      Section: section,
+      fileName,
+      FileName: fileName,
+      filePath: file.filePath || file.FilePath,
+      FilePath: file.filePath || file.FilePath,
+      fileSize: localFiles[index]?.size,
+      FileSize: localFiles[index]?.size,
+      fileType: ext ? `.${ext}` : undefined,
+      FileType: ext ? `.${ext}` : undefined,
+    };
+  });
+}
+
 function PreviewNewFile({ file }) {
   const [previewUrl, setPreviewUrl] = useState(null);
 
@@ -361,15 +381,8 @@ function ApplicationForm() {
         futurePlans: formData.futurePlans,
       });
       if (files.uploads?.length) {
-        await api.uploadFiles(id, 'ReachDocs', files.uploads);
-        setExistingFiles((prev) => [
-          ...prev,
-          ...files.uploads.map((f) => ({
-            Section: 'ReachDocs',
-            FileName: f.name,
-            FileSize: f.size,
-          })),
-        ]);
+        const uploadResult = await api.uploadFiles(id, 'ReachDocs', files.uploads);
+        setExistingFiles((prev) => [...prev, ...mapUploadedFiles(uploadResult, 'ReachDocs', files.uploads)]);
         setFiles((prev) => ({ ...prev, uploads: [] }));
       }
     });
@@ -393,15 +406,8 @@ function ApplicationForm() {
       });
 
       for (const field of section3Fields.filter((item) => item.type === 'file' && files[item.name]?.length)) {
-        await api.uploadFiles(id, field.fileType, files[field.name]);
-        setExistingFiles((prev) => [
-          ...prev,
-          ...files[field.name].map((f) => ({
-            Section: field.fileType,
-            FileName: f.name,
-            FileSize: f.size,
-          })),
-        ]);
+        const uploadResult = await api.uploadFiles(id, field.fileType, files[field.name]);
+        setExistingFiles((prev) => [...prev, ...mapUploadedFiles(uploadResult, field.fileType, files[field.name])]);
         setFiles((prev) => ({ ...prev, [field.name]: [] }));
       }
     });

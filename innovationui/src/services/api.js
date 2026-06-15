@@ -4,7 +4,9 @@ const SESSION_KEY = 'innovationAwardsSession';
 
 export function getFileUrl(filePath) {
   if (!filePath) return null;
-  return filePath.startsWith('http') ? filePath : `${API_BASE_URL}${filePath}`;
+  if (filePath.startsWith('http')) return filePath;
+  // Nginx proxies /api/* to the backend; static files are served at /uploads on Kestrel
+  return `${API_BASE_URL}${filePath}`;
 }
 
 async function request(path, options = {}) {

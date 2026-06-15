@@ -74,8 +74,8 @@ builder.Services.AddCors(o => {
 var app = builder.Build();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-var uploadsDir = Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "uploads");
-if (!Directory.Exists(uploadsDir)) Directory.CreateDirectory(uploadsDir);
+var uploadsDir = Path.Combine(builder.Environment.WebRootPath, "uploads");
+Directory.CreateDirectory(uploadsDir);
 
 app.UseStaticFiles(new StaticFileOptions
 {
