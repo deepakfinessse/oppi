@@ -5,9 +5,8 @@ const SESSION_KEY = 'innovationAwardsSession';
 export function getFileUrl(filePath) {
   if (!filePath) return null;
   if (filePath.startsWith('http')) return filePath;
-  // Static uploads are served from /uploads (wwwroot/uploads), not under /api
-  const origin = API_BASE_URL.replace(/\/api\/?$/, '');
-  return `${origin}${filePath}`;
+  // Nginx proxies /api/* to the backend; static files are served at /uploads on Kestrel
+  return `${API_BASE_URL}${filePath}`;
 }
 
 async function request(path, options = {}) {

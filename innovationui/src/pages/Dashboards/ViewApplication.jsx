@@ -80,7 +80,7 @@ export default function ViewApplication({ isMine }) {
             const blob = await response.blob();
             
             // Extract actual extension from filePath
-            let ext = file.filePath.split('.').pop() || '';
+            let ext = (file.filePath || file.FilePath || '').split('.').pop() || '';
             if (ext.includes('/') || ext.length > 5) ext = ''; // Safety check
             
             let saveName = file.fileName || `attachment_${index}`;
