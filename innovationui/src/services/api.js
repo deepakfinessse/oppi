@@ -1,5 +1,11 @@
 const API_BASE_URL = "http://74.225.167.29/api";
+// export const API_BASE_URL = "http://localhost:5233";
 const SESSION_KEY = 'innovationAwardsSession';
+
+export function getFileUrl(filePath) {
+  if (!filePath) return null;
+  return filePath.startsWith('http') ? filePath : `${API_BASE_URL}${filePath}`;
+}
 
 async function request(path, options = {}) {
   const headers = new Headers(options.headers || {});
@@ -102,7 +108,7 @@ export const api = {
     request(`/application/page2/${applicationId}`, {
       method: 'POST',
       body: {
-        Marketing_Strategy: payload.businessPresence,
+        Marketing_Strategy: payload.marketing,
         App_Details: payload.app,
         Website_Details: payload.websitePresence,
         Social_Media: payload.socialMedia,
@@ -125,6 +131,7 @@ export const api = {
       }
     }),
   uploadFiles: (applicationId, fileType, selectedFiles) => {
+    if (!selectedFiles?.length) return Promise.resolve(null);
     const formData = new FormData();
     selectedFiles.forEach((file) => formData.append('file', file));
     return request(`/application/upload/${applicationId}/${fileType}`, { method: 'POST', body: formData });

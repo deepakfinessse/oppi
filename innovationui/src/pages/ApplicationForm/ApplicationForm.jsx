@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { api, getApplicationStorageKey, getSession, clearSession } from '../../services/api';
+import { api, getApplicationStorageKey, getSession, clearSession, getFileUrl } from '../../services/api';
 import oppiLogo from '../../assets/OPPI-logo-black.png';
-import '../Dashboards/Dashboards.css'; // Use dashboard styling for header
+import FileUploadField from '../../components/FileUploadField/FileUploadField';
 import './ApplicationForm.css';
 
 const steps = [
@@ -22,38 +22,102 @@ const section1Fields = [
   { name: 'category', label: 'Category of work', required: true, type: 'select', options: ['IT', 'Manufacturing', 'Healthcare', 'Education', 'Others'] },
   { name: 'categoryOther', label: 'Others (specify)', required: false, showIf: (data) => data.category === 'Others' },
   { name: 'companyWebsite', label: 'Company Website', required: true },
-  { name: 'companyBrief', label: 'Company Brief', required: true },
-  { name: 'innovation', label: 'Innovation in product or service?', required: true },
-  { name: 'differentiation', label: 'How does it differ from existing solutions in the market: competitive analysis', required: true },
-  { name: 'needAnalysis', label: 'Describe the need analysis for coming up with this solution/product', required: true },
-  { name: 'commercialization', label: 'Transnational ability of the product to make it marketable/sale-able commercialization of the product/idea: easy to implement (Please mention NA if not applicable)', required: true },
+  { name: 'companyBrief', label: 'Company Brief', required: true, type: 'textarea' },
+  { name: 'innovation', label: 'Innovation in product or service?', required: true, type: 'textarea' },
+  { name: 'differentiation', label: 'How does it differ from existing solutions in the market: competitive analysis', required: true, type: 'textarea' },
+  { name: 'needAnalysis', label: 'Describe the need analysis for coming up with this solution/product', required: true, type: 'textarea' },
+  { name: 'commercialization', label: 'Transnational ability of the product to make it marketable/sale-able commercialization of the product/idea: easy to implement (Please mention NA if not applicable)', required: true, type: 'textarea' },
 ];
 
 const section2Fields = [
-  { name: 'businessPresence', label: 'Business presence and reach (followers, downloads, active users, registered users, website traffic, etc.)', required: true },
-  { name: 'marketing', label: 'How have you marketed your product or service?', required: true },
+  { name: 'marketing', label: 'How have you marketed your product or service?', required: true, type: 'textarea' },
   { name: 'app', label: 'App', required: true },
   { name: 'websitePresence', label: 'Website', required: true },
   { name: 'socialMedia', label: 'Social media', required: true },
   { name: 'physicalOutlets', label: 'Physical outlets', required: true },
   { name: 'uploads', label: 'Upload PDF, Photo or Video (up to 5 attachments, max 8MB each)', required: true, type: 'file', multiple: true },
-  { name: 'futurePlans', label: 'Future expansion plans over the next 3 years', required: true },
+  { name: 'futurePlans', label: 'Future expansion plans over the next 3 years', required: true, type: 'textarea' },
 ];
 
 const section3Fields = [
-  { name: 'customerHelp', label: 'How does your start-up help your customer and end-user', required: true },
-  { name: 'customerTestimonial', label: 'Customer Testimonial (If not applicable, please mention "NA" in the text space)', required: true },
+  { name: 'customerHelp', label: 'How does your start-up help your customer and end-user', required: true, type: 'textarea' },
+  { name: 'customerTestimonial', label: 'Customer Testimonial (If not applicable, please mention "NA" in the text space)', required: true, type: 'textarea' },
   { name: 'customerTestimonialUpload', label: 'Upload Customer Testimonial (PDF, Photo or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Testimonial' },
   { name: 'numEmployees', label: 'Number of employees', required: true },
-  { name: 'boardDirectors', label: 'Details of board of directors', required: true },
+  { name: 'boardDirectors', label: 'Details of board of directors', required: true, type: 'textarea' },
   { name: 'boardDirectorsUpload', label: 'Upload details of board of directors (PDF, Photo or Video, up to 5, 8MB each)', required: true, type: 'file', multiple: true, fileType: 'Board' },
-  { name: 'investors', label: 'Details of the investors', required: true },
+  { name: 'investors', label: 'Details of the investors', required: true, type: 'textarea' },
   { name: 'investorsUpload', label: 'Upload Details of the investors (PDF, Photo or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Investors' },
-  { name: 'mediaMentions', label: 'Media mentions / Accolades (academic publications, campus magazines, research publications, etc.)', required: false },
+  { name: 'mediaMentions', label: 'Media mentions / Accolades (academic publications, campus magazines, research publications, etc.)', required: false, type: 'textarea' },
   { name: 'mediaMentionsUpload', label: 'Upload Media mentions / Accolades (PDF, Photo or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Media' },
-  { name: 'patents', label: 'Patents (Include approved and/or applied)', required: false },
-  { name: 'benefits', label: 'What are the benefits of your product/service: competitive analysis', required: true },
+  { name: 'patents', label: 'Patents (Include approved and/or applied)', required: false, type: 'textarea' },
+  { name: 'benefits', label: 'What are the benefits of your product/service: competitive analysis', required: true, type: 'textarea' },
 ];
+
+function isImageFile(name, mimeType, fileType) {
+  if (mimeType?.startsWith('image/')) return true;
+  const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
+  return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+}
+
+function isVideoFile(name, mimeType, fileType) {
+  if (mimeType?.startsWith('video/')) return true;
+  const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
+  return ['mp4', 'mov'].includes(ext);
+}
+
+function PreviewNewFile({ file }) {
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [file]);
+
+  return (
+    <div className="preview-file-card new">
+      <div className="preview-file-media">
+        {previewUrl && isImageFile(file.name, file.type) && (
+          <img src={previewUrl} alt={file.name} className="preview-file-thumb" />
+        )}
+        {previewUrl && isVideoFile(file.name, file.type) && (
+          <video src={previewUrl} className="preview-file-thumb" controls />
+        )}
+        {!previewUrl && <div className="preview-file-icon">PDF</div>}
+      </div>
+      <span className="preview-file-name">{file.name}</span>
+    </div>
+  );
+}
+
+function PreviewExistingFile({ file }) {
+  const name = file.fileName || file.FileName;
+  const url = getFileUrl(file.filePath || file.FilePath);
+  const fileType = file.fileType || file.FileType;
+  const showImage = url && isImageFile(name, null, fileType);
+  const showVideo = url && isVideoFile(name, null, fileType);
+
+  return (
+    <div className="preview-file-card existing">
+      <div className="preview-file-media">
+        {showImage && <img src={url} alt={name} className="preview-file-thumb" />}
+        {showVideo && <video src={url} className="preview-file-thumb" controls />}
+        {!showImage && !showVideo && (
+          <div className="preview-file-icon">{isVideoFile(name, null, fileType) ? 'Video' : 'PDF'}</div>
+        )}
+      </div>
+      <span className="preview-file-name">{name}</span>
+      {url && (
+        <a href={url} target="_blank" rel="noreferrer" className="preview-file-link">
+          View file
+        </a>
+      )}
+    </div>
+  );
+}
 
 function ApplicationForm() {
   const session = getSession();
@@ -62,7 +126,6 @@ function ApplicationForm() {
   const [files, setFiles] = useState({});
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
-  const [statusMessage, setStatusMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [applicationId, setApplicationId] = useState(() => {
@@ -99,7 +162,6 @@ function ApplicationForm() {
              const newData = { ...prev };
              
              if (data.personal_info) {
-              debugger
                newData.companyName = data.personal_info.companyName || data.personal_info.CompanyName || '';
                newData.designation = data.personal_info.designation || data.personal_info.Designation || '';
                newData.category = data.personal_info.categoryOfWork || data.personal_info.CategoryOfWork || '';
@@ -113,7 +175,7 @@ function ApplicationForm() {
              }
              
              if (data.company_reach) {
-               newData.businessPresence = data.company_reach.marketingStrategy || data.company_reach.MarketingStrategy || '';
+               newData.marketing = data.company_reach.marketingStrategy || data.company_reach.MarketingStrategy || '';
                newData.app = data.company_reach.appDetails || data.company_reach.AppDetails || '';
                newData.websitePresence = data.company_reach.websiteDetails || data.company_reach.WebsiteDetails || '';
                newData.socialMedia = data.company_reach.socialMedia || data.company_reach.SocialMedia || '';
@@ -154,8 +216,37 @@ function ApplicationForm() {
   }
 
   if (isInitializing) {
-    return <div className="dashboard-loading">Loading application...</div>;
+    return (
+      <div className="application-loading">
+        <img src={oppiLogo} alt="OPPI Logo" className="application-loading-logo" />
+        <div className="application-loading-spinner" />
+        <span>Loading application...</span>
+      </div>
+    );
   }
+
+  const getFileFieldSection = (field) => field.fileType || 'ReachDocs';
+
+  const getExistingFilesForField = (field) =>
+    existingFiles.filter((f) => (f.section || f.Section) === getFileFieldSection(field));
+
+  const renderPreviewFiles = (field) => {
+    const uploaded = getExistingFilesForField(field);
+    const newlySelected = files[field.name] || [];
+
+    if (uploaded.length === 0 && newlySelected.length === 0) return null;
+
+    return (
+      <div className="preview-file-grid">
+        {uploaded.map((file) => (
+          <PreviewExistingFile key={`existing-${file.id || file.Id}-${file.fileName || file.FileName}`} file={file} />
+        ))}
+        {newlySelected.map((file, idx) => (
+          <PreviewNewFile key={`new-${file.name}-${idx}`} file={file} />
+        ))}
+      </div>
+    );
+  };
 
   const handleLogout = () => {
     clearSession();
@@ -170,22 +261,17 @@ function ApplicationForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e) => {
-    const { name, files: selectedFiles } = e.target;
-    const fileList = Array.from(selectedFiles);
-
-    if (fileList.length > 5) {
-      setErrors((prev) => ({ ...prev, [name]: 'Maximum 5 files allowed' }));
-      return;
-    }
-
-    if (fileList.some((file) => file.size > 8 * 1024 * 1024)) {
-      setErrors((prev) => ({ ...prev, [name]: 'Each file must be less than 8MB' }));
-      return;
-    }
-
+  const handleFilesChange = (name, fileList) => {
     setErrors((prev) => ({ ...prev, [name]: undefined }));
     setFiles((prev) => ({ ...prev, [name]: fileList }));
+  };
+
+  const handleRemoveNewFile = (name, index) => {
+    setFiles((prev) => ({
+      ...prev,
+      [name]: (prev[name] || []).filter((_, idx) => idx !== index),
+    }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const validateFields = (fields) => {
@@ -223,14 +309,12 @@ function ApplicationForm() {
     return nextApplicationId;
   };
 
-  const runSave = async (saveAction, successMessage) => {
+  const runSave = async (saveAction) => {
     setServerError('');
-    setStatusMessage('');
     setIsSaving(true);
 
     try {
       await saveAction();
-      setStatusMessage(successMessage);
       handleNext();
     } catch (err) {
       setServerError(err.message || 'Unable to save. Please try again.');
@@ -257,7 +341,7 @@ function ApplicationForm() {
         needAnalysis: formData.needAnalysis,
         commercialization: formData.commercialization,
       });
-    }, 'Personal information saved.');
+    });
   };
 
   const handleNextSection2 = (e) => {
@@ -267,7 +351,6 @@ function ApplicationForm() {
     runSave(async () => {
       const id = await ensureApplication();
       await api.saveCompanyReach(id, {
-        businessPresence: formData.businessPresence,
         marketing: formData.marketing,
         app: formData.app,
         websitePresence: formData.websitePresence,
@@ -275,8 +358,19 @@ function ApplicationForm() {
         physicalOutlets: formData.physicalOutlets,
         futurePlans: formData.futurePlans,
       });
-      await api.uploadFiles(id, 'ReachDocs', files.uploads || []);
-    }, 'Company reach saved.');
+      if (files.uploads?.length) {
+        await api.uploadFiles(id, 'ReachDocs', files.uploads);
+        setExistingFiles((prev) => [
+          ...prev,
+          ...files.uploads.map((f) => ({
+            Section: 'ReachDocs',
+            FileName: f.name,
+            FileSize: f.size,
+          })),
+        ]);
+        setFiles((prev) => ({ ...prev, uploads: [] }));
+      }
+    });
   };
 
   const handleNextSection3 = (e) => {
@@ -298,14 +392,22 @@ function ApplicationForm() {
 
       for (const field of section3Fields.filter((item) => item.type === 'file' && files[item.name]?.length)) {
         await api.uploadFiles(id, field.fileType, files[field.name]);
+        setExistingFiles((prev) => [
+          ...prev,
+          ...files[field.name].map((f) => ({
+            Section: field.fileType,
+            FileName: f.name,
+            FileSize: f.size,
+          })),
+        ]);
+        setFiles((prev) => ({ ...prev, [field.name]: [] }));
       }
-    }, 'Company details saved.');
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError('');
-    setStatusMessage('');
     setIsSaving(true);
 
     try {
@@ -323,39 +425,41 @@ function ApplicationForm() {
   const renderTextField = (field) => (
     <div className="form-group" key={field.name}>
       <label>{field.label} {field.required && <span className="required">*</span>}</label>
-      <input
-        type={field.type || 'text'}
-        name={field.name}
-        value={formData[field.name] || ''}
-        onChange={handleInputChange}
-        required={field.required}
-        disabled={field.autoFilled || isSaving}
-        autoComplete="off"
-      />
+      {field.type === 'textarea' ? (
+        <textarea
+          name={field.name}
+          value={formData[field.name] || ''}
+          onChange={handleInputChange}
+          required={field.required}
+          disabled={field.autoFilled || isSaving}
+          rows={4}
+        />
+      ) : (
+        <input
+          type={field.type || 'text'}
+          name={field.name}
+          value={formData[field.name] || ''}
+          onChange={handleInputChange}
+          required={field.required}
+          disabled={field.autoFilled || isSaving}
+          autoComplete="off"
+        />
+      )}
       {errors[field.name] && <span className="error">{errors[field.name]}</span>}
     </div>
   );
 
   const renderFileField = (field) => (
-    <div className="form-group" key={field.name}>
-      <label>{field.label} {field.required && <span className="required">*</span>}</label>
-      <input
-        type="file"
-        name={field.name}
-        multiple={field.multiple}
-        accept=".pdf,image/*,video/*"
-        onChange={handleFileChange}
-        disabled={isSaving}
-      />
-      {files[field.name] && files[field.name].length > 0 && (
-        <ul className="file-list">
-          {files[field.name].map((file, idx) => (
-            <li key={`${file.name}-${idx}`}>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</li>
-          ))}
-        </ul>
-      )}
-      {errors[field.name] && <span className="error">{errors[field.name]}</span>}
-    </div>
+    <FileUploadField
+      key={field.name}
+      field={field}
+      existingFiles={getExistingFilesForField(field)}
+      selectedFiles={files[field.name] || []}
+      onFilesChange={handleFilesChange}
+      onRemoveNew={handleRemoveNewFile}
+      disabled={isSaving}
+      error={errors[field.name]}
+    />
   );
 
   const renderField = (field) => {
@@ -394,37 +498,31 @@ function ApplicationForm() {
     <div className="section-fields preview-section">
       <h3>Personal Information</h3>
       <ul>
-        {visibleSection1Fields.filter((f) => !f.type || f.type === 'select').map((field) => (
+        {visibleSection1Fields.filter((f) => f.type !== 'file').map((field) => (
           <li key={field.name}><strong>{field.label}:</strong> {formData[field.name] || '-'}</li>
         ))}
       </ul>
       <h3>About the Company</h3>
       <ul>
-        {section2Fields.filter((f) => !f.type).map((field) => (
+        {section2Fields.filter((f) => f.type !== 'file').map((field) => (
           <li key={field.name}><strong>{field.label}:</strong> {formData[field.name] || '-'}</li>
         ))}
         {section2Fields.filter((f) => f.type === 'file').map((field) => (
-          <li key={field.name}><strong>{field.label}:</strong>
-            <ul>
-              {(files[field.name] || []).map((file, idx) => (
-                <li key={`${file.name}-${idx}`}>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</li>
-              ))}
-            </ul>
+          <li key={field.name} className="preview-file-row">
+            <strong>{field.label}:</strong>
+            {renderPreviewFiles(field) || <span className="preview-empty">No files attached</span>}
           </li>
         ))}
       </ul>
       <h3>About the Company (contd.)</h3>
       <ul>
-        {section3Fields.filter((f) => !f.type).map((field) => (
+        {section3Fields.filter((f) => f.type !== 'file').map((field) => (
           <li key={field.name}><strong>{field.label}:</strong> {formData[field.name] || '-'}</li>
         ))}
         {section3Fields.filter((f) => f.type === 'file').map((field) => (
-          <li key={field.name}><strong>{field.label}:</strong>
-            <ul>
-              {(files[field.name] || []).map((file, idx) => (
-                <li key={`${file.name}-${idx}`}>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</li>
-              ))}
-            </ul>
+          <li key={field.name} className="preview-file-row">
+            <strong>{field.label}:</strong>
+            {renderPreviewFiles(field) || <span className="preview-empty">No files attached</span>}
           </li>
         ))}
       </ul>
@@ -447,51 +545,71 @@ function ApplicationForm() {
   };
 
   return (
-    <div className="dashboard-page">
-      <div className="dashboard-header no-print">
-        <div className="dashboard-logo">
+    <div className="application-page">
+      <header className="application-header-bar no-print">
+        <div className="application-header-logo">
           <img src={oppiLogo} alt="OPPI Logo" />
           <span>Application Form</span>
         </div>
-        <div style={{display:'flex', gap:'10px'}}>
-          <button className="btn-action" onClick={() => navigate('/change-password')}>Change Password</button>
-          <button className="btn-logout" onClick={handleLogout}>Log Out</button>
+        <div className="application-header-actions">
+          {applicationId && (
+            <span className="application-id-badge">Application ID: {applicationId}</span>
+          )}
+          <button type="button" className="btn-header" onClick={() => navigate('/change-password')}>Change Password</button>
+          <button type="button" className="btn-header logout" onClick={handleLogout}>Log Out</button>
         </div>
-      </div>
-      
-      <div className="dashboard-content" style={{ maxWidth: '900px', margin: '40px auto' }}>
-        <div className="application-card" style={{ padding: '30px', background: 'white', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-          <div className="application-header" style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '2rem', color: '#1a1a1a', marginBottom: '0.5rem', fontWeight: 700 }}>Innovation Application</h2>
-            {applicationId && <p className="form-hint" style={{ color: '#666' }}>Application ID: {applicationId}</p>}
-          </div>
-          <div className="stepper" style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            {steps.map((label, idx) => (
-              <div key={label} className={`step ${activeStep === idx ? 'active' : ''}`} style={{ padding: '8px 16px', borderRadius: '20px', background: activeStep === idx ? '#4f46e5' : '#f3f4f6', color: activeStep === idx ? 'white' : '#666', fontSize: '0.9rem' }}>
-                {label}
+      </header>
+
+      <div className="application-container">
+        <div className="application-content-wrapper">
+          <div className="application-card">
+            <div className="application-header">
+              <div className="application-card-brand">
+                <img src={oppiLogo} alt="OPPI Logo" className="application-card-logo" />
+                <div className="application-card-title">
+                  <h2>Innovation Application</h2>
+                </div>
               </div>
-            ))}
-          </div>
-          {statusMessage && <p className="form-success" style={{ color: 'green', marginBottom: '10px' }}>{statusMessage}</p>}
-          {serverError && <p className="form-error" style={{ color: 'red', marginBottom: '10px' }}>{serverError}</p>}
-          <form noValidate onSubmit={
-            activeStep === 0 ? handleNextSection1 :
-            activeStep === 1 ? handleNextSection2 :
-            activeStep === 2 ? handleNextSection3 :
-            activeStep === 3 && !submitted ? handleSubmit :
-            undefined
-          }>
-            {renderStep()}
+            </div>
+
+            {serverError && <p className="form-error">{serverError}</p>}
+
             {!submitted && (
-              <div className="form-navigation" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px' }}>
-                {activeStep > 0 && activeStep < steps.length && (
-                  <button type="button" onClick={handleBack} disabled={isSaving} className="btn-action">Previous</button>
-                )}
-                {activeStep < 3 && <button type="submit" disabled={isSaving} className="btn-action approve">{isSaving ? 'Saving...' : 'Next'}</button>}
-                {activeStep === 3 && <button type="submit" disabled={isSaving} className="btn-action approve">{isSaving ? 'Submitting...' : 'Submit'}</button>}
-              </div>
+              <nav className="section-nav" aria-label="Application sections">
+                {steps.map((label, idx) => (
+                  <div
+                    key={label}
+                    className={`section-nav-item ${activeStep === idx ? 'active' : ''} ${activeStep > idx ? 'completed' : ''}`}
+                  >
+                    {label}
+                  </div>
+                ))}
+              </nav>
             )}
-          </form>
+
+            {!submitted && activeStep < steps.length && (
+              <h3 className="section-title">{steps[activeStep]}</h3>
+            )}
+
+            <form noValidate onSubmit={
+              activeStep === 0 ? handleNextSection1 :
+              activeStep === 1 ? handleNextSection2 :
+              activeStep === 2 ? handleNextSection3 :
+              activeStep === 3 && !submitted ? handleSubmit :
+              undefined
+            }>
+              {renderStep()}
+              {!submitted && (
+                <div className="form-navigation">
+                  {activeStep > 0 && activeStep < steps.length && (
+                    <button type="button" onClick={handleBack} disabled={isSaving} className="btn-prev">Previous</button>
+                  )}
+                  {activeStep < 3 && <button type="submit" disabled={isSaving} className="btn-next">{isSaving ? 'Saving...' : 'Next'}</button>}
+                  {activeStep === 3 && <button type="submit" disabled={isSaving} className="btn-submit">{isSaving ? 'Submitting...' : 'Submit Application'}</button>}
+                </div>
+              )}
+            </form>
+          </div>
         </div>
       </div>
     </div>
