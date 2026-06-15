@@ -43,7 +43,7 @@ const section3Fields = [
   { name: 'customerHelp', label: 'How does your start-up help your customer and end-user', required: true, type: 'textarea' },
   { name: 'customerTestimonial', label: 'Customer Testimonial (If not applicable, please mention "NA" in the text space)', required: true, type: 'textarea' },
   { name: 'customerTestimonialUpload', label: 'Upload Customer Testimonial (PDF, Photo or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Testimonial' },
-  { name: 'numEmployees', label: 'Number of employees', required: true },
+  { name: 'numEmployees', label: 'Number of employees', required: true, type: 'number' },
   { name: 'boardDirectors', label: 'Details of board of directors', required: true, type: 'textarea' },
   { name: 'boardDirectorsUpload', label: 'Upload details of board of directors (PDF, Photo or Video, up to 5, 8MB each)', required: true, type: 'file', multiple: true, fileType: 'Board' },
   { name: 'investors', label: 'Details of the investors', required: true, type: 'textarea' },
@@ -72,6 +72,7 @@ function PreviewNewFile({ file }) {
   useEffect(() => {
     if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
       const url = URL.createObjectURL(file);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
     }
@@ -205,6 +206,7 @@ function ApplicationForm() {
         }
       } catch (err) {
         // If no application exists, ignore.
+        console.log(err);
         setIsInitializing(false);
       }
     };
