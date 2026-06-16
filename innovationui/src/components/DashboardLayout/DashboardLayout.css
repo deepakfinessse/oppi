@@ -1,0 +1,72 @@
+.dashboard-page {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  color: #334155;
+  font-family: 'Inter', sans-serif;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.dashboard-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.dashboard-logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dashboard-logo img {
+  height: 40px;
+  width: auto;
+  margin-right: 1rem;
+}
+
+.dashboard-logo span {
+  color: #6366f1;
+  font-weight: 500;
+  font-size: 1rem;
+  border-left: 2px solid #e2e8f0;
+  padding-left: 0.75rem;
+}
+
+.btn-logout,
+.dashboard-header-actions .btn-action {
+  border: none;
+  cursor: pointer;
+}
+
+.dashboard-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .dashboard-header-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
