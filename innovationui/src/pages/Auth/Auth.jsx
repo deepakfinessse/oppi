@@ -1,6 +1,7 @@
 // pages/Auth/Auth.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { api, saveSession } from '../../services/api';
 import './Auth.css';
 import trophyImg from '../../assets/Trophy1.png';
@@ -8,6 +9,8 @@ import trophyImg from '../../assets/Trophy1.png';
 const Auth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -30,6 +33,8 @@ const Auth = () => {
     setIsLogin(!isLogin);
     setError('');
     setMessage('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     setFormData({
       firstName: '',
       lastName: '',
@@ -207,28 +212,48 @@ const Auth = () => {
                 {/* PASSWORD FIELDS */}
                 <div className="form-group">
                   <label>{isLogin ? 'Password' : 'Create Password'} <span className="required">*</span></label>
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder={isLogin ? "Enter your password" : "Create a strong password"}
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
+                  <div className="password-input-wrapper">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      placeholder={isLogin ? "Enter your password" : "Create a strong password"}
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle-btn"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
 
                 {/* CONFIRM PASSWORD - Register only */}
                 {!isLogin && (
                   <div className="form-group">
                     <label>Confirm Password <span className="required">*</span></label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      placeholder="Confirm your password"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      required
-                    />
+                    <div className="password-input-wrapper">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        name="confirmPassword"
+                        placeholder="Confirm your password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle-btn"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      >
+                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
                 )}
 
