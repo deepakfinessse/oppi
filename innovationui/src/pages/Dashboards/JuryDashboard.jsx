@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, clearSession } from '../../services/api';
-import oppiLogo from '../../assets/OPPI-logo-black.png';
+import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
 export default function JuryDashboard() {
@@ -16,20 +16,21 @@ export default function JuryDashboard() {
   const [scores, setScores] = useState({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchApps();
-  }, []);
-
-  const fetchApps = async () => {
+  const fetchApps = useCallback(async () => {
     try {
       const data = await api.getJuryApps();
       setApps(data);
     } catch (err) {
-      setError('Failed to load applications');
+      setError('Failed to load applications', err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchApps();
+  }, [fetchApps]);
 
   const handleAction = async (id, action) => {
     if (action === 'Approve') {
@@ -42,7 +43,7 @@ export default function JuryDashboard() {
         await api.juryReject(id);
         fetchApps();
       } catch (err) {
-        alert('Failed to reject application');
+        alert('Failed to reject application', err.message);
       }
     }
   };
@@ -84,51 +85,48 @@ export default function JuryDashboard() {
   if (loading) return <div className="dashboard-loading">Loading Jury Dashboard...</div>;
 
   return (
-    <div className="dashboard-page">
-      <div className="dashboard-header">
-        <div className="dashboard-logo">
-          <img src={oppiLogo} alt="OPPI Logo" />
-          <span>Jury</span>
-        </div>
-        <button className="btn-logout" onClick={handleLogout}>Log Out</button>
-      </div>
+    <>
+      <DashboardLayout
+        title="Jury Dashboard"
+        headerActions={<button className="btn-logout" onClick={handleLogout}>Log Out</button>}
+      >
+        <div className="dashboard-content">
+          {error && <div className="dashboard-error">{error}</div>}
 
-      <div className="dashboard-content">
-        {error && <div className="dashboard-error">{error}</div>}
-
-        <div className="dashboard-section">
-          <h3>Applications Pending Final Approval ({apps.length})</h3>
-          <div className="table-responsive">
-            <table className="dashboard-table">
-              <thead>
-                <tr>
-                  <th>App ID</th>
-                  <th>Applicant</th>
-                  <th>Company</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {apps.map(a => (
-                  <tr key={a.id}>
-                    <td>{a.id}</td>
-                    <td>{a.user_name}</td>
-                    <td>{a.company || '—'}</td>
-                    <td>
-                      <div className="action-buttons">
-                        <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)}>View</button>
-                        <button className="btn-action approve" onClick={() => handleAction(a.id, 'Approve')}>Approve</button>
-                        <button className="btn-action reject" onClick={() => handleAction(a.id, 'Reject')}>Reject</button>
-                      </div>
-                    </td>
+          <div className="dashboard-section">
+            <h3>Applications Pending Final Approval ({apps.length})</h3>
+            <div className="table-responsive">
+              <table className="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>App ID</th>
+                    <th>Applicant</th>
+                    <th>Company</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-                {apps.length === 0 && <tr><td colSpan="4" className="text-center">No pending applications.</td></tr>}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {apps.map(a => (
+                    <tr key={a.id}>
+                      <td>{a.id}</td>
+                      <td>{a.user_name}</td>
+                      <td>{a.company || '—'}</td>
+                      <td>
+                        <div className="action-buttons">
+                          <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)}>View</button>
+                          <button className="btn-action approve" onClick={() => handleAction(a.id, 'Approve')}>Approve</button>
+                          <button className="btn-action reject" onClick={() => handleAction(a.id, 'Reject')}>Reject</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {apps.length === 0 && <tr><td colSpan="4" className="text-center">No pending applications.</td></tr>}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
 
       {showModal && (
         <div className="modal-overlay">
@@ -238,6 +236,6 @@ export default function JuryDashboard() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

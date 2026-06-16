@@ -211,7 +211,8 @@ function ApplicationForm() {
       try {
         const data = await api.getPreview();
         if (data && data.status && data.status !== 'DRAFT') {
-          navigate('/my-application', { replace: true });
+          // navigate('/my-application', { replace: true });
+          navigate('/thank-you', { replace: true });
           return; // Do not clear initializing state, let it redirect
         } else if (data && data.status === 'DRAFT') {
           setApplicationId(String(data.id));
@@ -392,7 +393,8 @@ function ApplicationForm() {
     try {
       await saveAction();
       if (actionRef.current === 'exit') {
-        navigate('/my-application');
+        // navigate('/my-application');
+        navigate('/thank-you');
       } else {
         handleNext();
       }
@@ -480,7 +482,7 @@ function ApplicationForm() {
       const id = await ensureApplication();
       await api.submitApplication(id);
       setSubmitted(true);
-      setTimeout(() => navigate('/my-application'), 2000);
+      setTimeout(() => navigate('/thank-you'), 2000);
     } catch (err) {
       setServerError(err.message || 'Unable to submit. Please try again.');
     } finally {

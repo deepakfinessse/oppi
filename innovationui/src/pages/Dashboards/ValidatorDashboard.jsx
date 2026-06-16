@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, clearSession } from '../../services/api';
-import oppiLogo from '../../assets/OPPI-logo-black.png';
+import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
 export default function ValidatorDashboard() {
@@ -44,15 +44,10 @@ export default function ValidatorDashboard() {
   if (loading) return <div className="dashboard-loading">Loading Validator Dashboard...</div>;
 
   return (
-    <div className="dashboard-page">
-      <div className="dashboard-header">
-        <div className="dashboard-logo">
-          <img src={oppiLogo} alt="OPPI Logo" />
-          <span>Validator</span>
-        </div>
-        <button className="btn-logout" onClick={handleLogout}>Log Out</button>
-      </div>
-
+    <DashboardLayout
+      title="Validator Dashboard"
+      headerActions={<button className="btn-logout" onClick={handleLogout}>Log Out</button>}
+    >
       <div className="dashboard-content">
         {error && <div className="dashboard-error">{error}</div>}
 
@@ -91,6 +86,6 @@ export default function ValidatorDashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

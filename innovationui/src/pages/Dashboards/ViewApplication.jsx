@@ -4,7 +4,7 @@ import { api, clearSession, getSession, getFileUrl } from '../../services/api';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import html2pdf from 'html2pdf.js';
-import oppiLogo from '../../assets/OPPI-logo-black.png';
+import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
 const DataRow = ({ label, value }) => (
@@ -31,7 +31,7 @@ export default function ViewApplication({ isMine }) {
         const data = isMine ? await api.getPreview() : await api.getAppReview(id);
         setApp(data);
       } catch (err) {
-        setError('Failed to load application details');
+        setError('Failed to load application details', err.message);
       } finally {
         setLoading(false);
       }
@@ -146,20 +146,16 @@ export default function ViewApplication({ isMine }) {
   }
 
   return (
-    <div className="dashboard-page">
-      {isMine && (
-        <div className="dashboard-header no-print">
-          <div className="dashboard-logo">
-            <img src={oppiLogo} alt="OPPI Logo" />
-            <span>Applicant Dashboard</span>
-          </div>
-          <div style={{display:'flex', gap:'10px'}}>
-            <button className="btn-action" onClick={handleChangePassword}>Change Password</button>
-            <button className="btn-logout" onClick={handleLogout}>Log Out</button>
-          </div>
-        </div>
-      )}
-
+    <DashboardLayout
+      title={isMine ? 'Applicant Dashboard' : 'Application Review'}
+      headerActions={isMine ? (
+        <>
+          <button className="btn-action" onClick={handleChangePassword}>Change Password</button>
+          <button className="btn-logout" onClick={handleLogout}>Log Out</button>
+        </>
+      ) : null}
+      className={isMine ? 'applicant-dashboard' : 'review-dashboard'}
+    >
       <div className="dashboard-content" style={{ maxWidth: '900px', margin: '40px auto' }}>
         <div className="view-header no-print">
           <h2>Application #{app.id}</h2>
@@ -294,6 +290,6 @@ export default function ViewApplication({ isMine }) {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

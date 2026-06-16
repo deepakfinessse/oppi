@@ -10,6 +10,7 @@ import ValidatorDashboard from './pages/Dashboards/ValidatorDashboard';
 import JuryDashboard from './pages/Dashboards/JuryDashboard';
 import ViewApplication from './pages/Dashboards/ViewApplication';
 import ApplicantDashboard from './pages/Dashboards/ApplicantDashboard';
+import ThankYou from './pages/ThankYou/ThankYou';
 import ChangePassword from './pages/ChangePassword/ChangePassword';
 import { getSession } from './services/api';
 import './App.css';
@@ -57,9 +58,14 @@ function App() {
           <ViewApplication />
         </ProtectedRoute>
       } />
-      <Route path="/my-application" element={
+      {/* <Route path="/my-application" element={
         <ProtectedRoute>
           <ViewApplication isMine={true} />
+        </ProtectedRoute>
+      } /> */}
+      <Route path="/thank-you" element={
+        <ProtectedRoute>
+          <ThankYou isMine={true}/>
         </ProtectedRoute>
       } />
       <Route path="/home" element={<Home />} />
