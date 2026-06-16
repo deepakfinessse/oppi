@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { api, getApplicationStorageKey, getSession, clearSession, getFileUrl } from '../../services/api';
 import oppiLogo from '../../assets/OPPI-logo-black.png';
@@ -6,14 +6,14 @@ import FileUploadField from '../../components/FileUploadField/FileUploadField';
 import './ApplicationForm.css';
 
 const steps = [
-  'Personal Information',
-  'About the Company',
-  'About the Company (contd.)',
-  'Preview & Submit',
+  'Personal Info',
+  'About Company',
+  'Company Details',
+  'Submit & Review',
 ];
 
 const section1Fields = [
-  { name: 'firstName', label: 'First Name', required: true},
+  { name: 'firstName', label: 'First Name', required: true },
   { name: 'lastName', label: 'Last Name', required: true },
   { name: 'email', label: 'Email Id (Login)', required: true, autoFilled: true, type: 'email' },
   { name: 'mobile', label: 'Mobile Number', required: true, autoFilled: true, type: 'tel' },
@@ -180,6 +180,7 @@ function PreviewExistingFile({ file }) {
 function ApplicationForm() {
   const session = getSession();
   const navigate = useNavigate();
+  const actionRef = useRef('next');
   const [activeStep, setActiveStep] = useState(0);
   const [files, setFiles] = useState({});
   const [errors, setErrors] = useState({});
@@ -210,56 +211,56 @@ function ApplicationForm() {
       try {
         const data = await api.getPreview();
         if (data && data.status && data.status !== 'DRAFT') {
-           navigate('/my-application', { replace: true });
-           return; // Do not clear initializing state, let it redirect
+          navigate('/my-application', { replace: true });
+          return; // Do not clear initializing state, let it redirect
         } else if (data && data.status === 'DRAFT') {
-           setApplicationId(String(data.id));
-           
-           // Populate existing text data
-           setFormData(prev => {
-             const newData = { ...prev };
-             
-             if (data.personal_info) {
-               newData.companyName = data.personal_info.companyName || data.personal_info.CompanyName || '';
-               newData.designation = data.personal_info.designation || data.personal_info.Designation || '';
-               newData.category = data.personal_info.categoryOfWork || data.personal_info.CategoryOfWork || '';
-               newData.categoryOther = data.personal_info.otherCategory || data.personal_info.OtherCategory || '';
-               newData.companyWebsite = data.personal_info.companyWebsite || data.personal_info.CompanyWebsite || '';
-               newData.companyBrief = data.personal_info.companyBrief || data.personal_info.CompanyBrief || '';
-               newData.innovation = data.personal_info.innovation || data.personal_info.Innovation || '';
-               newData.differentiation = data.personal_info.competitiveAnalysis || data.personal_info.CompetitiveAnalysis || '';
-               newData.needAnalysis = data.personal_info.needAnalysis || data.personal_info.NeedAnalysis || '';
-               newData.commercialization = data.personal_info.marketability || data.personal_info.Marketability || '';
-             }
-             
-             if (data.company_reach) {
-               newData.marketing = data.company_reach.marketingStrategy || data.company_reach.MarketingStrategy || '';
-               newData.app = data.company_reach.appDetails || data.company_reach.AppDetails || '';
-               newData.websitePresence = data.company_reach.websiteDetails || data.company_reach.WebsiteDetails || '';
-               newData.socialMedia = data.company_reach.socialMedia || data.company_reach.SocialMedia || '';
-               newData.physicalOutlets = data.company_reach.physicalOutlets || data.company_reach.PhysicalOutlets || '';
-               newData.futurePlans = data.company_reach.futureExpansion || data.company_reach.FutureExpansion || '';
-             }
-             
-             if (data.company_detail) {
-               newData.customerHelp = data.company_detail.customerBenefit || data.company_detail.CustomerBenefit || '';
-               newData.customerTestimonial = data.company_detail.testimonial || data.company_detail.Testimonial || '';
-               newData.numEmployees = data.company_detail.employeeCount || data.company_detail.EmployeeCount || '';
-               newData.boardDirectors = data.company_detail.boardOfDirectors || data.company_detail.BoardOfDirectors || '';
-               newData.investors = data.company_detail.investorsDetails || data.company_detail.InvestorsDetails || '';
-               newData.mediaMentions = data.company_detail.mediaMentions || data.company_detail.MediaMentions || '';
-               newData.patents = data.company_detail.patents || data.company_detail.Patents || '';
-               newData.benefits = data.company_detail.productBenefits || data.company_detail.ProductBenefits || '';
-             }
-             
-             return newData;
-           });
+          setApplicationId(String(data.id));
 
-           // Store existing files so we can bypass file validation
-           if (data.file_uploads) {
-               setExistingFiles(data.file_uploads);
-           }
-           setIsInitializing(false);
+          // Populate existing text data
+          setFormData(prev => {
+            const newData = { ...prev };
+
+            if (data.personal_info) {
+              newData.companyName = data.personal_info.companyName || data.personal_info.CompanyName || '';
+              newData.designation = data.personal_info.designation || data.personal_info.Designation || '';
+              newData.category = data.personal_info.categoryOfWork || data.personal_info.CategoryOfWork || '';
+              newData.categoryOther = data.personal_info.otherCategory || data.personal_info.OtherCategory || '';
+              newData.companyWebsite = data.personal_info.companyWebsite || data.personal_info.CompanyWebsite || '';
+              newData.companyBrief = data.personal_info.companyBrief || data.personal_info.CompanyBrief || '';
+              newData.innovation = data.personal_info.innovation || data.personal_info.Innovation || '';
+              newData.differentiation = data.personal_info.competitiveAnalysis || data.personal_info.CompetitiveAnalysis || '';
+              newData.needAnalysis = data.personal_info.needAnalysis || data.personal_info.NeedAnalysis || '';
+              newData.commercialization = data.personal_info.marketability || data.personal_info.Marketability || '';
+            }
+
+            if (data.company_reach) {
+              newData.marketing = data.company_reach.marketingStrategy || data.company_reach.MarketingStrategy || '';
+              newData.app = data.company_reach.appDetails || data.company_reach.AppDetails || '';
+              newData.websitePresence = data.company_reach.websiteDetails || data.company_reach.WebsiteDetails || '';
+              newData.socialMedia = data.company_reach.socialMedia || data.company_reach.SocialMedia || '';
+              newData.physicalOutlets = data.company_reach.physicalOutlets || data.company_reach.PhysicalOutlets || '';
+              newData.futurePlans = data.company_reach.futureExpansion || data.company_reach.FutureExpansion || '';
+            }
+
+            if (data.company_detail) {
+              newData.customerHelp = data.company_detail.customerBenefit || data.company_detail.CustomerBenefit || '';
+              newData.customerTestimonial = data.company_detail.testimonial || data.company_detail.Testimonial || '';
+              newData.numEmployees = data.company_detail.employeeCount || data.company_detail.EmployeeCount || '';
+              newData.boardDirectors = data.company_detail.boardOfDirectors || data.company_detail.BoardOfDirectors || '';
+              newData.investors = data.company_detail.investorsDetails || data.company_detail.InvestorsDetails || '';
+              newData.mediaMentions = data.company_detail.mediaMentions || data.company_detail.MediaMentions || '';
+              newData.patents = data.company_detail.patents || data.company_detail.Patents || '';
+              newData.benefits = data.company_detail.productBenefits || data.company_detail.ProductBenefits || '';
+            }
+
+            return newData;
+          });
+
+          // Store existing files so we can bypass file validation
+          if (data.file_uploads) {
+            setExistingFiles(data.file_uploads);
+          }
+          setIsInitializing(false);
         }
       } catch (err) {
         // If no application exists, ignore.
@@ -356,7 +357,7 @@ function ApplicationForm() {
         const hasNewFiles = files[field.name] && files[field.name].length > 0;
         const targetSection = field.fileType || 'ReachDocs';
         const hasExistingFiles = existingFiles.some(f => (f.section || f.Section) === targetSection);
-        
+
         if (!hasNewFiles && !hasExistingFiles) {
           newErrors[field.name] = 'Required';
         }
@@ -390,7 +391,11 @@ function ApplicationForm() {
 
     try {
       await saveAction();
-      handleNext();
+      if (actionRef.current === 'exit') {
+        navigate('/my-application');
+      } else {
+        handleNext();
+      }
     } catch (err) {
       setServerError(err.message || 'Unable to save. Please try again.');
     } finally {
@@ -613,66 +618,105 @@ function ApplicationForm() {
 
   return (
     <div className="application-page">
-      <header className="application-header-bar no-print">
-        <div className="application-header-logo">
-          <img src={oppiLogo} alt="OPPI Logo" />
-          <span>Application Form</span>
-        </div>
-        <div className="application-header-actions">
-          {applicationId && (
-            <span className="application-id-badge">Application ID: {applicationId}</span>
-          )}
-          <button type="button" className="btn-header" onClick={() => navigate('/change-password')}>Change Password</button>
-          <button type="button" className="btn-header logout" onClick={handleLogout}>Log Out</button>
-        </div>
-      </header>
+      <div className="application-header-wrapper">
+        <header className="application-header-bar no-print">
+          <div className="application-header-logo">
+            <img src={oppiLogo} alt="OPPI Logo" />
+          </div>
+          <div className="application-header-actions">
+            {applicationId && (
+              <span className="application-id-badge">Application ID: {applicationId}</span>
+            )}
+            <button type="button" className="btn-header change-pwd" onClick={() => navigate('/change-password')}>CHANGE PASSWORD</button>
+            <button type="button" className="btn-header logout" onClick={handleLogout}>LOG OUT <span className="logout-icon">→</span></button>
+          </div>
+        </header>
+      </div>
 
       <div className="application-container">
         <div className="application-content-wrapper">
-          <div className="application-card">
-            <div className="application-header">
-              <div className="application-card-brand">
-                <img src={oppiLogo} alt="OPPI Logo" className="application-card-logo" />
-                <div className="application-card-title">
-                  <h2>Innovation Application</h2>
-                </div>
-              </div>
-            </div>
 
-            {serverError && <p className="form-error">{serverError}</p>}
 
-            {!submitted && (
+          {!submitted && (
+            <div className="progress-tracker-container">
               <nav className="section-nav" aria-label="Application sections">
                 {steps.map((label, idx) => (
                   <div
                     key={label}
                     className={`section-nav-item ${activeStep === idx ? 'active' : ''} ${activeStep > idx ? 'completed' : ''}`}
                   >
-                    {label}
+                    <div className="step-circle">{idx + 1}</div>
+                    <span className="step-label">{label}</span>
                   </div>
                 ))}
               </nav>
-            )}
+            </div>
+          )}
 
-            {!submitted && activeStep < steps.length && (
-              <h3 className="section-title">{steps[activeStep]}</h3>
+          <div className="application-card">
+            {serverError && <p className="form-error">{serverError}</p>}
+
+            {!submitted && activeStep < 3 && (
+              <div className="form-instructions">
+                <h3>Fill in your details</h3>
+                <p>All data entered during registration will be auto-filled. Please verify and complete the remaining fields.</p>
+              </div>
+            )}
+            {!submitted && activeStep === 3 && (
+              <div className="form-instructions">
+                <h3>Submit & Review</h3>
+                <p>Please review your details before final submission.</p>
+              </div>
             )}
 
             <form noValidate onSubmit={
               activeStep === 0 ? handleNextSection1 :
-              activeStep === 1 ? handleNextSection2 :
-              activeStep === 2 ? handleNextSection3 :
-              activeStep === 3 && !submitted ? handleSubmit :
-              undefined
+                activeStep === 1 ? handleNextSection2 :
+                  activeStep === 2 ? handleNextSection3 :
+                    activeStep === 3 && !submitted ? handleSubmit :
+                      undefined
             }>
               {renderStep()}
               {!submitted && (
                 <div className="form-navigation">
-                  {activeStep > 0 && activeStep < steps.length && (
-                    <button type="button" onClick={handleBack} disabled={isSaving} className="btn-prev">Previous</button>
-                  )}
-                  {activeStep < 3 && <button type="submit" disabled={isSaving} className="btn-next">{isSaving ? 'Saving...' : 'Next'}</button>}
-                  {activeStep === 3 && <button type="submit" disabled={isSaving} className="btn-submit">{isSaving ? 'Submitting...' : 'Submit Application'}</button>}
+                  <div className="form-nav-left">
+                    {activeStep < 3 && (
+                      <div className="page-indicator">
+                        <span className="page-text">Page {activeStep + 1} of 4</span>
+                        <div className="page-progress-bar">
+                          <div className="page-progress-fill" style={{ width: `${((activeStep + 1) / 4) * 100}%` }}></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="form-nav-right">
+                    {activeStep > 0 && activeStep < steps.length && (
+                      <button type="button" onClick={handleBack} disabled={isSaving} className="btn-prev">Previous</button>
+                    )}
+                    {activeStep < 3 && (
+                      <>
+                        <button type="submit" onClick={() => { actionRef.current = 'exit'; }} disabled={isSaving} className="btn-save-exit">Save & Exit</button>
+                        <button
+                          type="submit"
+                          onClick={() => { actionRef.current = 'next'; }}
+                          disabled={isSaving}
+                          className="btn-next"
+                        >
+                          {isSaving ? 'Saving...' : ( 
+                            <>
+                              Continue <span aria-hidden="true">&nbsp;&nbsp;&nbsp;</span>
+                              <span aria-hidden="true">&gt;</span>
+                            </>
+                          )}
+                        </button>
+                   
+                      </>
+                 
+                    )}
+                    {activeStep === 3 && (
+                      <button type="submit" onClick={() => { actionRef.current = 'next'; }} disabled={isSaving} className="btn-submit">{isSaving ? 'Submitting...' : 'Submit Application'}</button>
+                    )}
+                  </div>
                 </div>
               )}
             </form>
