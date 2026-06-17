@@ -13,7 +13,7 @@ const Auth = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -26,12 +26,14 @@ const Auth = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (error) setError('');
+    if (errors[name] || errors.form) {
+      setErrors(prev => ({ ...prev, [name]: '', form: '' }));
+    }
   };
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setError('');
+    setErrors({});
     setMessage('');
     setShowPassword(false);
     setShowConfirmPassword(false);
@@ -47,7 +49,7 @@ const Auth = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
     setIsSubmitting(true);
 
     try {
@@ -66,7 +68,7 @@ const Auth = () => {
         navigate('/application', { replace: true });
       }
     } catch (err) {
-      setError(err.message || 'Invalid email or password');
+      setErrors({ form: err.message || 'Invalid email or password' });
     } finally {
       setIsSubmitting(false);
     }
@@ -75,17 +77,25 @@ const Auth = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
+    let hasError = false;
+    const newErrors = {};
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      newErrors.password = 'Password must be at least 6 characters';
+      hasError = true;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
       return;
     }
 
-    setError('');
+    setErrors({});
     setMessage('');
     setIsSubmitting(true);
 
@@ -98,7 +108,7 @@ const Auth = () => {
         setFormData(prev => ({ ...prev, emailId: '', password: '', confirmPassword: '' }));
       }, 1500);
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setErrors({ form: err.message || 'Registration failed. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +141,6 @@ const Auth = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="auth-form">
-                {error && <div className="form-error">{error}</div>}
                 {message && <div className="form-success">{message}</div>}
 
                 {/* REGISTER FIELDS */}
@@ -230,6 +239,7 @@ const Auth = () => {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  {errors.password && <div className="field-error-text">{errors.password}</div>}
                 </div>
 
                 {/* CONFIRM PASSWORD - Register only */}
@@ -254,6 +264,7 @@ const Auth = () => {
                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
+                    {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
                   </div>
                 )}
 
@@ -282,6 +293,7 @@ const Auth = () => {
                   </div>
                 )}
 
+                {errors.form && <div className="form-error" style={{ marginBottom: '1rem' }}>{errors.form}</div>}
                 <button type="submit" className="submit-btn" disabled={isSubmitting}>
                   {isSubmitting
                     ? (isLogin ? 'LOGGING IN...' : 'REGISTERING...')

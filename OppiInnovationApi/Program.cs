@@ -235,7 +235,7 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
         .FirstOrDefaultAsync(x => x.Id == id);
     if (a == null) return Results.NotFound(new { message = "Application not found" });
 
-    var reviews = await db.JuryReviews
+    var juryReviews = await db.JuryReviews
         .Where(jr => jr.ApplicationId == id)
         .Select(jr => new {
             jr.Id,
@@ -250,7 +250,22 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
         })
         .ToListAsync();
 
-    double avgScore = reviews.Any() ? reviews.Average(r => r.WeightedScore) : 0.0;
+    var validatorReviews = await db.ValidatorReviews
+        .Where(vr => vr.ApplicationId == id)
+        .Select(vr => new {
+            vr.Id,
+            vr.ValidatorId,
+            validator_name = db.Users.Where(u => u.Id == vr.ValidatorId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault() ?? "Validator",
+            vr.InnovationIpScore,
+            vr.TeamStrengthScore,
+            vr.BusinessPlanScore,
+            vr.ImpactScore,
+            vr.WeightedScore,
+            vr.CreatedAt
+        })
+        .ToListAsync();
+
+    double avgScore = juryReviews.Any() ? juryReviews.Average(r => r.WeightedScore) : 0.0;
 
     return Results.Ok(new { id = a.Id, status = a.Status, submitted_at = a.SubmittedAt,
         user_name = a.User?.FirstName + " " + a.User?.LastName, user_email = a.User?.Email, user_mobile = a.User?.Mobile,
@@ -264,9 +279,10 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
             a.CompanyDetail.EmployeeCount, a.CompanyDetail.BoardOfDirectors, a.CompanyDetail.InvestorsDetails,
             a.CompanyDetail.MediaMentions, a.CompanyDetail.Patents, a.CompanyDetail.ProductBenefits },
         file_uploads = a.FileUploads.Select(f => new { f.Id, f.Section, f.FileName, f.FilePath, f.FileSize, f.FileType }),
-        jury_reviews = reviews,
+        jury_reviews = juryReviews,
+        validator_reviews = validatorReviews,
         average_score = avgScore,
-        jury_approval_count = reviews.Count
+        jury_approval_count = juryReviews.Count
     });
 });
 
@@ -387,6 +403,9 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
         .Select(a => new { a.Id, a.Status, a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
+            validator_score = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id).Select(vr => (double?)vr.WeightedScore).FirstOrDefault(),
+            validator_name = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id)
+                .Select(vr => db.Users.Where(u => u.Id == vr.ValidatorId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault()).FirstOrDefault(),
             jury_approval_count = db.JuryReviews.Count(jr => jr.ApplicationId == a.Id),
             average_score = db.JuryReviews.Where(jr => jr.ApplicationId == a.Id).Average(jr => (double?)jr.WeightedScore) ?? 0.0 })
         .ToListAsync();
@@ -407,13 +426,38 @@ api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContex
     return Results.Ok(apps);
 });
 
-api.MapPost("/validator/approve/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+api.MapPost("/validator/approve/{appId}", async (int appId, ValidatorApprovalDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
-    a.Status = "VALIDATOR_APPROVED"; a.ValidatorId = GetUid(ctx); a.ValidatorActionAt = DateTime.UtcNow;
+
+    if (dto.InnovationIpScore < 1 || dto.InnovationIpScore > 5 ||
+        dto.TeamStrengthScore < 1 || dto.TeamStrengthScore > 5 ||
+        dto.BusinessPlanScore < 1 || dto.BusinessPlanScore > 5 ||
+        dto.ImpactScore < 1 || dto.ImpactScore > 5)
+    {
+        return Results.BadRequest(new { message = "All scores must be between 1 and 5." });
+    }
+
+    double weightedScore = dto.InnovationIpScore * 0.25 + dto.TeamStrengthScore * 0.25 + dto.BusinessPlanScore * 0.25 + dto.ImpactScore * 0.25;
+
+    var review = new ValidatorReview
+    {
+        ApplicationId = appId,
+        ValidatorId = uid.Value,
+        InnovationIpScore = dto.InnovationIpScore,
+        TeamStrengthScore = dto.TeamStrengthScore,
+        BusinessPlanScore = dto.BusinessPlanScore,
+        ImpactScore = dto.ImpactScore,
+        WeightedScore = weightedScore,
+        CreatedAt = DateTime.UtcNow
+    };
+    db.ValidatorReviews.Add(review);
+
+    a.Status = "VALIDATOR_APPROVED"; a.ValidatorId = uid; a.ValidatorActionAt = DateTime.UtcNow;
     await db.SaveChangesAsync();
-    await audit.LogAsync(GetUid(ctx), "VALIDATOR_APPROVE", "Application", appId, null, GetIp(ctx));
-    return Results.Ok(new { message = "Approved" });
+    await audit.LogAsync(uid, "VALIDATOR_APPROVE", "Application", appId, $"Scores: IP={dto.InnovationIpScore}, Team={dto.TeamStrengthScore}, Biz={dto.BusinessPlanScore}, Impact={dto.ImpactScore}, Weighted={weightedScore}", GetIp(ctx));
+    return Results.Ok(new { message = "Approved with scores recorded" });
 });
 
 api.MapPost("/validator/reject/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit) =>

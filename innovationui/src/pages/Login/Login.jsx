@@ -13,7 +13,7 @@ const Login = () => {
     password: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,11 +21,14 @@ const Login = () => {
       ...prevState,
       [name]: value
     }));
+    if (errors[name] || errors.form) {
+      setErrors(prev => ({ ...prev, [name]: '', form: '' }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
     setIsSubmitting(true);
 
     try {
@@ -33,7 +36,7 @@ const Login = () => {
       saveSession(session);
       navigate('/application', { replace: true });
     } catch (err) {
-      setError(err.message || 'Login failed. Please check your email and password.');
+      setErrors({ form: err.message || 'Login failed. Please check your email and password.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -55,7 +58,6 @@ const Login = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="login-form">
-                {error && <div className="form-error">{error}</div>}
                 <div className="form-group">
                   <label>Email Id <span className="required">*</span></label>
                   <input
@@ -88,6 +90,7 @@ const Login = () => {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  {errors.form && <div className="form-error" style={{ marginTop: '0.25rem' }}>{errors.form}</div>}
                 </div>
 
                 <div className="form-options">

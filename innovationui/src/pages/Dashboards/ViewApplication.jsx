@@ -235,6 +235,40 @@ export default function ViewApplication({ isMine }) {
             </div>
           </div>
 
+          {(userRole === 'ADMIN' || userRole === 'VALIDATOR') && app.validator_reviews && app.validator_reviews.length > 0 && (
+            <div className="dashboard-section no-print">
+              <h3>Validator Reviews Breakdown</h3>
+              <div className="table-responsive">
+                <table className="jury-scores-table">
+                  <thead>
+                    <tr>
+                      <th>Validator</th>
+                      <th>Innovation & IP (25%)</th>
+                      <th>Team Strength (25%)</th>
+                      <th>Business Plan (25%)</th>
+                      <th>Impact (25%)</th>
+                      <th>Weighted Score</th>
+                      <th>Reviewed At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {app.validator_reviews.map(r => (
+                      <tr key={r.id}>
+                        <td>{r.validator_name}</td>
+                        <td>{r.innovationIpScore} / 5</td>
+                        <td>{r.teamStrengthScore} / 5</td>
+                        <td>{r.businessPlanScore} / 5</td>
+                        <td>{r.impactScore} / 5</td>
+                        <td><strong>{r.weightedScore.toFixed(2)}</strong> / 5.00</td>
+                        <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {(userRole === 'ADMIN' || userRole === 'JURY') && app.jury_reviews && app.jury_reviews.length > 0 && (
             <div className="dashboard-section no-print">
               <h3>Jury Reviews Breakdown</h3>

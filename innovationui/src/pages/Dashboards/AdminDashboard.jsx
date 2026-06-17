@@ -83,6 +83,7 @@ export default function AdminDashboard() {
                   <th>Email</th>
                   <th>Company</th>
                   <th>Status</th>
+                  <th>Validator Score</th>
                   <th>Jury Approvals / Avg Score</th>
                   <th>Actions</th>
                 </tr>
@@ -95,6 +96,16 @@ export default function AdminDashboard() {
                     <td>{a.user_email}</td>
                     <td>{a.company || '—'}</td>
                     <td><span className={`status-badge ${a.status.toLowerCase().replace('_', '-')}`}>{a.status}</span></td>
+                    <td>
+                      {a.validator_score ? (
+                        <span>
+                          <strong>{a.validator_score.toFixed(2)}</strong>
+                          {a.validator_name && <span style={{ color: '#64748b', fontSize: '0.8rem' }}> by {a.validator_name}</span>}
+                        </span>
+                      ) : (
+                        <span style={{ color: '#94a3b8' }}>—</span>
+                      )}
+                    </td>
                     <td>
                       {a.jury_approval_count > 0 ? (
                         <span>
@@ -109,7 +120,7 @@ export default function AdminDashboard() {
                     </td>
                   </tr>
                 ))}
-                {apps.length === 0 && <tr><td colSpan="7" className="text-center">No applications found.</td></tr>}
+                {apps.length === 0 && <tr><td colSpan="8" className="text-center">No applications found.</td></tr>}
               </tbody>
             </table>
           </div>

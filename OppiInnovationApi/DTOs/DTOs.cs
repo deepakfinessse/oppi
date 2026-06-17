@@ -69,3 +69,11 @@ public class JuryApprovalDto
     public int BusinessPlanScore { get; set; }
     public int ImpactScore { get; set; }
 }
+
+public class ValidatorApprovalDto
+{
+    public int InnovationIpScore { get; set; }
+    public int TeamStrengthScore { get; set; }
+    public int BusinessPlanScore { get; set; }
+    public int ImpactScore { get; set; }
+}

@@ -19,7 +19,7 @@ const Register = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,18 +27,34 @@ const Register = () => {
       ...prevState,
       [name]: value
     }));
+    // Clear error for the field being edited
+    if (errors[name] || errors.form) {
+      setErrors(prev => ({ ...prev, [name]: '', form: '' }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Add password validation
+    let hasError = false;
+    const newErrors = {};
+
+    if (formData.createPassword.length < 6) {
+      newErrors.createPassword = 'Password must be at least 6 characters';
+      hasError = true;
+    }
+
     if (formData.createPassword !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      newErrors.confirmPassword = 'Passwords do not match';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
       return;
     }
 
-    setError('');
+    setErrors({});
     setMessage('');
     setIsSubmitting(true);
 
@@ -47,7 +63,7 @@ const Register = () => {
       setMessage('Registration successful. Redirecting to login...');
       setTimeout(() => navigate('/login', { replace: true }), 800);
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setErrors({ form: err.message || 'Registration failed. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +86,6 @@ const Register = () => {
 
               <form onSubmit={handleSubmit} className="register-form">
                 {message && <div className="form-success">{message}</div>}
-                {error && <div className="form-error">{error}</div>}
 
                 <div className="form-row">
                   <div className="form-group">
@@ -147,6 +162,7 @@ const Register = () => {
                       {showCreatePassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  {errors.createPassword && <div className="field-error-text">{errors.createPassword}</div>}
                 </div>
 
                 <div className="form-group">
@@ -168,6 +184,7 @@ const Register = () => {
                       {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
                 </div>
 
                 <div className="form-footer">
@@ -183,6 +200,7 @@ const Register = () => {
                       </div>
                     </div>
                   </div>
+                  {errors.form && <div className="form-error" style={{ marginBottom: '1rem' }}>{errors.form}</div>}
                   <button type="submit" className="btn-register" disabled={isSubmitting}>
                     {isSubmitting ? 'REGISTERING...' : 'REGISTER'}
                   </button>
