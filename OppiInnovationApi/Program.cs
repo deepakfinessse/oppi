@@ -30,6 +30,7 @@ builder.Services.AddDbContext<InnovationDbContext>(o => o.UseMySql(connStr, Serv
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<DomainService>();
 builder.Services.AddScoped<AuditService>();
+builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IValidator<RegisterDto>, RegisterValidator>();
 builder.Services.AddScoped<IValidator<LoginDto>, LoginValidator>();
 
@@ -123,6 +124,81 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 var uploadsDir = Path.Combine(builder.Environment.WebRootPath, "uploads");
 Directory.CreateDirectory(uploadsDir);
 
+var templatesDir = Path.Combine(builder.Environment.WebRootPath, "templates");
+Directory.CreateDirectory(templatesDir);
+var blankFormPath = Path.Combine(templatesDir, "Blank_Application_Form.doc");
+if (!File.Exists(blankFormPath))
+{
+    var rtfContent = @"{\rtf1\ansi\deff0
+{\fonttbl{\f0\fnil\fcharset0 Arial;}}
+{\colortbl ;\red0\green92\blue154;\red128\green128\blue128;}
+\viewkind4\uc1\pard\lang1033\f0\fs28\b\cf1 OPPI Excellence in Innovation Award 2025\b0\cf0\fs24\par
+\fs22\cf2 Blank Application Form Template for Reference\cf0\fs24\par
+\par
+This document is provided for your easy reference. You may fill out the details here before submitting them online at \b http://innovationawards.indiaoppi.com/\b0.\par
+\par
+\b\cf1 SECTION 1: PERSONAL & COMPANY INFORMATION\cf0\b0\par
+--------------------------------------------------\par
+1. Company Name:\par
+   [__________________________________________________]\par
+\par
+2. Designation:\par
+   [__________________________________________________]\par
+\par
+3. Category of Work:\par
+   [__________________________________________________]\par
+\par
+4. Company Website:\par
+   [__________________________________________________]\par
+\par
+5. Company Brief (Short Description):\par
+   [__________________________________________________]\par
+\par
+6. Innovation Details (What makes it unique?):\par
+   [__________________________________________________]\par
+\par
+7. Competitive Analysis:\par
+   [__________________________________________________]\par
+\par
+8. Need Analysis & Marketability:\par
+   [__________________________________________________]\par
+\par
+\par
+\b\cf1 SECTION 2: COMPANY REACH & CHANNELS\cf0\b0\par
+--------------------------------------------------\par
+1. Marketing Strategy:\par
+   [__________________________________________________]\par
+\par
+2. App/Website Details:\par
+   [__________________________________________________]\par
+\par
+3. Social Media Presence:\par
+   [__________________________________________________]\par
+\par
+4. Physical Outlets / Future Expansion:\par
+   [__________________________________________________]\par
+\par
+\par
+\b\cf1 SECTION 3: COMPANY DETAILS & IMPACT\cf0\b0\par
+--------------------------------------------------\par
+1. Customer Benefit:\par
+   [__________________________________________________]\par
+\par
+2. Testimonials & Media Mentions:\par
+   [__________________________________________________]\par
+\par
+3. Employee Count & Board of Directors:\par
+   [__________________________________________________]\par
+\par
+4. Investors Details / Patents / Product Benefits:\par
+   [__________________________________________________]\par
+\par
+\par
+\b Note:\b0 Final submission must be completed online.\par
+}";
+    File.WriteAllText(blankFormPath, rtfContent);
+}
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsDir),
@@ -146,7 +222,7 @@ static string GetIp(HttpContext c) => c.Connection.RemoteIpAddress?.ToString() ?
 var auth = app.MapGroup("/auth").RequireRateLimiting("auth");
 
 auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db, DomainService ds,
-    JwtService jwt, AuditService audit, IValidator<RegisterDto> v, HttpContext ctx) =>
+    JwtService jwt, AuditService audit, IValidator<RegisterDto> v, EmailService emailService, HttpContext ctx) =>
 {
     var vr = await v.ValidateAsync(dto);
     if (!vr.IsValid) return Results.BadRequest(new { errors = vr.Errors.Select(e => e.ErrorMessage) });
@@ -161,6 +237,24 @@ auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db, Domain
     var at = jwt.GenerateAccessToken(user);
     var rt = await jwt.GenerateRefreshTokenAsync(user, ctx.Request.Headers.UserAgent);
     await audit.LogAsync(user.Id, "REGISTER", "User", user.Id, null, GetIp(ctx));
+
+    // Send registration email safely in background
+    var serviceProvider = ctx.RequestServices.GetRequiredService<IServiceProvider>();
+    var email = user.Email;
+    var name = $"{user.FirstName} {user.LastName}";
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            using var scope = serviceProvider.CreateScope();
+            var emailSvc = scope.ServiceProvider.GetRequiredService<EmailService>();
+            await emailSvc.SendRegistrationEmailAsync(email, name);
+        }
+        catch (Exception)
+        {
+            // Failures inside SendRegistrationEmailAsync are already logged
+        }
+    });
 
     return Results.Ok(new { access_token = at, refresh_token = rt,
         user = new { id = user.Id, first_name = user.FirstName, last_name = user.LastName,
