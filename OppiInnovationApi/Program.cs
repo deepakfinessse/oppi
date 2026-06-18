@@ -428,36 +428,43 @@ api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContex
 
 api.MapPost("/validator/approve/{appId}", async (int appId, ValidatorApprovalDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
-    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
-    var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
-
-    if (dto.InnovationIpScore < 1 || dto.InnovationIpScore > 5 ||
-        dto.TeamStrengthScore < 1 || dto.TeamStrengthScore > 5 ||
-        dto.BusinessPlanScore < 1 || dto.BusinessPlanScore > 5 ||
-        dto.ImpactScore < 1 || dto.ImpactScore > 5)
+    try
     {
-        return Results.BadRequest(new { message = "All scores must be between 1 and 5." });
+        var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+        var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
+
+        if (dto.InnovationIpScore < 1 || dto.InnovationIpScore > 5 ||
+            dto.TeamStrengthScore < 1 || dto.TeamStrengthScore > 5 ||
+            dto.BusinessPlanScore < 1 || dto.BusinessPlanScore > 5 ||
+            dto.ImpactScore < 1 || dto.ImpactScore > 5)
+        {
+            return Results.BadRequest(new { message = "All scores must be between 1 and 5." });
+        }
+
+        double weightedScore = dto.InnovationIpScore * 0.25 + dto.TeamStrengthScore * 0.25 + dto.BusinessPlanScore * 0.25 + dto.ImpactScore * 0.25;
+
+        var review = new ValidatorReview
+        {
+            ApplicationId = appId,
+            ValidatorId = uid.Value,
+            InnovationIpScore = dto.InnovationIpScore,
+            TeamStrengthScore = dto.TeamStrengthScore,
+            BusinessPlanScore = dto.BusinessPlanScore,
+            ImpactScore = dto.ImpactScore,
+            WeightedScore = weightedScore,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.ValidatorReviews.Add(review);
+
+        a.Status = "VALIDATOR_APPROVED"; a.ValidatorId = uid; a.ValidatorActionAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        await audit.LogAsync(uid, "VALIDATOR_APPROVE", "Application", appId, $"Scores: IP={dto.InnovationIpScore}, Team={dto.TeamStrengthScore}, Biz={dto.BusinessPlanScore}, Impact={dto.ImpactScore}, Weighted={weightedScore}", GetIp(ctx));
+        return Results.Ok(new { message = "Approved with scores recorded" });
     }
-
-    double weightedScore = dto.InnovationIpScore * 0.25 + dto.TeamStrengthScore * 0.25 + dto.BusinessPlanScore * 0.25 + dto.ImpactScore * 0.25;
-
-    var review = new ValidatorReview
+    catch (Exception ex)
     {
-        ApplicationId = appId,
-        ValidatorId = uid.Value,
-        InnovationIpScore = dto.InnovationIpScore,
-        TeamStrengthScore = dto.TeamStrengthScore,
-        BusinessPlanScore = dto.BusinessPlanScore,
-        ImpactScore = dto.ImpactScore,
-        WeightedScore = weightedScore,
-        CreatedAt = DateTime.UtcNow
-    };
-    db.ValidatorReviews.Add(review);
-
-    a.Status = "VALIDATOR_APPROVED"; a.ValidatorId = uid; a.ValidatorActionAt = DateTime.UtcNow;
-    await db.SaveChangesAsync();
-    await audit.LogAsync(uid, "VALIDATOR_APPROVE", "Application", appId, $"Scores: IP={dto.InnovationIpScore}, Team={dto.TeamStrengthScore}, Biz={dto.BusinessPlanScore}, Impact={dto.ImpactScore}, Weighted={weightedScore}", GetIp(ctx));
-    return Results.Ok(new { message = "Approved with scores recorded" });
+        return Results.Problem(ex.ToString());
+    }
 });
 
 api.MapPost("/validator/reject/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
