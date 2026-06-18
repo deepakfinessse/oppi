@@ -559,6 +559,19 @@ api.MapPost("/jury/reject/{appId}", async (int appId, InnovationDbContext db, Ht
     return Results.Ok(new { message = "Final Rejected" });
 });
 
+app.MapGet("/debug/db", async (InnovationDbContext db) =>
+{
+    try
+    {
+        var count = await db.ValidatorReviews.CountAsync();
+        return Results.Ok(new { message = "Table exists!", count = count });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.ToString());
+    }
+});
+
 app.Run();
 } catch (Exception ex) { Log.Fatal(ex, "Fatal"); }
 finally { Log.CloseAndFlush(); }
