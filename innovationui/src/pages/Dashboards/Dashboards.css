@@ -168,6 +168,14 @@
 }
 .btn-action.reject:hover { background: #dc2626; }
 
+.btn-action.save {
+  background: #64748b;
+  color: white;
+}
+.btn-action.save:hover {
+  background: #475569;
+}
+
 .view-header {
   display: flex;
   justify-content: space-between;

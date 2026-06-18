@@ -36,7 +36,17 @@ export default function JuryDashboard() {
   const handleAction = async (id, action) => {
     if (action === 'Approve') {
       setSelectedAppId(id);
-      setScores({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
+      const app = apps.find(a => a.id === id);
+      if (app && app.draft_scores) {
+        setScores({
+          innovationIp: app.draft_scores.innovationIpScore || 0,
+          teamStrength: app.draft_scores.teamStrengthScore || 0,
+          businessPlan: app.draft_scores.businessPlanScore || 0,
+          impact: app.draft_scores.impactScore || 0
+        });
+      } else {
+        setScores({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
+      }
       setShowModal(true);
     } else {
       if (!window.confirm(`Are you sure you want to reject this application?`)) return;
@@ -72,14 +82,15 @@ export default function JuryDashboard() {
     ).toFixed(2);
   };
 
-  const submitScores = async () => {
+  const submitScores = async (isDraft = false) => {
     try {
       setSubmitting(true);
       await api.juryApprove(selectedAppId, {
         innovationIpScore: scores.innovationIp,
         teamStrengthScore: scores.teamStrength,
         businessPlanScore: scores.businessPlan,
-        impactScore: scores.impact
+        impactScore: scores.impact,
+        isDraft: isDraft
       });
       closeModal();
       fetchApps();
@@ -193,8 +204,15 @@ export default function JuryDashboard() {
             <div className="modal-actions">
               <button className="btn-action view" onClick={closeModal}>Cancel</button>
               <button
+                className="btn-action save"
+                onClick={() => submitScores(true)}
+                disabled={submitting}
+              >
+                Save & Exit
+              </button>
+              <button
                 className="btn-action approve"
-                onClick={submitScores}
+                onClick={() => submitScores(false)}
                 disabled={submitting || !scores.innovationIp || !scores.teamStrength || !scores.businessPlan || !scores.impact}
               >
                 {submitting ? 'Submitting...' : 'Approve'}
