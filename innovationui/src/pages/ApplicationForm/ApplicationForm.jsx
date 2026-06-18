@@ -35,21 +35,21 @@ const section2Fields = [
   { name: 'websitePresence', label: 'Website', required: true },
   { name: 'socialMedia', label: 'Social media', required: true },
   { name: 'physicalOutlets', label: 'Physical outlets', required: true },
-  { name: 'uploads', label: 'Upload PDF, Photo or Video (up to 5 attachments, max 8MB each)', required: true, type: 'file', multiple: true },
+  { name: 'uploads', label: 'Upload PDF, PNG or JPEG (up to 5 attachments, max 8MB each)', required: true, type: 'file', multiple: true },
   { name: 'futurePlans', label: 'Future expansion plans over the next 3 years', required: true, type: 'textarea' },
 ];
 
 const section3Fields = [
   { name: 'customerHelp', label: 'How does your start-up help your customer and end-user', required: true, type: 'textarea' },
   { name: 'customerTestimonial', label: 'Customer Testimonial (If not applicable, please mention "NA" in the text space)', required: true, type: 'textarea' },
-  { name: 'customerTestimonialUpload', label: 'Upload Customer Testimonial (PDF, Photo or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Testimonial' },
+  { name: 'customerTestimonialUpload', label: 'Upload Customer Testimonial (PDF, PNG or JPEG, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Testimonial' },
   { name: 'numEmployees', label: 'Number of employees', required: true, type: 'number' },
   { name: 'boardDirectors', label: 'Details of board of directors', required: true, type: 'textarea' },
-  { name: 'boardDirectorsUpload', label: 'Upload details of board of directors (PDF, Photo or Video, up to 5, 8MB each)', required: true, type: 'file', multiple: true, fileType: 'Board' },
+  { name: 'boardDirectorsUpload', label: 'Upload details of board of directors (PDF, PNG or JPEG, up to 5, 8MB each)', required: true, type: 'file', multiple: true, fileType: 'Board' },
   { name: 'investors', label: 'Details of the investors', required: true, type: 'textarea' },
-  { name: 'investorsUpload', label: 'Upload Details of the investors (PDF, Photo or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Investors' },
+  { name: 'investorsUpload', label: 'Upload Details of the investors (PDF, PNG or JPEG, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Investors' },
   { name: 'mediaMentions', label: 'Media mentions / Accolades (academic publications, campus magazines, research publications, etc.)', required: false, type: 'textarea' },
-  { name: 'mediaMentionsUpload', label: 'Upload Media mentions / Accolades (PDF, Photo or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Media' },
+  { name: 'mediaMentionsUpload', label: 'Upload Media mentions / Accolades (PDF, PNG or JPEG, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Media' },
   { name: 'patents', label: 'Patents (Include approved and/or applied)', required: false, type: 'textarea' },
   { name: 'benefits', label: 'What are the benefits of your product/service: competitive analysis', required: true, type: 'textarea' },
 ];
@@ -393,8 +393,7 @@ function ApplicationForm() {
     try {
       await saveAction();
       if (actionRef.current === 'exit') {
-        // navigate('/my-application');
-        navigate('/thank-you');
+        navigate('/');
       } else {
         handleNext();
       }

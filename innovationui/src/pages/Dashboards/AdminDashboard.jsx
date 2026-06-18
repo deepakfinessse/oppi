@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LogOut, ChevronDown, Download, Eye } from 'lucide-react';
 import { api, clearSession } from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
@@ -10,6 +11,16 @@ export default function AdminDashboard() {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Dropdown & Filter States
+  const [userFilter, setUserFilter] = useState('ALL');
+  const [appFilter, setAppFilter] = useState('ALL');
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [appDropdownOpen, setAppDropdownOpen] = useState(false);
+
+  // Dropdown Refs
+  const userDropdownRef = useRef(null);
+  const appDropdownRef = useRef(null);
 
   useEffect(() => {
     const fetchAdminData = async () => {
@@ -29,9 +40,115 @@ export default function AdminDashboard() {
     fetchAdminData();
   }, []);
 
+  // Click outside listener to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
+        setUserDropdownOpen(false);
+      }
+      if (appDropdownRef.current && !appDropdownRef.current.contains(event.target)) {
+        setAppDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleLogout = () => {
     clearSession();
     navigate('/auth');
+  };
+
+  // Padded double-digit ID formatting (e.g. 01, 02)
+  const formatId = (id) => {
+    if (!id) return '';
+    const numStr = String(id);
+    if (/^\d+$/.test(numStr)) {
+      return numStr.padStart(2, '0');
+    }
+    return numStr;
+  };
+
+  // Filter Registered Users
+  const filteredUsers = users.filter(u => {
+    if (userFilter === 'ALL') return true;
+    return u.role?.toUpperCase() === userFilter;
+  });
+
+  // Filter Submitted Applications
+  const filteredApps = apps.filter(a => {
+    if (appFilter === 'ALL') return true;
+    const statusUpper = a.status?.toUpperCase() || '';
+    if (appFilter === 'VALIDATOR') {
+      return statusUpper.includes('VALIDATOR') || (a.validator_score !== undefined && a.validator_score !== null);
+    }
+    if (appFilter === 'JURY') {
+      return statusUpper.includes('JURY') || statusUpper === 'UNDER_JURY_REVIEW';
+    }
+    if (appFilter === 'USER') {
+      return statusUpper === 'SUBMITTED';
+    }
+    return true;
+  });
+
+  // Download filtered data as CSV
+  const handleDownloadCSV = (data, type) => {
+    let headers = [];
+    let filename = '';
+
+    if (type === 'users') {
+      filename = `registered_users_${userFilter.toLowerCase()}.csv`;
+      headers = [
+        { label: 'ID', key: 'id', format: (v) => formatId(v) },
+        { label: 'Name', key: 'name', format: (_, row) => `${row.firstName || ''} ${row.lastName || ''}`.trim() },
+        { label: 'Email', key: 'email' },
+        { label: 'Mobile', key: 'mobile' },
+        { label: 'Role', key: 'role' }
+      ];
+    } else {
+      filename = `submitted_applications_${appFilter.toLowerCase()}.csv`;
+      headers = [
+        { label: 'App ID', key: 'id', format: (v) => formatId(v) },
+        { label: 'Name', key: 'user_name' },
+        { label: 'Email', key: 'user_email' },
+        { label: 'Company', key: 'company' },
+        { label: 'Status', key: 'status' },
+        { label: 'Validator Score', key: 'validator_score', format: (v) => v ? v.toFixed(2) : '—' },
+        { label: 'Jury Approval Score', key: 'jury_approval_count', format: (v, row) => `${v || 0}/3 (${row.average_score ? row.average_score.toFixed(2) : '—'})` }
+      ];
+    }
+
+    const csvRows = [];
+    // Header row
+    csvRows.push(headers.map(h => `"${h.label}"`).join(','));
+
+    // Data rows
+    for (const row of data) {
+      const values = headers.map(h => {
+        let val = '';
+        if (h.format) {
+          val = h.format(row[h.key], row);
+        } else {
+          val = row[h.key];
+        }
+        const escaped = ('' + (val ?? '')).replace(/"/g, '""');
+        return `"${escaped}"`;
+      });
+      csvRows.push(values.join(','));
+    }
+
+    const csvContent = "\uFEFF" + csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (loading) return <div className="dashboard-loading">Loading Admin Dashboard...</div>;
@@ -39,13 +156,45 @@ export default function AdminDashboard() {
   return (
     <DashboardLayout
       title="Admin Dashboard"
-      headerActions={<button className="btn-logout" onClick={handleLogout}>Log Out</button>}
+      className="admin-dashboard-page"
+      headerActions={
+        <button className="admin-btn-logout" onClick={handleLogout}>
+          LOG OUT <LogOut size={16} />
+        </button>
+      }
     >
       <div className="dashboard-content">
         {error && <div className="dashboard-error">{error}</div>}
 
+        <h1 className="admin-main-heading">Admin</h1>
+
+        {/* Registered Users Section */}
         <div className="dashboard-section">
-          <h3>Registered Users ({users.length})</h3>
+          <div className="dashboard-section-header">
+            <h3>Registered Users({String(filteredUsers.length).padStart(2, '0')})</h3>
+            <div className="admin-header-actions">
+              <div className="filter-dropdown-container" ref={userDropdownRef}>
+                <button
+                  className={`btn-filter ${userFilter !== 'ALL' ? 'active-filter' : ''}`}
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                >
+                  FILTER <ChevronDown size={14} />
+                </button>
+                {userDropdownOpen && (
+                  <div className="dropdown-menu">
+                    <button className={userFilter === 'ALL' ? 'active' : ''} onClick={() => { setUserFilter('ALL'); setUserDropdownOpen(false); }}>All</button>
+                    <button className={userFilter === 'VALIDATOR' ? 'active' : ''} onClick={() => { setUserFilter('VALIDATOR'); setUserDropdownOpen(false); }}>Validator</button>
+                    <button className={userFilter === 'JURY' ? 'active' : ''} onClick={() => { setUserFilter('JURY'); setUserDropdownOpen(false); }}>Jury</button>
+                    <button className={userFilter === 'USER' ? 'active' : ''} onClick={() => { setUserFilter('USER'); setUserDropdownOpen(false); }}>User</button>
+                  </div>
+                )}
+              </div>
+              <button className="btn-download" onClick={() => handleDownloadCSV(filteredUsers, 'users')}>
+                DOWNLOAD <Download size={14} />
+              </button>
+            </div>
+          </div>
+
           <div className="table-responsive">
             <table className="dashboard-table">
               <thead>
@@ -58,44 +207,82 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {users.map(u => (
+                {filteredUsers.map(u => (
                   <tr key={u.id}>
-                    <td>{u.id}</td>
+                    <td>{formatId(u.id)}</td>
                     <td>{u.firstName} {u.lastName}</td>
                     <td>{u.email}</td>
                     <td>{u.mobile}</td>
-                    <td><span className={`role-badge ${u.role.toLowerCase()}`}>{u.role}</span></td>
+                    <td>
+                      <span className={`admin-role-badge ${u.role.toLowerCase()}`}>
+                        {u.role.toLowerCase()}
+                      </span>
+                    </td>
                   </tr>
                 ))}
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="text-center">No users found.</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </div>
 
+        {/* Submitted Applications Section */}
         <div className="dashboard-section">
-          <h3>Submitted Applications ({apps.length})</h3>
+          <div className="dashboard-section-header">
+            <h3>Submitted applications({String(filteredApps.length).padStart(2, '0')})</h3>
+            <div className="admin-header-actions">
+              <div className="filter-dropdown-container" ref={appDropdownRef}>
+                <button
+                  className={`btn-filter ${appFilter !== 'ALL' ? 'active-filter' : ''}`}
+                  onClick={() => setAppDropdownOpen(!appDropdownOpen)}
+                >
+                  FILTER <ChevronDown size={14} />
+                </button>
+                {appDropdownOpen && (
+                  <div className="dropdown-menu">
+                    <button className={appFilter === 'ALL' ? 'active' : ''} onClick={() => { setAppFilter('ALL'); setAppDropdownOpen(false); }}>All</button>
+                    <button className={appFilter === 'VALIDATOR' ? 'active' : ''} onClick={() => { setAppFilter('VALIDATOR'); setAppDropdownOpen(false); }}>Validator</button>
+                    <button className={appFilter === 'JURY' ? 'active' : ''} onClick={() => { setAppFilter('JURY'); setAppDropdownOpen(false); }}>Jury</button>
+                    <button className={appFilter === 'USER' ? 'active' : ''} onClick={() => { setAppFilter('USER'); setAppDropdownOpen(false); }}>User</button>
+                  </div>
+                )}
+              </div>
+              <button className="btn-download" onClick={() => handleDownloadCSV(filteredApps, 'apps')}>
+                DOWNLOAD <Download size={14} />
+              </button>
+            </div>
+          </div>
+
           <div className="table-responsive">
             <table className="dashboard-table">
               <thead>
                 <tr>
                   <th>App ID</th>
-                  <th>Applicant</th>
+                  <th>Name</th>
                   <th>Email</th>
                   <th>Company</th>
                   <th>Status</th>
-                  <th>Validator Score</th>
-                  <th>Jury Approvals / Avg Score</th>
+                  <th>Validator score</th>
+                  <th>Jury approval score</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {apps.map(a => (
+                {filteredApps.map(a => (
                   <tr key={a.id}>
-                    <td>{a.id}</td>
+                    <td>{formatId(a.id)}</td>
                     <td>{a.user_name}</td>
                     <td>{a.user_email}</td>
                     <td>{a.company || '—'}</td>
-                    <td><span className={`status-badge ${a.status.toLowerCase().replace('_', '-')}`}>{a.status}</span></td>
+                    <td>
+                      <span className={`status-badge ${a.status.toLowerCase().replace('_', '-')}`}>
+                        {a.status}
+                      </span>
+                    </td>
                     <td>
                       {a.validator_score ? (
                         <span>
@@ -116,11 +303,17 @@ export default function AdminDashboard() {
                       )}
                     </td>
                     <td>
-                      <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)}>View</button>
+                      <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
+                        <Eye size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))}
-                {apps.length === 0 && <tr><td colSpan="8" className="text-center">No applications found.</td></tr>}
+                {filteredApps.length === 0 && (
+                  <tr>
+                    <td colSpan="8" className="text-center">No applications found.</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

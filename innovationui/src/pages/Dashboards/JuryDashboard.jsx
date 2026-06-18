@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, clearSession } from '../../services/api';
+import { Eye } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
@@ -125,7 +126,9 @@ export default function JuryDashboard() {
                       <td>{a.company || '—'}</td>
                       <td>
                         <div className="action-buttons">
-                          <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)}>View</button>
+                          <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
+                            <Eye size={16} />
+                          </button>
                           <button className="btn-action approve" onClick={() => handleAction(a.id, 'Approve')}>Approve</button>
                           <button className="btn-action reject" onClick={() => handleAction(a.id, 'Reject')}>Reject</button>
                         </div>

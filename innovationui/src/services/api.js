@@ -35,10 +35,33 @@ async function request(path, options = {}) {
   const data = contentType.includes('application/json') ? await response.json() : await response.text();
 
   if (!response.ok) {
-    const message = Array.isArray(data?.errors)
-      ? data.errors.join(' ')
-      : data?.message || data || 'Request failed.';
-    throw new Error(message);
+    let message = 'Request failed.';
+    let errors = null;
+
+    if (data?.errors) {
+      if (Array.isArray(data.errors)) {
+        errors = data.errors;
+        message = data.errors.join(' ');
+      } else if (typeof data.errors === 'object') {
+        errors = [];
+        for (const key in data.errors) {
+          if (Array.isArray(data.errors[key])) {
+            errors.push(...data.errors[key]);
+          } else {
+            errors.push(String(data.errors[key]));
+          }
+        }
+        message = errors.join(' ');
+      }
+    } else {
+      message = data?.message || (typeof data === 'string' ? data : 'Request failed.');
+    }
+
+    const error = new Error(message);
+    if (errors) {
+      error.errors = errors;
+    }
+    throw error;
   }
 
   return data;

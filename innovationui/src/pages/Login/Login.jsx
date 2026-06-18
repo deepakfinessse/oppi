@@ -5,6 +5,49 @@ import { api, saveSession } from '../../services/api';
 import './Login.css';
 import trophyImg from '../../assets/Trophy1.png';
 
+const parseValidationErrors = (err) => {
+  const newErrors = {};
+  const unmappedErrors = [];
+
+  const errorList = err.errors || (err.message ? [err.message] : []);
+
+  errorList.forEach(msg => {
+    const lower = msg.toLowerCase();
+    let mapped = false;
+
+    if (lower.includes("first_name") || lower.includes("first name") || lower.includes("first_ name")) {
+      newErrors.firstName = newErrors.firstName ? `${newErrors.firstName} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("last_name") || lower.includes("last name") || lower.includes("last_ name")) {
+      newErrors.lastName = newErrors.lastName ? `${newErrors.lastName} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("email")) {
+      newErrors.emailId = newErrors.emailId ? `${newErrors.emailId} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("mobile") || lower.includes("must be 10 digits") || lower.includes("mobile number") || lower.includes("mobilenumber")) {
+      newErrors.mobileNumber = newErrors.mobileNumber ? `${newErrors.mobileNumber} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("password") || lower.includes("need uppercase") || lower.includes("need lowercase") || lower.includes("need digit")) {
+      newErrors.password = newErrors.password ? `${newErrors.password} ${msg}` : msg;
+      newErrors.createPassword = newErrors.createPassword ? `${newErrors.createPassword} ${msg}` : msg;
+      mapped = true;
+    }
+
+    if (!mapped) {
+      unmappedErrors.push(msg);
+    }
+  });
+
+  return {
+    newErrors,
+    formError: unmappedErrors.length > 0 ? unmappedErrors.join(' ') : ''
+  };
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -36,7 +79,12 @@ const Login = () => {
       saveSession(session);
       navigate('/application', { replace: true });
     } catch (err) {
-      setErrors({ form: err.message || 'Login failed. Please check your email and password.' });
+      const { newErrors, formError } = parseValidationErrors(err);
+      setErrors(prev => ({
+        ...prev,
+        ...newErrors,
+        form: formError || (Object.keys(newErrors).length > 0 ? '' : (err.message || 'Login failed. Please check your email and password.'))
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -68,6 +116,7 @@ const Login = () => {
                     onChange={handleChange}
                     required
                   />
+                  {errors.emailId && <div className="field-error-text">{errors.emailId}</div>}
                 </div>
 
                 <div className="form-group">
@@ -90,7 +139,7 @@ const Login = () => {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
-                  {errors.form && <div className="form-error" style={{ marginTop: '0.25rem' }}>{errors.form}</div>}
+                  {errors.password && <div className="field-error-text">{errors.password}</div>}
                 </div>
 
                 <div className="form-options">
@@ -102,6 +151,7 @@ const Login = () => {
                 </div>
 
                 <div className="form-footer">
+                  {errors.form && <div className="form-error" style={{ marginBottom: '1rem', width: '100%' }}>{errors.form}</div>}
                   <button type="submit" className="btn-login" disabled={isSubmitting}>
                     {isSubmitting ? 'LOGGING IN...' : 'LOGIN'}
                   </button>

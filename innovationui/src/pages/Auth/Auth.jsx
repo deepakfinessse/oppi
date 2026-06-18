@@ -6,6 +6,48 @@ import { api, saveSession } from '../../services/api';
 import './Auth.css';
 import trophyImg from '../../assets/Trophy1.png';
 
+const parseValidationErrors = (err) => {
+  const newErrors = {};
+  const unmappedErrors = [];
+
+  const errorList = err.errors || (err.message ? [err.message] : []);
+
+  errorList.forEach(msg => {
+    const lower = msg.toLowerCase();
+    let mapped = false;
+
+    if (lower.includes("first_name") || lower.includes("first name") || lower.includes("first_ name")) {
+      newErrors.firstName = newErrors.firstName ? `${newErrors.firstName} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("last_name") || lower.includes("last name") || lower.includes("last_ name")) {
+      newErrors.lastName = newErrors.lastName ? `${newErrors.lastName} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("email")) {
+      newErrors.emailId = newErrors.emailId ? `${newErrors.emailId} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("mobile") || lower.includes("must be 10 digits") || lower.includes("mobile number") || lower.includes("mobilenumber")) {
+      newErrors.mobileNumber = newErrors.mobileNumber ? `${newErrors.mobileNumber} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("password") || lower.includes("need uppercase") || lower.includes("need lowercase") || lower.includes("need digit")) {
+      newErrors.password = newErrors.password ? `${newErrors.password} ${msg}` : msg;
+      mapped = true;
+    }
+
+    if (!mapped) {
+      unmappedErrors.push(msg);
+    }
+  });
+
+  return {
+    newErrors,
+    formError: unmappedErrors.length > 0 ? unmappedErrors.join(' ') : ''
+  };
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
@@ -68,7 +110,12 @@ const Auth = () => {
         navigate('/application', { replace: true });
       }
     } catch (err) {
-      setErrors({ form: err.message || 'Invalid email or password' });
+      const { newErrors, formError } = parseValidationErrors(err);
+      setErrors(prev => ({
+        ...prev,
+        ...newErrors,
+        form: formError || (Object.keys(newErrors).length > 0 ? '' : (err.message || 'Invalid email or password'))
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -108,7 +155,12 @@ const Auth = () => {
         setFormData(prev => ({ ...prev, emailId: '', password: '', confirmPassword: '' }));
       }, 1500);
     } catch (err) {
-      setErrors({ form: err.message || 'Registration failed. Please try again.' });
+      const { newErrors, formError } = parseValidationErrors(err);
+      setErrors(prev => ({
+        ...prev,
+        ...newErrors,
+        form: formError || (Object.keys(newErrors).length > 0 ? '' : (err.message || 'Registration failed. Please try again.'))
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -157,6 +209,7 @@ const Auth = () => {
                           onChange={handleChange}
                           required
                         />
+                        {errors.firstName && <div className="field-error-text">{errors.firstName}</div>}
                       </div>
                       <div className="form-group">
                         <label>Last Name <span className="required">*</span></label>
@@ -168,6 +221,7 @@ const Auth = () => {
                           onChange={handleChange}
                           required
                         />
+                        {errors.lastName && <div className="field-error-text">{errors.lastName}</div>}
                       </div>
                     </div>
 
@@ -187,6 +241,7 @@ const Auth = () => {
                             required
                           />
                         </div>
+                        {errors.mobileNumber && <div className="field-error-text">{errors.mobileNumber}</div>}
                       </div>
                       <div className="form-group">
                         <label>Email Id <span className="required">*</span></label>
@@ -198,6 +253,7 @@ const Auth = () => {
                           onChange={handleChange}
                           required
                         />
+                        {errors.emailId && <div className="field-error-text">{errors.emailId}</div>}
                       </div>
                     </div>
                   </>
@@ -215,6 +271,7 @@ const Auth = () => {
                       onChange={handleChange}
                       required
                     />
+                    {errors.emailId && <div className="field-error-text">{errors.emailId}</div>}
                   </div>
                 )}
 

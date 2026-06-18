@@ -1,13 +1,108 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import { getFileUrl } from '../../services/api';
 import './FileUploadField.css';
+
+function isImageFile(name, mimeType, fileType) {
+  if (mimeType?.startsWith('image/')) return true;
+  const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
+  return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+}
+
+function isVideoFile(name, mimeType, fileType) {
+  if (mimeType?.startsWith('video/')) return true;
+  const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
+  return ['mp4', 'mov'].includes(ext);
+}
+
+function PreviewNewFile({ file, onRemove, disabled, formatFileSize }) {
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    let url = null;
+    if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+      url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [file]);
+
+  const name = file.name;
+  const isImage = isImageFile(name, file.type);
+  const isVideo = isVideoFile(name, file.type);
+
+  return (
+    <li className="file-list-item new">
+      <div className="file-preview-thumbnail">
+        {previewUrl && isImage && (
+          <img src={previewUrl} alt={name} className="preview-thumb-img" />
+        )}
+        {previewUrl && isVideo && (
+          <video src={previewUrl} className="preview-thumb-video" muted playsInline />
+        )}
+        {(!previewUrl || (!isImage && !isVideo)) && (
+          <div className="preview-thumb-icon">PDF</div>
+        )}
+      </div>
+      <div className="file-list-info">
+        <span className="file-name" title={name}>{name}</span>
+        <span className="file-meta">{formatFileSize(file.size)} · Ready</span>
+      </div>
+      {!disabled && (
+        <button
+          type="button"
+          className="file-remove-btn"
+          onClick={onRemove}
+          aria-label={`Remove ${name}`}
+        >
+          ×
+        </button>
+      )}
+    </li>
+  );
+}
+
+function PreviewExistingFile({ file, formatFileSize }) {
+  const name = file.fileName || file.FileName;
+  const url = getFileUrl(file.filePath || file.FilePath);
+  const fileType = file.fileType || file.FileType;
+  const isImage = isImageFile(name, null, fileType);
+  const isVideo = isVideoFile(name, null, fileType);
+
+  return (
+    <li className="file-list-item existing">
+      <div className="file-preview-thumbnail">
+        {url && isImage && (
+          <img src={url} alt={name} className="preview-thumb-img" />
+        )}
+        {url && isVideo && (
+          <video src={url} className="preview-thumb-video" muted playsInline />
+        )}
+        {(!url || (!isImage && !isVideo)) && (
+          <div className="preview-thumb-icon">{isVideo ? 'Video' : 'PDF'}</div>
+        )}
+      </div>
+      <div className="file-list-info">
+        <span className="file-name" title={name}>{name}</span>
+        <span className="file-meta">{formatFileSize(file.fileSize || file.FileSize)} · Uploaded</span>
+      </div>
+      {url && (
+        <a href={url} target="_blank" rel="noreferrer" className="file-view-link">
+          View
+        </a>
+      )}
+    </li>
+  );
+}
 
 const MAX_FILES = 5;
 const MAX_SIZE = 8 * 1024 * 1024;
-const ACCEPTED_TYPES = ['.pdf', '.jpg', '.jpeg', '.png', '.mp4', '.mov'];
+const ACCEPTED_TYPES = ['.pdf', '.jpg', '.jpeg', '.png'];
 
 function isAllowedFile(file) {
   const ext = `.${file.name.split('.').pop()?.toLowerCase()}`;
-  return ACCEPTED_TYPES.includes(ext) || file.type.startsWith('image/') || file.type.startsWith('video/') || file.type === 'application/pdf';
+  return ACCEPTED_TYPES.includes(ext);
 }
 
 function formatFileSize(bytes) {
@@ -46,7 +141,7 @@ export default function FileUploadField({
 
     const invalidType = fileList.find((file) => !isAllowedFile(file));
     if (invalidType) {
-      setLocalError('Only PDF, photo, or video files are allowed.');
+      setLocalError('Only PDF, PNG, or JPEG files are allowed.');
       return;
     }
 
@@ -107,7 +202,7 @@ export default function FileUploadField({
           type="file"
           name={field.name}
           multiple
-          accept=".pdf,image/*,video/*"
+          accept=".pdf,.png,.jpg,.jpeg"
           onChange={handleInputChange}
           disabled={disabled || isFull}
           className="file-input-hidden"
@@ -129,7 +224,7 @@ export default function FileUploadField({
           </p>
         )}
         <p className="file-dropzone-hint">
-          Up to {MAX_FILES} files at a time · PDF, photo, or video · 8MB each
+          Up to {MAX_FILES} files at a time · PDF, PNG, or JPEG · 8MB each
         </p>
         <p className="file-dropzone-count">{totalCount} of {MAX_FILES} files attached</p>
       </div>
@@ -137,30 +232,20 @@ export default function FileUploadField({
       {(existingFiles.length > 0 || selectedFiles.length > 0) && (
         <ul className="file-list">
           {existingFiles.map((file) => (
-            <li key={`existing-${file.id || file.Id}-${file.fileName || file.FileName}`} className="file-list-item existing">
-              <div className="file-list-info">
-                <span className="file-name">{file.fileName || file.FileName}</span>
-                <span className="file-meta">{formatFileSize(file.fileSize || file.FileSize)} · Uploaded</span>
-              </div>
-            </li>
+            <PreviewExistingFile
+              key={`existing-${file.id || file.Id}-${file.fileName || file.FileName}`}
+              file={file}
+              formatFileSize={formatFileSize}
+            />
           ))}
           {selectedFiles.map((file, idx) => (
-            <li key={`new-${file.name}-${idx}`} className="file-list-item new">
-              <div className="file-list-info">
-                <span className="file-name">{file.name}</span>
-                <span className="file-meta">{formatFileSize(file.size)} · Ready to upload</span>
-              </div>
-              {!disabled && (
-                <button
-                  type="button"
-                  className="file-remove-btn"
-                  onClick={() => onRemoveNew(field.name, idx)}
-                  aria-label={`Remove ${file.name}`}
-                >
-                  ×
-                </button>
-              )}
-            </li>
+            <PreviewNewFile
+              key={`new-${file.name}-${idx}`}
+              file={file}
+              onRemove={() => onRemoveNew(field.name, idx)}
+              disabled={disabled}
+              formatFileSize={formatFileSize}
+            />
           ))}
         </ul>
       )}

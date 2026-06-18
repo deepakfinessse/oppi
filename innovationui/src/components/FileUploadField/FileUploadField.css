@@ -95,18 +95,18 @@
   margin-top: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .file-list-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 0.85rem;
-  border-radius: 10px;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
+  transition: all 0.2s ease;
 }
 
 .file-list-item.existing {
@@ -117,6 +117,33 @@
 .file-list-item.new {
   background: #eff6ff;
   border-color: #bfdbfe;
+}
+
+.file-preview-thumbnail {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.preview-thumb-img,
+.preview-thumb-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-thumb-icon {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
 }
 
 .file-list-info {
@@ -137,6 +164,23 @@
 .file-list-item .file-meta {
   font-size: 0.75rem;
   color: #64748b;
+}
+
+.file-view-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #10b981;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #a7f3d0;
+  transition: all 0.2s ease;
+}
+
+.file-view-link:hover {
+  background: #ecfdf5;
+  border-color: #10b981;
 }
 
 .file-remove-btn {
