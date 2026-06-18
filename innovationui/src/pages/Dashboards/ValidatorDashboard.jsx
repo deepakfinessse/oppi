@@ -100,6 +100,7 @@ export default function ValidatorDashboard() {
     <>
       <DashboardLayout
         title="Validator Dashboard"
+        className="validator-dashboard-page"
         headerActions={<button className="btn-logout" onClick={handleLogout}>Log Out</button>}
       >
         <div className="dashboard-content">

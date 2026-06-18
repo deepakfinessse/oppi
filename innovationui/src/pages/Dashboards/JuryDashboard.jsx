@@ -101,6 +101,7 @@ export default function JuryDashboard() {
     <>
       <DashboardLayout
         title="Jury Dashboard"
+        className="jury-dashboard-page"
         headerActions={<button className="btn-logout" onClick={handleLogout}>Log Out</button>}
       >
         <div className="dashboard-content">

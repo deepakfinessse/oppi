@@ -611,7 +611,9 @@
   z-index: 1;
 }
 
-.admin-dashboard-page .dashboard-header {
+.admin-dashboard-page .dashboard-header,
+.jury-dashboard-page .dashboard-header,
+.validator-dashboard-page .dashboard-header {
   margin: 1.5rem 2rem 0 2rem;
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.95);
@@ -624,18 +626,24 @@
   box-sizing: border-box;
 }
 
-.admin-dashboard-page .dashboard-logo {
+.admin-dashboard-page .dashboard-logo,
+.jury-dashboard-page .dashboard-logo,
+.validator-dashboard-page .dashboard-logo {
   display: flex;
   align-items: center;
 }
 
-.admin-dashboard-page .dashboard-logo img {
+.admin-dashboard-page .dashboard-logo img,
+.jury-dashboard-page .dashboard-logo img,
+.validator-dashboard-page .dashboard-logo img {
   height: 36px;
   width: auto;
   margin-right: 1rem;
 }
 
-.admin-dashboard-page .dashboard-logo span {
+.admin-dashboard-page .dashboard-logo span,
+.jury-dashboard-page .dashboard-logo span,
+.validator-dashboard-page .dashboard-logo span {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: 1rem;
@@ -691,7 +699,9 @@
 }
 
 /* White Section Cards */
-.admin-dashboard-page .dashboard-section {
+.admin-dashboard-page .dashboard-section,
+.jury-dashboard-page .dashboard-section,
+.validator-dashboard-page .dashboard-section {
   background: white;
   border-radius: 20px;
   padding: 2.2rem;
@@ -701,7 +711,9 @@
   position: relative;
 }
 
-.admin-dashboard-page .dashboard-section h3 {
+.admin-dashboard-page .dashboard-section h3,
+.jury-dashboard-page .dashboard-section h3,
+.validator-dashboard-page .dashboard-section h3 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
@@ -903,7 +915,9 @@
 
 /* Floating header responsiveness overrides */
 @media (max-width: 768px) {
-  .admin-dashboard-page .dashboard-header {
+  .admin-dashboard-page .dashboard-header,
+  .jury-dashboard-page .dashboard-header,
+  .validator-dashboard-page .dashboard-header {
     margin: 1rem 1rem 0 1rem;
     padding: 0.75rem 1.5rem;
     border-radius: 24px;
@@ -912,7 +926,9 @@
 
 /* Review & Applicant Dashboard Background (matching thank you page) */
 .review-dashboard,
-.applicant-dashboard {
+.applicant-dashboard,
+.jury-dashboard-page,
+.validator-dashboard-page {
   background: #5dc6e1 !important;
   position: relative;
   overflow-x: hidden;
@@ -920,7 +936,9 @@
 }
 
 .review-dashboard::before,
-.applicant-dashboard::before {
+.applicant-dashboard::before,
+.jury-dashboard-page::before,
+.validator-dashboard-page::before {
   content: '';
   position: absolute;
   top: -100px;
@@ -934,7 +952,9 @@
 }
 
 .review-dashboard::after,
-.applicant-dashboard::after {
+.applicant-dashboard::after,
+.jury-dashboard-page::after,
+.validator-dashboard-page::after {
   content: '';
   position: absolute;
   bottom: 100px;
@@ -945,6 +965,36 @@
   background: rgba(255, 255, 255, 0.08);
   pointer-events: none;
   z-index: 1;
+}
+
+/* Custom Log Out Button for Jury and Validator */
+.jury-dashboard-page .btn-logout,
+.validator-dashboard-page .btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1e40af;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.6rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2), 0 2px 4px -1px rgba(30, 64, 175, 0.1);
+}
+
+.jury-dashboard-page .btn-logout:hover,
+.validator-dashboard-page .btn-logout:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px -1px rgba(30, 64, 175, 0.3), 0 4px 6px -1px rgba(30, 64, 175, 0.15);
+}
+
+.jury-dashboard-page .btn-logout:active,
+.validator-dashboard-page .btn-logout:active {
+  transform: translateY(0);
 }
 
 /* Application Review/Details File Previews */
