@@ -156,6 +156,32 @@
   display: block;
 }
 
+.btn-action.edit {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  aspect-ratio: 1;
+}
+.btn-action.edit:hover {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.btn-action.edit svg {
+  display: block;
+}
+
+.btn-action.edit-text {
+  background: #2563eb;
+  color: white;
+}
+.btn-action.edit-text:hover {
+  background: #1d4ed8;
+}
+
 .btn-action.approve {
   background: #22c55e;
   color: white;
@@ -1105,6 +1131,135 @@
 .app-preview-link:hover {
   color: #059669;
   text-decoration: underline;
+}
+
+/* Premium Modal Styles */
+.user-edit-modal {
+  max-width: 520px !important;
+  border-radius: 16px !important;
+  background: white !important;
+  padding: 2rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+.user-edit-modal h3 {
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  color: #1e3a8a !important;
+  margin: 0 !important;
+}
+
+.user-edit-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.25rem !important;
+  margin-top: 1.25rem !important;
+}
+
+.form-row {
+  display: flex !important;
+  gap: 1rem !important;
+}
+
+.form-row .form-group {
+  flex: 1 !important;
+  margin-bottom: 0 !important;
+}
+
+.modal-label {
+  display: block !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 0.35rem !important;
+}
+
+.modal-input,
+.modal-select {
+  width: 100% !important;
+  padding: 0.75rem 1rem !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  font-size: 0.925rem !important;
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+  transition: all 0.2s ease-in-out !important;
+  box-sizing: border-box !important;
+}
+
+.modal-input:focus,
+.modal-select:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  background-color: white !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+.modal-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+.modal-select {
+  appearance: none !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 1rem center !important;
+  background-size: 1.1em !important;
+  padding-right: 2.5rem !important;
+  cursor: pointer !important;
+  background-color: #f8fafc !important;
+}
+
+.modal-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 0.75rem !important;
+  margin-top: 1rem !important;
+  border-top: 1px solid #f1f5f9 !important;
+  padding-top: 1.25rem !important;
+}
+
+.btn-modal-cancel {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+  padding: 0.6rem 1.5rem !important;
+  border-radius: 50px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-modal-cancel:hover {
+  background: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+.btn-modal-save {
+  background: #1e40af !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.6rem 1.75rem !important;
+  border-radius: 50px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2) !important;
+}
+
+.btn-modal-save:hover {
+  background: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 12px -1px rgba(30, 64, 175, 0.3) !important;
+}
+
+.btn-modal-save:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 
 

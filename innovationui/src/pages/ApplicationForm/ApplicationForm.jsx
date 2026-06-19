@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { api, getApplicationStorageKey, getSession, clearSession, getFileUrl } from '../../services/api';
 import oppiLogo from '../../assets/OPPI-logo-black.png';
 import FileUploadField from '../../components/FileUploadField/FileUploadField';
@@ -180,6 +180,7 @@ function PreviewExistingFile({ file }) {
 function ApplicationForm() {
   const session = getSession();
   const navigate = useNavigate();
+  const { id: routeId } = useParams();
   const actionRef = useRef('next');
   const [activeStep, setActiveStep] = useState(0);
   const [files, setFiles] = useState({});
@@ -188,15 +189,19 @@ function ApplicationForm() {
   const [isSaving, setIsSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [applicationId, setApplicationId] = useState(() => {
+    if (routeId) return routeId;
     if (!session?.userId) return null;
     return localStorage.getItem(getApplicationStorageKey(session.userId));
   });
-  const [formData, setFormData] = useState(() => ({
-    firstName: session?.first_name || '',
-    lastName: session?.last_name || '',
-    email: session?.email || '',
-    mobile: session?.mobile || '',
-  }));
+  const [formData, setFormData] = useState(() => {
+    const isEditingSpecificApp = !!routeId;
+    return {
+      firstName: isEditingSpecificApp ? '' : (session?.first_name || ''),
+      lastName: isEditingSpecificApp ? '' : (session?.last_name || ''),
+      email: isEditingSpecificApp ? '' : (session?.email || ''),
+      mobile: isEditingSpecificApp ? '' : (session?.mobile || ''),
+    };
+  });
 
   const visibleSection1Fields = useMemo(
     () => section1Fields.filter((field) => !field.showIf || field.showIf(formData)),
@@ -209,17 +214,28 @@ function ApplicationForm() {
   useEffect(() => {
     const checkExisting = async () => {
       try {
-        const data = await api.getPreview();
-        if (data && data.status && data.status !== 'DRAFT') {
-          // navigate('/my-application', { replace: true });
-          navigate('/thank-you', { replace: true });
-          return; // Do not clear initializing state, let it redirect
-        } else if (data && data.status === 'DRAFT') {
+        const isEditingSpecificApp = !!routeId;
+        const data = isEditingSpecificApp ? await api.getAppReview(routeId) : await api.getPreview();
+        
+        if (data) {
+          if (!isEditingSpecificApp && data.status && data.status !== 'DRAFT') {
+            navigate('/thank-you', { replace: true });
+            return;
+          }
+
           setApplicationId(String(data.id));
 
           // Populate existing text data
           setFormData(prev => {
             const newData = { ...prev };
+
+            if (isEditingSpecificApp) {
+              const nameParts = (data.user_name || '').trim().split(/\s+/);
+              newData.firstName = nameParts[0] || '';
+              newData.lastName = nameParts.slice(1).join(' ') || '';
+              newData.email = data.user_email || '';
+              newData.mobile = data.user_mobile || '';
+            }
 
             if (data.personal_info) {
               newData.companyName = data.personal_info.companyName || data.personal_info.CompanyName || '';
@@ -261,8 +277,8 @@ function ApplicationForm() {
           if (data.file_uploads) {
             setExistingFiles(data.file_uploads);
           }
-          setIsInitializing(false);
         }
+        setIsInitializing(false);
       } catch (err) {
         // If no application exists, ignore.
         console.log(err);
@@ -270,7 +286,7 @@ function ApplicationForm() {
       }
     };
     checkExisting();
-  }, [navigate]);
+  }, [navigate, routeId]);
 
   if (!session?.token) {
     return <Navigate to="/login" replace />;
@@ -393,7 +409,7 @@ function ApplicationForm() {
     try {
       await saveAction();
       if (actionRef.current === 'exit') {
-        navigate('/');
+        navigate(routeId ? '/admin' : '/');
       } else {
         handleNext();
       }
@@ -628,6 +644,9 @@ function ApplicationForm() {
             {applicationId && (
               <span className="application-id-badge">Application ID: {applicationId}</span>
             )}
+            {routeId && (
+              <button type="button" className="btn-header dashboard" onClick={() => navigate('/admin')}>BACK TO DASHBOARD</button>
+            )}
             <button type="button" className="btn-header change-pwd" onClick={() => navigate('/change-password')}>CHANGE PASSWORD</button>
             <button type="button" className="btn-header logout" onClick={handleLogout}>LOG OUT <span className="logout-icon">→</span></button>
           </div>
@@ -714,8 +733,15 @@ function ApplicationForm() {
                       </>
                  
                     )}
-                    {activeStep === 3 && (
-                      <button type="submit" onClick={() => { actionRef.current = 'next'; }} disabled={isSaving} className="btn-submit">{isSaving ? 'Submitting...' : 'Submit Application'}</button>
+                     {activeStep === 3 && (
+                      <button
+                        type={routeId ? 'button' : 'submit'}
+                        onClick={routeId ? () => navigate('/admin') : (() => { actionRef.current = 'next'; })}
+                        disabled={isSaving}
+                        className="btn-submit"
+                      >
+                        {routeId ? 'Finish & Return to Dashboard' : (isSaving ? 'Submitting...' : 'Submit Application')}
+                      </button>
                     )}
                   </div>
                 </div>

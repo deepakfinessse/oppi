@@ -164,6 +164,7 @@ export const api = {
   getPreview: () => request(`/application/mine`),
   submitApplication: (applicationId) => request(`/application/submit/${applicationId}`, { method: 'POST' }),
   getAdminUsers: () => request('/admin/users'),
+  updateAdminUser: (id, payload) => request(`/admin/users/${id}`, { method: 'PUT', body: payload }),
   getAdminApps: () => request('/admin/applications'),
   getValidatorApps: () => request('/validator/applications'),
   validatorApprove: (id, payload) => request(`/validator/approve/${id}`, { method: 'POST', body: payload }),

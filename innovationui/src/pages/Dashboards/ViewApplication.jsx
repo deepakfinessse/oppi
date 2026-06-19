@@ -205,6 +205,11 @@ export default function ViewApplication({ isMine }) {
         <div className="view-header no-print">
           <h2>Application #{app.id}</h2>
           <div style={{ display: 'flex', gap: '10px' }}>
+            {userRole === 'ADMIN' && (
+              <button className="btn-action edit-text" onClick={() => navigate(`/admin/edit-application/${app.id}`)}>
+                EDIT APPLICATION
+              </button>
+            )}
             <button className="btn-action approve" onClick={handleDownloadZip} disabled={downloading}>
               {downloading ? 'GENERATING ZIP...' : 'DOWNLOAD APPLICATION (ZIP)'}
             </button>

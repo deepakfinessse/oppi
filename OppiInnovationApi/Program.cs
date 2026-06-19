@@ -537,6 +537,37 @@ api.MapGet("/admin/users", async (HttpContext ctx, InnovationDbContext db) =>
     return Results.Ok(users);
 });
 
+api.MapPut("/admin/users/{id}", async (int id, UserUpdateDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var admin = await db.Users.FindAsync(uid.Value);
+    if (admin?.Role != "ADMIN") return Results.Forbid();
+
+    var user = await db.Users.FindAsync(id);
+    if (user == null) return Results.NotFound();
+
+    // Check if email is already taken by another user
+    if (db.Users.Any(u => u.Email == dto.Email && u.Id != id))
+    {
+        return Results.BadRequest(new { message = "Email is already in use by another user" });
+    }
+
+    user.FirstName = dto.FirstName;
+    user.LastName = dto.LastName;
+    user.Email = dto.Email;
+    user.Mobile = dto.Mobile;
+    user.Role = dto.Role;
+
+    if (!string.IsNullOrWhiteSpace(dto.Password))
+    {
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+    }
+
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_UPDATE_USER", "User", id, $"Updated details and role to {dto.Role}", GetIp(ctx));
+    return Results.Ok(new { message = "User updated successfully" });
+});
+
 api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();

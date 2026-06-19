@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, ChevronDown, Download, Eye } from 'lucide-react';
+import { LogOut, ChevronDown, Download, Eye, Edit } from 'lucide-react';
 import { api, clearSession } from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
@@ -18,27 +18,78 @@ export default function AdminDashboard() {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [appDropdownOpen, setAppDropdownOpen] = useState(false);
 
+  // User edit modal states
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userForm, setUserForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    mobile: '',
+    role: 'USER',
+    password: ''
+  });
+  const [userModalError, setUserModalError] = useState('');
+  const [userModalSubmitting, setUserModalSubmitting] = useState(false);
+
   // Dropdown Refs
   const userDropdownRef = useRef(null);
   const appDropdownRef = useRef(null);
 
-  useEffect(() => {
-    const fetchAdminData = async () => {
-      try {
-        const [uRes, aRes] = await Promise.all([
-          api.getAdminUsers(),
-          api.getAdminApps()
-        ]);
-        setUsers(uRes);
-        setApps(aRes);
-      } catch (err) {
-        setError('Failed to fetch data or unauthorized.', err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAdminData();
+  const fetchAdminData = useCallback(async () => {
+    try {
+      const [uRes, aRes] = await Promise.all([
+        api.getAdminUsers(),
+        api.getAdminApps()
+      ]);
+      setUsers(uRes);
+      setApps(aRes);
+    } catch (err) {
+      setError('Failed to fetch data or unauthorized.', err.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchAdminData();
+  }, [fetchAdminData]);
+
+  const handleEditUser = (user) => {
+    setSelectedUser(user);
+    setUserForm({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email || '',
+      mobile: user.mobile || '',
+      role: user.role || 'USER',
+      password: ''
+    });
+    setUserModalError('');
+    setShowUserModal(true);
+  };
+
+  const handleUserSubmit = async (e) => {
+    e.preventDefault();
+    setUserModalError('');
+    setUserModalSubmitting(true);
+    try {
+      await api.updateAdminUser(selectedUser.id, {
+        FirstName: userForm.firstName,
+        LastName: userForm.lastName,
+        Email: userForm.email,
+        Mobile: userForm.mobile || null,
+        Role: userForm.role,
+        Password: userForm.password || null
+      });
+      setShowUserModal(false);
+      fetchAdminData();
+    } catch (err) {
+      setUserModalError(err.message || 'Failed to update user.');
+    } finally {
+      setUserModalSubmitting(false);
+    }
+  };
 
   // Click outside listener to close dropdowns
   useEffect(() => {
@@ -204,6 +255,7 @@ export default function AdminDashboard() {
                   <th>Email</th>
                   <th>Mobile</th>
                   <th>Role</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -212,17 +264,24 @@ export default function AdminDashboard() {
                     <td>{formatId(u.id)}</td>
                     <td>{u.firstName} {u.lastName}</td>
                     <td>{u.email}</td>
-                    <td>{u.mobile}</td>
+                    <td>{u.mobile || '—'}</td>
                     <td>
                       <span className={`admin-role-badge ${u.role.toLowerCase()}`}>
                         {u.role.toLowerCase()}
                       </span>
                     </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button className="btn-action edit" onClick={() => handleEditUser(u)} title="Edit User">
+                          <Edit size={16} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
                 {filteredUsers.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="text-center">No users found.</td>
+                    <td colSpan="6" className="text-center">No users found.</td>
                   </tr>
                 )}
               </tbody>
@@ -303,9 +362,14 @@ export default function AdminDashboard() {
                       )}
                     </td>
                     <td>
-                      <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
-                        <Eye size={16} />
-                      </button>
+                      <div className="action-buttons">
+                        <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
+                          <Eye size={16} />
+                        </button>
+                        <button className="btn-action edit" onClick={() => navigate(`/admin/edit-application/${a.id}`)} title="Edit Application">
+                          <Edit size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -319,6 +383,83 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+      {showUserModal && (
+        <div className="modal-overlay">
+          <div className="modal-container user-edit-modal">
+            <div className="modal-header">
+              <h3>Edit User: {selectedUser?.firstName} {selectedUser?.lastName}</h3>
+              <button className="modal-close-btn" onClick={() => setShowUserModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleUserSubmit} className="user-edit-form">
+              {userModalError && <div className="dashboard-error">{userModalError}</div>}
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="modal-label">First Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={userForm.firstName}
+                    onChange={(e) => setUserForm(prev => ({ ...prev, firstName: e.target.value }))}
+                    className="modal-input"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="modal-label">Last Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={userForm.lastName}
+                    onChange={(e) => setUserForm(prev => ({ ...prev, lastName: e.target.value }))}
+                    className="modal-input"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="modal-label">Email *</label>
+                <input
+                  type="email"
+                  required
+                  value={userForm.email}
+                  onChange={(e) => setUserForm(prev => ({ ...prev, email: e.target.value }))}
+                  className="modal-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="modal-label">Mobile</label>
+                <input
+                  type="text"
+                  value={userForm.mobile || ''}
+                  onChange={(e) => setUserForm(prev => ({ ...prev, mobile: e.target.value }))}
+                  className="modal-input"
+                />
+              </div>
+
+
+
+              <div className="form-group">
+                <label className="modal-label">Password (leave blank to keep unchanged)</label>
+                <input
+                  type="password"
+                  placeholder="New password"
+                  value={userForm.password}
+                  onChange={(e) => setUserForm(prev => ({ ...prev, password: e.target.value }))}
+                  className="modal-input"
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-modal-cancel" onClick={() => setShowUserModal(false)}>Cancel</button>
+                <button type="submit" className="btn-modal-save" disabled={userModalSubmitting}>
+                  {userModalSubmitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
