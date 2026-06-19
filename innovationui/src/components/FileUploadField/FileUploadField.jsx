@@ -63,7 +63,7 @@ function PreviewNewFile({ file, onRemove, disabled, formatFileSize }) {
   );
 }
 
-function PreviewExistingFile({ file, formatFileSize }) {
+function PreviewExistingFile({ file, onRemove, disabled, formatFileSize }) {
   const name = file.fileName || file.FileName;
   const url = getFileUrl(file.filePath || file.FilePath);
   const fileType = file.fileType || file.FileType;
@@ -92,6 +92,16 @@ function PreviewExistingFile({ file, formatFileSize }) {
           View
         </a>
       )}
+      {!disabled && onRemove && (
+        <button
+          type="button"
+          className="file-remove-btn"
+          onClick={onRemove}
+          aria-label={`Remove ${name}`}
+        >
+          ×
+        </button>
+      )}
     </li>
   );
 }
@@ -117,6 +127,7 @@ export default function FileUploadField({
   selectedFiles = [],
   onFilesChange,
   onRemoveNew,
+  onRemoveExisting,
   disabled = false,
   error,
 }) {
@@ -235,6 +246,8 @@ export default function FileUploadField({
             <PreviewExistingFile
               key={`existing-${file.id || file.Id}-${file.fileName || file.FileName}`}
               file={file}
+              onRemove={onRemoveExisting ? () => onRemoveExisting(field.name, file.id || file.Id) : null}
+              disabled={disabled}
               formatFileSize={formatFileSize}
             />
           ))}

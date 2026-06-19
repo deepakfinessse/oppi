@@ -364,6 +364,20 @@ function ApplicationForm() {
     setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
+  const handleRemoveExistingFile = async (name, fileId) => {
+    if (!window.confirm('Are you sure you want to delete this file?')) return;
+    setServerError('');
+    setIsSaving(true);
+    try {
+      await api.deleteFile(fileId);
+      setExistingFiles((prev) => prev.filter((f) => (f.id || f.Id) !== fileId));
+    } catch (err) {
+      setServerError(err.message || 'Unable to delete file. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const validateFields = (fields) => {
     const newErrors = {};
 
@@ -544,6 +558,7 @@ function ApplicationForm() {
       selectedFiles={files[field.name] || []}
       onFilesChange={handleFilesChange}
       onRemoveNew={handleRemoveNewFile}
+      onRemoveExisting={handleRemoveExistingFile}
       disabled={isSaving}
       error={errors[field.name]}
     />

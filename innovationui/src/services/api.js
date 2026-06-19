@@ -161,6 +161,7 @@ export const api = {
     selectedFiles.forEach((file) => formData.append('file', file));
     return request(`/application/upload/${applicationId}/${fileType}`, { method: 'POST', body: formData });
   },
+  deleteFile: (fileId) => request(`/application/upload/${fileId}`, { method: 'DELETE' }),
   getPreview: () => request(`/application/mine`),
   submitApplication: (applicationId) => request(`/application/submit/${applicationId}`, { method: 'POST' }),
   getAdminUsers: () => request('/admin/users'),
