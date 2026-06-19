@@ -298,6 +298,7 @@ export default function ViewApplication({ isMine }) {
                       <th>Business Plan (25%)</th>
                       <th>Impact (25%)</th>
                       <th>Weighted Score</th>
+                      <th>Remarks</th>
                       <th>Reviewed At</th>
                     </tr>
                   </thead>
@@ -310,6 +311,7 @@ export default function ViewApplication({ isMine }) {
                         <td>{r.businessPlanScore} / 5</td>
                         <td>{r.impactScore} / 5</td>
                         <td><strong>{r.weightedScore.toFixed(2)}</strong> / 5.00</td>
+                        <td>{r.remarks || '—'}</td>
                         <td>{new Date(r.createdAt).toLocaleDateString()}</td>
                       </tr>
                     ))}
@@ -332,6 +334,7 @@ export default function ViewApplication({ isMine }) {
                       <th>Business Plan (25%)</th>
                       <th>Impact (25%)</th>
                       <th>Weighted Score</th>
+                      <th>Remarks</th>
                       <th>Reviewed At</th>
                     </tr>
                   </thead>
@@ -344,6 +347,7 @@ export default function ViewApplication({ isMine }) {
                         <td>{r.businessPlanScore} / 5</td>
                         <td>{r.impactScore} / 5</td>
                         <td><strong>{r.weightedScore.toFixed(2)}</strong> / 5.00</td>
+                        <td>{r.remarks || '—'}</td>
                         <td>{new Date(r.createdAt).toLocaleDateString()}</td>
                       </tr>
                     ))}

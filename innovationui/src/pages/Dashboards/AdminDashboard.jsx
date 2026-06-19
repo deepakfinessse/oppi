@@ -13,7 +13,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
 
   // Dropdown & Filter States
-  const [userFilter, setUserFilter] = useState('ALL');
+  const [userFilter, setUserFilter] = useState('JURY');
   const [appFilter, setAppFilter] = useState('ALL');
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [appDropdownOpen, setAppDropdownOpen] = useState(false);

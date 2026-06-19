@@ -323,6 +323,8 @@ CREATE TABLE `jury_reviews` (
   `business_plan_score` int(11) NOT NULL,
   `impact_score` int(11) NOT NULL,
   `weighted_score` double NOT NULL,
+  `is_draft` tinyint(1) NOT NULL DEFAULT '0',
+  `remarks` text COLLATE utf8mb4_unicode_ci,
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -341,6 +343,8 @@ CREATE TABLE `validator_reviews` (
   `business_plan_score` int(11) NOT NULL,
   `impact_score` int(11) NOT NULL,
   `weighted_score` double NOT NULL,
+  `is_draft` tinyint(1) NOT NULL DEFAULT '0',
+  `remarks` text COLLATE utf8mb4_unicode_ci,
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

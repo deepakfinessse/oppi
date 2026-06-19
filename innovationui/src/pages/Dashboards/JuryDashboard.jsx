@@ -15,6 +15,7 @@ export default function JuryDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
   const [scores, setScores] = useState({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
+  const [remarks, setRemarks] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const fetchApps = useCallback(async () => {
@@ -44,8 +45,10 @@ export default function JuryDashboard() {
           businessPlan: app.draft_scores.businessPlanScore || 0,
           impact: app.draft_scores.impactScore || 0
         });
+        setRemarks(app.draft_scores.remarks || '');
       } else {
         setScores({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
+        setRemarks('');
       }
       setShowModal(true);
     } else {
@@ -62,6 +65,7 @@ export default function JuryDashboard() {
   const closeModal = () => {
     setShowModal(false);
     setSelectedAppId(null);
+    setRemarks('');
   };
 
   const WEIGHTS = {
@@ -90,7 +94,8 @@ export default function JuryDashboard() {
         teamStrengthScore: scores.teamStrength,
         businessPlanScore: scores.businessPlan,
         impactScore: scores.impact,
-        isDraft: isDraft
+        isDraft: isDraft,
+        remarks: remarks
       });
       closeModal();
       fetchApps();
@@ -201,6 +206,28 @@ export default function JuryDashboard() {
               <span className="jury-total-val">{calculateWeightedScore()}</span>
             </div>
 
+            <div className="jury-remarks-section" style={{ marginTop: '15px', marginBottom: '15px' }}>
+              <label style={{ display: 'block', fontWeight: '500', marginBottom: '5px', fontSize: '0.9rem', color: '#1e293b', textAlign: 'left' }}>
+                Remarks / Comments (Mandatory for Approval) *
+              </label>
+              <textarea
+                style={{
+                  width: '100%',
+                  minHeight: '80px',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  padding: '8px 12px',
+                  fontSize: '0.9rem',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  boxSizing: 'border-box'
+                }}
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                placeholder="Enter jury remarks..."
+              />
+            </div>
+
             <div className="modal-actions">
               <button className="btn-action view" onClick={closeModal}>Cancel</button>
               <button
@@ -213,7 +240,7 @@ export default function JuryDashboard() {
               <button
                 className="btn-action approve"
                 onClick={() => submitScores(false)}
-                disabled={submitting || !scores.innovationIp || !scores.teamStrength || !scores.businessPlan || !scores.impact}
+                disabled={submitting || !scores.innovationIp || !scores.teamStrength || !scores.businessPlan || !scores.impact || !remarks.trim()}
               >
                 {submitting ? 'Submitting...' : 'Approve'}
               </button>

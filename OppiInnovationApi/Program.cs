@@ -112,6 +112,36 @@ using (var scope = app.Services.CreateScope())
                 }
             }
         }
+
+        // 3. Check/Add remarks to jury_reviews
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'jury_reviews' AND column_name = 'remarks'";
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            if (count == 0)
+            {
+                using (var cmdAlter = conn.CreateCommand())
+                {
+                    cmdAlter.CommandText = "ALTER TABLE `jury_reviews` ADD COLUMN `remarks` TEXT NULL";
+                    await cmdAlter.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
+        // 4. Check/Add remarks to validator_reviews
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'validator_reviews' AND column_name = 'remarks'";
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            if (count == 0)
+            {
+                using (var cmdAlter = conn.CreateCommand())
+                {
+                    cmdAlter.CommandText = "ALTER TABLE `validator_reviews` ADD COLUMN `remarks` TEXT NULL";
+                    await cmdAlter.ExecuteNonQueryAsync();
+                }
+            }
+        }
     }
     catch (Exception ex)
     {
@@ -387,6 +417,7 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
             jr.ImpactScore,
             jr.WeightedScore,
             jr.IsDraft,
+            jr.Remarks,
             jr.CreatedAt
         })
         .ToListAsync();
@@ -403,6 +434,7 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
             vr.ImpactScore,
             vr.WeightedScore,
             vr.IsDraft,
+            vr.Remarks,
             vr.CreatedAt
         })
         .ToListAsync();
@@ -597,7 +629,7 @@ api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContex
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
             draft_scores = db.ValidatorReviews
                 .Where(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && vr.IsDraft)
-                .Select(vr => new { vr.InnovationIpScore, vr.TeamStrengthScore, vr.BusinessPlanScore, vr.ImpactScore })
+                .Select(vr => new { vr.InnovationIpScore, vr.TeamStrengthScore, vr.BusinessPlanScore, vr.ImpactScore, vr.Remarks })
                 .FirstOrDefault()
         })
         .ToListAsync();
@@ -613,6 +645,11 @@ api.MapPost("/validator/approve/{appId}", async (int appId, ValidatorApprovalDto
 
         if (!dto.IsDraft)
         {
+            if (string.IsNullOrWhiteSpace(dto.Remarks))
+            {
+                return Results.BadRequest(new { message = "Remarks are mandatory for approval." });
+            }
+
             if (dto.InnovationIpScore < 1 || dto.InnovationIpScore > 5 ||
                 dto.TeamStrengthScore < 1 || dto.TeamStrengthScore > 5 ||
                 dto.BusinessPlanScore < 1 || dto.BusinessPlanScore > 5 ||
@@ -652,6 +689,7 @@ api.MapPost("/validator/approve/{appId}", async (int appId, ValidatorApprovalDto
         review.ImpactScore = dto.ImpactScore;
         review.WeightedScore = weightedScore;
         review.IsDraft = dto.IsDraft;
+        review.Remarks = dto.Remarks;
 
         if (dto.IsDraft)
         {
@@ -703,7 +741,7 @@ api.MapGet("/jury/applications", async (HttpContext ctx, InnovationDbContext db)
             company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
             draft_scores = db.JuryReviews
                 .Where(jr => jr.ApplicationId == a.Id && jr.JuryId == uid.Value && jr.IsDraft)
-                .Select(jr => new { jr.InnovationIpScore, jr.TeamStrengthScore, jr.BusinessPlanScore, jr.ImpactScore })
+                .Select(jr => new { jr.InnovationIpScore, jr.TeamStrengthScore, jr.BusinessPlanScore, jr.ImpactScore, jr.Remarks })
                 .FirstOrDefault()
         })
         .ToListAsync();
@@ -730,6 +768,11 @@ api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, Inno
  
     if (!dto.IsDraft)
     {
+        if (string.IsNullOrWhiteSpace(dto.Remarks))
+        {
+            return Results.BadRequest(new { message = "Remarks are mandatory for approval." });
+        }
+
         if (dto.InnovationIpScore < 1 || dto.InnovationIpScore > 5 ||
             dto.TeamStrengthScore < 1 || dto.TeamStrengthScore > 5 ||
             dto.BusinessPlanScore < 1 || dto.BusinessPlanScore > 5 ||
@@ -769,6 +812,7 @@ api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, Inno
     review.ImpactScore = dto.ImpactScore;
     review.WeightedScore = weightedScore;
     review.IsDraft = dto.IsDraft;
+    review.Remarks = dto.Remarks;
  
     var existingFinalizedReviewsCount = await db.JuryReviews.CountAsync(jr => jr.ApplicationId == appId && jr.JuryId != uid.Value && !jr.IsDraft);
     int totalApprovals = existingFinalizedReviewsCount + (dto.IsDraft ? 0 : 1);

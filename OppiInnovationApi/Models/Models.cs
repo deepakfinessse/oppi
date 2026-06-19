@@ -134,6 +134,7 @@ public class JuryReview
     public int ImpactScore { get; set; }
     public double WeightedScore { get; set; }
     public bool IsDraft { get; set; } = false;
+    public string? Remarks { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public virtual Application Application { get; set; } = null!;
@@ -151,6 +152,7 @@ public class ValidatorReview
     public int ImpactScore { get; set; }
     public double WeightedScore { get; set; }
     public bool IsDraft { get; set; } = false;
+    public string? Remarks { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public virtual Application Application { get; set; } = null!;

@@ -152,6 +152,7 @@ public class InnovationDbContext : DbContext
             e.Property(x => x.ImpactScore).HasColumnName("impact_score");
             e.Property(x => x.WeightedScore).HasColumnName("weighted_score");
             e.Property(x => x.IsDraft).HasColumnName("is_draft").HasDefaultValue(false);
+            e.Property(x => x.Remarks).HasColumnName("remarks").HasColumnType("text");
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
 
             e.HasOne(x => x.Application).WithMany().HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.Cascade);
@@ -170,6 +171,7 @@ public class InnovationDbContext : DbContext
             e.Property(x => x.ImpactScore).HasColumnName("impact_score");
             e.Property(x => x.WeightedScore).HasColumnName("weighted_score");
             e.Property(x => x.IsDraft).HasColumnName("is_draft").HasDefaultValue(false);
+            e.Property(x => x.Remarks).HasColumnName("remarks").HasColumnType("text");
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
 
             e.HasOne(x => x.Application).WithMany().HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.Cascade);

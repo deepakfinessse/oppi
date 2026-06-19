@@ -69,6 +69,7 @@ public class JuryApprovalDto
     public int BusinessPlanScore { get; set; }
     public int ImpactScore { get; set; }
     public bool IsDraft { get; set; }
+    public string? Remarks { get; set; }
 }
 
 public class ValidatorApprovalDto
@@ -78,6 +79,7 @@ public class ValidatorApprovalDto
     public int BusinessPlanScore { get; set; }
     public int ImpactScore { get; set; }
     public bool IsDraft { get; set; }
+    public string? Remarks { get; set; }
 }
 
 public class UserUpdateDto
