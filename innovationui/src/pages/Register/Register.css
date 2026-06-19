@@ -319,6 +319,13 @@
   margin-bottom: 0.5rem;
 }
 
+.field-helper-text {
+  color: #718096;
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+  padding-left: 0.25rem;
+}
+
 /* Responsiveness */
 @media (max-width: 900px) {
   .register-card {
@@ -409,4 +416,108 @@
 .password-toggle-btn svg {
   display: block;
   pointer-events: none;
+}
+
+/* Password Requirements Styling */
+.password-requirements {
+  margin-top: 0.15rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.1rem 0.4rem;
+  background-color: #f8fafc;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid #edf2f7;
+}
+
+.password-requirements-inline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 0.5rem;
+  margin-top: 0.25rem;
+  padding: 0.15rem 0.25rem;
+  background-color: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 4px;
+}
+
+.password-requirements-inline .requirement {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.65rem;
+  color: #64748b;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.password-requirements-inline .requirement.met {
+  color: #16a34a;
+}
+
+.password-requirements-inline .req-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.password-requirements-inline .requirement:not(.met) .req-icon {
+  color: #94a3b8;
+}
+
+.password-requirements-inline .requirement.met .req-icon {
+  color: #16a34a;
+}
+
+.requirement {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.65rem;
+  color: #64748b;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.requirement.met {
+  color: #16a34a;
+}
+
+.req-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.requirement:not(.met) .req-icon {
+  color: #94a3b8;
+}
+
+.requirement.met .req-icon {
+  color: #16a34a;
+}
+
+.password-instruction-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  margin-top: 0.25rem;
+  color: #475569;
+  font-size: 0.65rem;
+  line-height: 1.35;
+}
+
+.password-instruction-msg svg {
+  color: #64748b;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
 }

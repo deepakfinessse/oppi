@@ -82,8 +82,14 @@ const Register = () => {
     let hasError = false;
     const newErrors = {};
 
-    if (formData.createPassword.length < 6) {
-      newErrors.createPassword = 'Password must be at least 6 characters';
+    const passwordVal = formData.createPassword || '';
+    const hasMinLength = passwordVal.length >= 8;
+    const hasUppercase = /[A-Z]/.test(passwordVal);
+    const hasLowercase = /[a-z]/.test(passwordVal);
+    const hasNumber = /\d/.test(passwordVal);
+
+    if (!hasMinLength || !hasUppercase || !hasLowercase || !hasNumber) {
+      newErrors.createPassword = 'Password does not meet the requirements below';
       hasError = true;
     }
 
@@ -195,7 +201,7 @@ const Register = () => {
                   </div>
                 </div>
 
-                <div className="form-group">
+                 <div className="form-group">
                   <label>Create Password <span className="required">*</span></label>
                   <div className="password-input-wrapper">
                     <input
@@ -217,7 +223,7 @@ const Register = () => {
                   {errors.createPassword && <div className="field-error-text">{errors.createPassword}</div>}
                 </div>
 
-                <div className="form-group">
+                 <div className="form-group">
                   <label>Confirm Password <span className="required">*</span></label>
                   <div className="password-input-wrapper">
                     <input
@@ -236,6 +242,26 @@ const Register = () => {
                       {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+
+                  <div className="password-requirements">
+                    <div className={`requirement ${(formData.createPassword || '').length >= 8 ? 'met' : ''}`}>
+                      <span className="req-icon">{(formData.createPassword || '').length >= 8 ? '✓' : '○'}</span>
+                      <span>Min. 8 characters</span>
+                    </div>
+                    <div className={`requirement ${/[A-Z]/.test(formData.createPassword || '') ? 'met' : ''}`}>
+                      <span className="req-icon">{/[A-Z]/.test(formData.createPassword || '') ? '✓' : '○'}</span>
+                      <span>One uppercase (A-Z)</span>
+                    </div>
+                    <div className={`requirement ${/[a-z]/.test(formData.createPassword || '') ? 'met' : ''}`}>
+                      <span className="req-icon">{/[a-z]/.test(formData.createPassword || '') ? '✓' : '○'}</span>
+                      <span>One lowercase (a-z)</span>
+                    </div>
+                    <div className={`requirement ${/\d/.test(formData.createPassword || '') ? 'met' : ''}`}>
+                      <span className="req-icon">{/\d/.test(formData.createPassword || '') ? '✓' : '○'}</span>
+                      <span>One number (0-9)</span>
+                    </div>
+                  </div>
+
                   {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
                 </div>
 

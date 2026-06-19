@@ -1,7 +1,7 @@
 // pages/Auth/Auth.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Info } from 'lucide-react';
 import { api, saveSession } from '../../services/api';
 import './Auth.css';
 import trophyImg from '../../assets/Trophy1.png';
@@ -127,8 +127,14 @@ const Auth = () => {
     let hasError = false;
     const newErrors = {};
 
-    if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    const passwordVal = formData.password || '';
+    const hasMinLength = passwordVal.length >= 8;
+    const hasUppercase = /[A-Z]/.test(passwordVal);
+    const hasLowercase = /[a-z]/.test(passwordVal);
+    const hasNumber = /\d/.test(passwordVal);
+
+    if (!hasMinLength || !hasUppercase || !hasLowercase || !hasNumber) {
+      newErrors.password = 'Password does not meet the requirements below';
       hasError = true;
     }
 
@@ -321,6 +327,12 @@ const Auth = () => {
                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
+
+                    <div className="password-instruction-msg">
+                      <Info size={14} style={{ marginRight: '4px', verticalAlign: 'middle', flexShrink: 0 }} />
+                      <span>Password must contain at least 8 characters, including one uppercase letter (A–Z), one lowercase letter (a–z), and one number (0–9)</span>
+                    </div>
+
                     {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
                   </div>
                 )}
