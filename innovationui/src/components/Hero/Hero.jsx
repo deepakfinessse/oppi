@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Hero.css';
+// At the top of your React file
+import '@fontsource/bodoni-moda'; // or use an import in your CSS
 
 const Hero = () => {
   const [timeLeft, setTimeLeft] = useState({

@@ -62,8 +62,6 @@
 }
 
 .trophy-image {
-  width: 100%;
-  max-width: 450px;
   height: auto;
   object-fit: contain;
 }
@@ -93,7 +91,7 @@
   backdrop-filter: blur(4px);
   padding: 1.25rem 1.8rem;
   /* Increased padding */
-  border-radius: 16px;
+  border-radius: 10px;
   /* Increased from 12px */
   font-size: 1rem;
   /* Increased from 0.92rem */
@@ -119,9 +117,9 @@
   /* Increased from 26px */
   height: 28px;
   /* Increased from 26px */
-  border-radius: 50%;
-  background: #1264B9;
-  color: white;
+  /* border-radius: 50%; */
+  /* background: #1264B9; */
+  color: #2D9BCE;
   margin-top: 0.1rem;
 }
 

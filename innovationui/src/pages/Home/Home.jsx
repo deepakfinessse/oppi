@@ -1,7 +1,6 @@
 import React from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Hero from '../../components/Hero/Hero'
-import Stats from '../../components/Stats/Stats'
 import Quote from '../../components/Quote/Quote'
 import WhyParticipate from '../../components/WhyParticipate/WhyParticipate'
 import Rules from '../../components/Rules/Rules'
@@ -16,7 +15,6 @@ const Home = () => {
       <main>
         <Hero />
         <Quote />
-        <Stats />
         <WhyParticipate />
         <Rules />
         <Jury />

@@ -63,7 +63,7 @@
   align-items: center;
   gap: 0.6rem;
   /* White border with a drop shadow creates the glowing/inset effect seen in the image */
-  border: 4px solid #ffffff;
+  border: 3px solid #ffffff;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   cursor: pointer;
