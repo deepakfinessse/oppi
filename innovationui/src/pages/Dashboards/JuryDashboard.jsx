@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, clearSession } from '../../services/api';
+import { Eye } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
@@ -14,6 +15,7 @@ export default function JuryDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
   const [scores, setScores] = useState({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
+  const [remarks, setRemarks] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const fetchApps = useCallback(async () => {
@@ -35,7 +37,19 @@ export default function JuryDashboard() {
   const handleAction = async (id, action) => {
     if (action === 'Approve') {
       setSelectedAppId(id);
-      setScores({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
+      const app = apps.find(a => a.id === id);
+      if (app && app.draft_scores) {
+        setScores({
+          innovationIp: app.draft_scores.innovationIpScore || 0,
+          teamStrength: app.draft_scores.teamStrengthScore || 0,
+          businessPlan: app.draft_scores.businessPlanScore || 0,
+          impact: app.draft_scores.impactScore || 0
+        });
+        setRemarks(app.draft_scores.remarks || '');
+      } else {
+        setScores({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
+        setRemarks('');
+      }
       setShowModal(true);
     } else {
       if (!window.confirm(`Are you sure you want to reject this application?`)) return;
@@ -51,22 +65,37 @@ export default function JuryDashboard() {
   const closeModal = () => {
     setShowModal(false);
     setSelectedAppId(null);
+    setRemarks('');
+  };
+
+  const WEIGHTS = {
+    innovationIp: 0.3,
+    teamStrength: 0.2,
+    businessPlan: 0.2,
+    impact: 0.3
   };
 
   const calculateWeightedScore = () => {
     const { innovationIp, teamStrength, businessPlan, impact } = scores;
     if (!innovationIp || !teamStrength || !businessPlan || !impact) return '0.00';
-    return ((innovationIp + teamStrength + businessPlan + impact) / 4.0).toFixed(2);
+    return (
+      innovationIp * WEIGHTS.innovationIp +
+      teamStrength * WEIGHTS.teamStrength +
+      businessPlan * WEIGHTS.businessPlan +
+      impact * WEIGHTS.impact
+    ).toFixed(2);
   };
 
-  const submitScores = async () => {
+  const submitScores = async (isDraft = false) => {
     try {
       setSubmitting(true);
       await api.juryApprove(selectedAppId, {
         innovationIpScore: scores.innovationIp,
         teamStrengthScore: scores.teamStrength,
         businessPlanScore: scores.businessPlan,
-        impactScore: scores.impact
+        impactScore: scores.impact,
+        isDraft: isDraft,
+        remarks: remarks
       });
       closeModal();
       fetchApps();
@@ -88,6 +117,7 @@ export default function JuryDashboard() {
     <>
       <DashboardLayout
         title="Jury Dashboard"
+        className="jury-dashboard-page"
         headerActions={<button className="btn-logout" onClick={handleLogout}>Log Out</button>}
       >
         <div className="dashboard-content">
@@ -113,7 +143,9 @@ export default function JuryDashboard() {
                       <td>{a.company || '—'}</td>
                       <td>
                         <div className="action-buttons">
-                          <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)}>View</button>
+                          <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
+                            <Eye size={16} />
+                          </button>
                           <button className="btn-action approve" onClick={() => handleAction(a.id, 'Approve')}>Approve</button>
                           <button className="btn-action reject" onClick={() => handleAction(a.id, 'Reject')}>Reject</button>
                         </div>
@@ -130,107 +162,87 @@ export default function JuryDashboard() {
 
       {showModal && (
         <div className="modal-overlay">
-          <div className="modal-container">
+          <div className="modal-container jury-modal-compact">
             <div className="modal-header">
-              <h3>Score & Approve Application #{selectedAppId}</h3>
+              <h3>Score Application #{selectedAppId}</h3>
               <button className="modal-close-btn" onClick={closeModal}>&times;</button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div className="rating-group">
-                <div className="rating-label">
-                  <span>Innovation & IP</span>
-                  <span>{scores.innovationIp || '—'} / 5</span>
+            <div className="jury-criteria-list">
+              {[
+                { key: 'innovationIp', label: 'Innovation & IP', desc: 'Quality and novelty of the innovation and associated IP', weight: WEIGHTS.innovationIp },
+                { key: 'teamStrength', label: 'Founding Team', desc: 'Strength of the founding team', weight: WEIGHTS.teamStrength },
+                { key: 'businessPlan', label: 'Business Plan', desc: 'The Business Plan (market potential)', weight: WEIGHTS.businessPlan },
+                { key: 'impact', label: 'Impact', desc: 'Impact (short term & long term)', weight: WEIGHTS.impact },
+              ].map(c => (
+                <div className="jury-criterion" key={c.key}>
+                  <div className="jury-criterion-top">
+                    <span className="jury-criterion-label">{c.label}</span>
+                    <span className="jury-criterion-weight">×{c.weight}</span>
+                  </div>
+                  <div className="jury-criterion-bottom">
+                    <div className="jury-score-btns">
+                      {[1, 3, 5].map(val => (
+                        <button
+                          key={val}
+                          type="button"
+                          className={`jury-score-btn ${scores[c.key] === val ? 'active' : ''}`}
+                          onClick={() => setScores(prev => ({ ...prev, [c.key]: val }))}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                    <span className="jury-criterion-result">
+                      {scores[c.key] ? (scores[c.key] * c.weight).toFixed(2) : '—'}
+                    </span>
+                  </div>
                 </div>
-                <div className="rating-desc">Quality and novelty of the innovation and associated IP</div>
-                <div className="rating-selector">
-                  {[1, 2, 3, 4, 5].map(val => (
-                    <button
-                      key={val}
-                      type="button"
-                      className={`rating-btn ${scores.innovationIp === val ? 'active' : ''}`}
-                      onClick={() => setScores(prev => ({ ...prev, innovationIp: val }))}
-                    >
-                      {val}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              ))}
+            </div>
 
-              <div className="rating-group">
-                <div className="rating-label">
-                  <span>Founding Team</span>
-                  <span>{scores.teamStrength || '—'} / 5</span>
-                </div>
-                <div className="rating-desc">Strength of the founding team</div>
-                <div className="rating-selector">
-                  {[1, 2, 3, 4, 5].map(val => (
-                    <button
-                      key={val}
-                      type="button"
-                      className={`rating-btn ${scores.teamStrength === val ? 'active' : ''}`}
-                      onClick={() => setScores(prev => ({ ...prev, teamStrength: val }))}
-                    >
-                      {val}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="jury-total-row">
+              <span>Weighted Total</span>
+              <span className="jury-total-val">{calculateWeightedScore()}</span>
+            </div>
 
-              <div className="rating-group">
-                <div className="rating-label">
-                  <span>Business Plan</span>
-                  <span>{scores.businessPlan || '—'} / 5</span>
-                </div>
-                <div className="rating-desc">The Business Plan (market potential)</div>
-                <div className="rating-selector">
-                  {[1, 2, 3, 4, 5].map(val => (
-                    <button
-                      key={val}
-                      type="button"
-                      className={`rating-btn ${scores.businessPlan === val ? 'active' : ''}`}
-                      onClick={() => setScores(prev => ({ ...prev, businessPlan: val }))}
-                    >
-                      {val}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rating-group">
-                <div className="rating-label">
-                  <span>Impact</span>
-                  <span>{scores.impact || '—'} / 5</span>
-                </div>
-                <div className="rating-desc">Impact (short term & long term)</div>
-                <div className="rating-selector">
-                  {[1, 2, 3, 4, 5].map(val => (
-                    <button
-                      key={val}
-                      type="button"
-                      className={`rating-btn ${scores.impact === val ? 'active' : ''}`}
-                      onClick={() => setScores(prev => ({ ...prev, impact: val }))}
-                    >
-                      {val}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="weighted-score-display">
-                <span>Calculated Total Score (Weights: 25% each)</span>
-                <span className="weighted-score-val">{calculateWeightedScore()}</span>
-              </div>
+            <div className="jury-remarks-section" style={{ marginTop: '15px', marginBottom: '15px' }}>
+              <label style={{ display: 'block', fontWeight: '500', marginBottom: '5px', fontSize: '0.9rem', color: '#1e293b', textAlign: 'left' }}>
+                Remarks / Comments (Mandatory for Approval) *
+              </label>
+              <textarea
+                style={{
+                  width: '100%',
+                  minHeight: '80px',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  padding: '8px 12px',
+                  fontSize: '0.9rem',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  boxSizing: 'border-box'
+                }}
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                placeholder="Enter jury remarks..."
+              />
             </div>
 
             <div className="modal-actions">
               <button className="btn-action view" onClick={closeModal}>Cancel</button>
               <button
-                className="btn-action approve"
-                onClick={submitScores}
-                disabled={submitting || !scores.innovationIp || !scores.teamStrength || !scores.businessPlan || !scores.impact}
+                className="btn-action save"
+                onClick={() => submitScores(true)}
+                disabled={submitting}
               >
-                {submitting ? 'Submitting...' : 'Submit Approval'}
+                Save & Exit
+              </button>
+              <button
+                className="btn-action approve"
+                onClick={() => submitScores(false)}
+                disabled={submitting || !scores.innovationIp || !scores.teamStrength || !scores.businessPlan || !scores.impact || !remarks.trim()}
+              >
+                {submitting ? 'Submitting...' : 'Approve'}
               </button>
             </div>
           </div>

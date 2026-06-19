@@ -323,6 +323,28 @@ CREATE TABLE `jury_reviews` (
   `business_plan_score` int(11) NOT NULL,
   `impact_score` int(11) NOT NULL,
   `weighted_score` double NOT NULL,
+  `is_draft` tinyint(1) NOT NULL DEFAULT '0',
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `created_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `validator_reviews`
+--
+
+CREATE TABLE `validator_reviews` (
+  `id` int(11) NOT NULL,
+  `application_id` int(11) NOT NULL,
+  `validator_id` int(11) NOT NULL,
+  `innovation_ip_score` int(11) NOT NULL,
+  `team_strength_score` int(11) NOT NULL,
+  `business_plan_score` int(11) NOT NULL,
+  `impact_score` int(11) NOT NULL,
+  `weighted_score` double NOT NULL,
+  `is_draft` tinyint(1) NOT NULL DEFAULT '0',
+  `remarks` text COLLATE utf8mb4_unicode_ci,
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -524,6 +546,14 @@ ALTER TABLE `jury_reviews`
   ADD KEY `fk_jury_reviews_jury` (`jury_id`);
 
 --
+-- Indexes for table `validator_reviews`
+--
+ALTER TABLE `validator_reviews`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_app_validator` (`application_id`,`validator_id`),
+  ADD KEY `fk_validator_reviews_validator` (`validator_id`);
+
+--
 -- Indexes for table `personal_info`
 --
 ALTER TABLE `personal_info`
@@ -586,6 +616,12 @@ ALTER TABLE `file_uploads`
 --
 ALTER TABLE `jury_reviews`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `validator_reviews`
+--
+ALTER TABLE `validator_reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `personal_info`
 --
@@ -641,6 +677,13 @@ ALTER TABLE `file_uploads`
 ALTER TABLE `jury_reviews`
   ADD CONSTRAINT `fk_jury_reviews_application` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_jury_reviews_jury` FOREIGN KEY (`jury_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `validator_reviews`
+--
+ALTER TABLE `validator_reviews`
+  ADD CONSTRAINT `fk_validator_reviews_application` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_validator_reviews_validator` FOREIGN KEY (`validator_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `personal_info`

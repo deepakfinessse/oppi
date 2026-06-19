@@ -16,6 +16,7 @@ public class InnovationDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<JuryReview> JuryReviews => Set<JuryReview>();
+    public DbSet<ValidatorReview> ValidatorReviews => Set<ValidatorReview>();
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
@@ -150,11 +151,32 @@ public class InnovationDbContext : DbContext
             e.Property(x => x.BusinessPlanScore).HasColumnName("business_plan_score");
             e.Property(x => x.ImpactScore).HasColumnName("impact_score");
             e.Property(x => x.WeightedScore).HasColumnName("weighted_score");
+            e.Property(x => x.IsDraft).HasColumnName("is_draft").HasDefaultValue(false);
+            e.Property(x => x.Remarks).HasColumnName("remarks").HasColumnType("text");
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
 
             e.HasOne(x => x.Application).WithMany().HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Jury).WithMany().HasForeignKey(x => x.JuryId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.ApplicationId, x.JuryId }).IsUnique();
+        });
+
+        mb.Entity<ValidatorReview>(e => {
+            e.ToTable("validator_reviews");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.ValidatorId).HasColumnName("validator_id");
+            e.Property(x => x.InnovationIpScore).HasColumnName("innovation_ip_score");
+            e.Property(x => x.TeamStrengthScore).HasColumnName("team_strength_score");
+            e.Property(x => x.BusinessPlanScore).HasColumnName("business_plan_score");
+            e.Property(x => x.ImpactScore).HasColumnName("impact_score");
+            e.Property(x => x.WeightedScore).HasColumnName("weighted_score");
+            e.Property(x => x.IsDraft).HasColumnName("is_draft").HasDefaultValue(false);
+            e.Property(x => x.Remarks).HasColumnName("remarks").HasColumnType("text");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+
+            e.HasOne(x => x.Application).WithMany().HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Validator).WithMany().HasForeignKey(x => x.ValidatorId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.ApplicationId, x.ValidatorId }).IsUnique();
         });
     }
 }

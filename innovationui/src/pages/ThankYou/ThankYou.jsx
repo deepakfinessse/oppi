@@ -1,12 +1,30 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
+import { getSession, clearSession, getApplicationStorageKey, api } from '../../services/api';
+import oppiLogo from '../../assets/OPPI-logo-black.png';
+import '../ApplicationForm/ApplicationForm.css';
 import './ThankYou.css';
-import { clearSession } from '../../services/api';
 
 export default function ThankYou() {
   const navigate = useNavigate();
+  const session = getSession();
   const confettiRef = useRef(null);
+
+  const [applicationId, setApplicationId] = useState(() => {
+    if (!session?.userId) return null;
+    return localStorage.getItem(getApplicationStorageKey(session.userId));
+  });
+
+  // Try to fetch application ID from API if not in localStorage
+  useEffect(() => {
+    if (!applicationId && session?.token) {
+      api.getPreview().then((data) => {
+        if (data?.id) {
+          setApplicationId(String(data.id));
+        }
+      }).catch(() => {});
+    }
+  }, [applicationId, session?.token]);
 
   useEffect(() => {
     const container = confettiRef.current;
@@ -29,60 +47,44 @@ export default function ThankYou() {
     return () => pieces.forEach(el => el.remove());
   }, []);
 
-    const handleLogout = () => {
-      clearSession();
-      navigate('/auth');
-    };
-  
-    const handleChangePassword = () => {
-      navigate('/change-password');
-    };
+  const handleLogout = () => {
+    clearSession();
+    navigate('/auth');
+  };
+
+  const handleChangePassword = () => {
+    navigate('/change-password');
+  };
 
   return (
-    // <DashboardLayout title="Thank You" class Name="thank-you-wrapper">
-    <DashboardLayout title='Application Submitted' headerActions={(
-                <>
-                  <button className="btn-action" onClick={handleChangePassword}>Change Password</button>
-                  <button className="btn-logout" onClick={handleLogout}>Log Out</button>
-                </>
-              )}
-            //   className={isMine ? 'applicant-dashboard' : 'review-dashboard'}
-            >
-    <div className="thank-you-page">
-      <div className="confetti-container" ref={confettiRef} />
+    <div className="application-page">
+      <div className="application-header-wrapper">
+        <header className="application-header-bar no-print">
+          <div className="application-header-logo">
+            <img src={oppiLogo} alt="OPPI Logo" />
+          </div>
+          <div className="application-header-actions">
+            {applicationId && (
+              <span className="application-id-badge">Application ID: {applicationId}</span>
+            )}
+            <button type="button" className="btn-header change-pwd" onClick={handleChangePassword}>CHANGE PASSWORD</button>
+            <button type="button" className="btn-header logout" onClick={handleLogout}>LOG OUT <span className="logout-icon">→</span></button>
+          </div>
+        </header>
+      </div>
 
-      {/* Rope system */}
-      <div className="rope-center" />
-      <div className="rope-left" />
-      <div className="rope-right" />
-
-      {/* Hanging board */}
-      <div className="board-sway">
-        <div className="board-frame">
-          <div className="board-surface">
-            {/* Corner pins */}
-            <div className="pin pin-tl" />
-            <div className="pin pin-tr" />
-            <div className="pin pin-bl" />
-            <div className="pin pin-br" />
-
-            <div className="board-content">
-              <div className="board-emoji">🙌</div>
-              <h1 className="board-heading">Thank you!</h1>
-              <p className="board-sub">Your application has been</p>
-              <p className="board-highlight">submitted successfully ✓</p>
-              <button
-                type="button"
-                className="board-btn"
-                onClick={() => navigate('/home')}
-              >
-                Return to home →
-              </button>
+      <div className="application-container">
+        <div className="application-content-wrapper">
+          <div className="application-card">
+            <div className="thank-you-content" ref={confettiRef}>
+              <div className="thank-you">
+                <h2>Thank you for your submission!</h2>
+                <p>Your application has been submitted successfully.</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

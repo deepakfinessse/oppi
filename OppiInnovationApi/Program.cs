@@ -30,6 +30,7 @@ builder.Services.AddDbContext<InnovationDbContext>(o => o.UseMySql(connStr, Serv
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<DomainService>();
 builder.Services.AddScoped<AuditService>();
+builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IValidator<RegisterDto>, RegisterValidator>();
 builder.Services.AddScoped<IValidator<LoginDto>, LoginValidator>();
 
@@ -72,10 +73,161 @@ builder.Services.AddCors(o => {
 });
 
 var app = builder.Build();
+
+// Run automatic DB migrations to add is_draft if missing
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<InnovationDbContext>();
+        var conn = db.Database.GetDbConnection();
+        await conn.OpenAsync();
+        
+        // 1. Check/Add is_draft to jury_reviews
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'jury_reviews' AND column_name = 'is_draft'";
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            if (count == 0)
+            {
+                using (var cmdAlter = conn.CreateCommand())
+                {
+                    cmdAlter.CommandText = "ALTER TABLE `jury_reviews` ADD COLUMN `is_draft` TINYINT(1) NOT NULL DEFAULT 0";
+                    await cmdAlter.ExecuteNonQueryAsync();
+                }
+            }
+        }
+        
+        // 2. Check/Add is_draft to validator_reviews
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'validator_reviews' AND column_name = 'is_draft'";
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            if (count == 0)
+            {
+                using (var cmdAlter = conn.CreateCommand())
+                {
+                    cmdAlter.CommandText = "ALTER TABLE `validator_reviews` ADD COLUMN `is_draft` TINYINT(1) NOT NULL DEFAULT 0";
+                    await cmdAlter.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
+        // 3. Check/Add remarks to jury_reviews
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'jury_reviews' AND column_name = 'remarks'";
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            if (count == 0)
+            {
+                using (var cmdAlter = conn.CreateCommand())
+                {
+                    cmdAlter.CommandText = "ALTER TABLE `jury_reviews` ADD COLUMN `remarks` TEXT NULL";
+                    await cmdAlter.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
+        // 4. Check/Add remarks to validator_reviews
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'validator_reviews' AND column_name = 'remarks'";
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            if (count == 0)
+            {
+                using (var cmdAlter = conn.CreateCommand())
+                {
+                    cmdAlter.CommandText = "ALTER TABLE `validator_reviews` ADD COLUMN `remarks` TEXT NULL";
+                    await cmdAlter.ExecuteNonQueryAsync();
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database migration error: {ex.Message}");
+    }
+}
+
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 var uploadsDir = Path.Combine(builder.Environment.WebRootPath, "uploads");
 Directory.CreateDirectory(uploadsDir);
+
+var templatesDir = Path.Combine(builder.Environment.WebRootPath, "templates");
+Directory.CreateDirectory(templatesDir);
+var blankFormPath = Path.Combine(templatesDir, "Blank_Application_Form.doc");
+if (!File.Exists(blankFormPath))
+{
+    var rtfContent = @"{\rtf1\ansi\deff0
+{\fonttbl{\f0\fnil\fcharset0 Arial;}}
+{\colortbl ;\red0\green92\blue154;\red128\green128\blue128;}
+\viewkind4\uc1\pard\lang1033\f0\fs28\b\cf1 OPPI Excellence in Innovation Award 2025\b0\cf0\fs24\par
+\fs22\cf2 Blank Application Form Template for Reference\cf0\fs24\par
+\par
+This document is provided for your easy reference. You may fill out the details here before submitting them online at \b http://innovationawards.indiaoppi.com/\b0.\par
+\par
+\b\cf1 SECTION 1: PERSONAL & COMPANY INFORMATION\cf0\b0\par
+--------------------------------------------------\par
+1. Company Name:\par
+   [__________________________________________________]\par
+\par
+2. Designation:\par
+   [__________________________________________________]\par
+\par
+3. Category of Work:\par
+   [__________________________________________________]\par
+\par
+4. Company Website:\par
+   [__________________________________________________]\par
+\par
+5. Company Brief (Short Description):\par
+   [__________________________________________________]\par
+\par
+6. Innovation Details (What makes it unique?):\par
+   [__________________________________________________]\par
+\par
+7. Competitive Analysis:\par
+   [__________________________________________________]\par
+\par
+8. Need Analysis & Marketability:\par
+   [__________________________________________________]\par
+\par
+\par
+\b\cf1 SECTION 2: COMPANY REACH & CHANNELS\cf0\b0\par
+--------------------------------------------------\par
+1. Marketing Strategy:\par
+   [__________________________________________________]\par
+\par
+2. App/Website Details:\par
+   [__________________________________________________]\par
+\par
+3. Social Media Presence:\par
+   [__________________________________________________]\par
+\par
+4. Physical Outlets / Future Expansion:\par
+   [__________________________________________________]\par
+\par
+\par
+\b\cf1 SECTION 3: COMPANY DETAILS & IMPACT\cf0\b0\par
+--------------------------------------------------\par
+1. Customer Benefit:\par
+   [__________________________________________________]\par
+\par
+2. Testimonials & Media Mentions:\par
+   [__________________________________________________]\par
+\par
+3. Employee Count & Board of Directors:\par
+   [__________________________________________________]\par
+\par
+4. Investors Details / Patents / Product Benefits:\par
+   [__________________________________________________]\par
+\par
+\par
+\b Note:\b0 Final submission must be completed online.\par
+}";
+    File.WriteAllText(blankFormPath, rtfContent);
+}
 
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -100,7 +252,7 @@ static string GetIp(HttpContext c) => c.Connection.RemoteIpAddress?.ToString() ?
 var auth = app.MapGroup("/auth").RequireRateLimiting("auth");
 
 auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db, DomainService ds,
-    JwtService jwt, AuditService audit, IValidator<RegisterDto> v, HttpContext ctx) =>
+    JwtService jwt, AuditService audit, IValidator<RegisterDto> v, EmailService emailService, HttpContext ctx) =>
 {
     var vr = await v.ValidateAsync(dto);
     if (!vr.IsValid) return Results.BadRequest(new { errors = vr.Errors.Select(e => e.ErrorMessage) });
@@ -115,6 +267,24 @@ auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db, Domain
     var at = jwt.GenerateAccessToken(user);
     var rt = await jwt.GenerateRefreshTokenAsync(user, ctx.Request.Headers.UserAgent);
     await audit.LogAsync(user.Id, "REGISTER", "User", user.Id, null, GetIp(ctx));
+
+    // Send registration email safely in background
+    var serviceProvider = ctx.RequestServices.GetRequiredService<IServiceProvider>();
+    var email = user.Email;
+    var name = $"{user.FirstName} {user.LastName}";
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            using var scope = serviceProvider.CreateScope();
+            var emailSvc = scope.ServiceProvider.GetRequiredService<EmailService>();
+            await emailSvc.SendRegistrationEmailAsync(email, name);
+        }
+        catch (Exception)
+        {
+            // Failures inside SendRegistrationEmailAsync are already logged
+        }
+    });
 
     return Results.Ok(new { access_token = at, refresh_token = rt,
         user = new { id = user.Id, first_name = user.FirstName, last_name = user.LastName,
@@ -235,7 +405,7 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
         .FirstOrDefaultAsync(x => x.Id == id);
     if (a == null) return Results.NotFound(new { message = "Application not found" });
 
-    var reviews = await db.JuryReviews
+    var juryReviews = await db.JuryReviews
         .Where(jr => jr.ApplicationId == id)
         .Select(jr => new {
             jr.Id,
@@ -246,11 +416,30 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
             jr.BusinessPlanScore,
             jr.ImpactScore,
             jr.WeightedScore,
+            jr.IsDraft,
+            jr.Remarks,
             jr.CreatedAt
         })
         .ToListAsync();
 
-    double avgScore = reviews.Any() ? reviews.Average(r => r.WeightedScore) : 0.0;
+    var validatorReviews = await db.ValidatorReviews
+        .Where(vr => vr.ApplicationId == id)
+        .Select(vr => new {
+            vr.Id,
+            vr.ValidatorId,
+            validator_name = db.Users.Where(u => u.Id == vr.ValidatorId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault() ?? "Validator",
+            vr.InnovationIpScore,
+            vr.TeamStrengthScore,
+            vr.BusinessPlanScore,
+            vr.ImpactScore,
+            vr.WeightedScore,
+            vr.IsDraft,
+            vr.Remarks,
+            vr.CreatedAt
+        })
+        .ToListAsync();
+
+    double avgScore = juryReviews.Where(r => !r.IsDraft).Any() ? juryReviews.Where(r => !r.IsDraft).Average(r => r.WeightedScore) : 0.0;
 
     return Results.Ok(new { id = a.Id, status = a.Status, submitted_at = a.SubmittedAt,
         user_name = a.User?.FirstName + " " + a.User?.LastName, user_email = a.User?.Email, user_mobile = a.User?.Mobile,
@@ -264,9 +453,10 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
             a.CompanyDetail.EmployeeCount, a.CompanyDetail.BoardOfDirectors, a.CompanyDetail.InvestorsDetails,
             a.CompanyDetail.MediaMentions, a.CompanyDetail.Patents, a.CompanyDetail.ProductBenefits },
         file_uploads = a.FileUploads.Select(f => new { f.Id, f.Section, f.FileName, f.FilePath, f.FileSize, f.FileType }),
-        jury_reviews = reviews,
+        jury_reviews = juryReviews,
+        validator_reviews = validatorReviews,
         average_score = avgScore,
-        jury_approval_count = reviews.Count
+        jury_approval_count = juryReviews.Count(r => !r.IsDraft)
     });
 });
 
@@ -379,6 +569,37 @@ api.MapGet("/admin/users", async (HttpContext ctx, InnovationDbContext db) =>
     return Results.Ok(users);
 });
 
+api.MapPut("/admin/users/{id}", async (int id, UserUpdateDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var admin = await db.Users.FindAsync(uid.Value);
+    if (admin?.Role != "ADMIN") return Results.Forbid();
+
+    var user = await db.Users.FindAsync(id);
+    if (user == null) return Results.NotFound();
+
+    // Check if email is already taken by another user
+    if (db.Users.Any(u => u.Email == dto.Email && u.Id != id))
+    {
+        return Results.BadRequest(new { message = "Email is already in use by another user" });
+    }
+
+    user.FirstName = dto.FirstName;
+    user.LastName = dto.LastName;
+    user.Email = dto.Email;
+    user.Mobile = dto.Mobile;
+    user.Role = dto.Role;
+
+    if (!string.IsNullOrWhiteSpace(dto.Password))
+    {
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+    }
+
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_UPDATE_USER", "User", id, $"Updated details and role to {dto.Role}", GetIp(ctx));
+    return Results.Ok(new { message = "User updated successfully" });
+});
+
 api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
@@ -387,8 +608,11 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
         .Select(a => new { a.Id, a.Status, a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
-            jury_approval_count = db.JuryReviews.Count(jr => jr.ApplicationId == a.Id),
-            average_score = db.JuryReviews.Where(jr => jr.ApplicationId == a.Id).Average(jr => (double?)jr.WeightedScore) ?? 0.0 })
+            validator_score = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id && !vr.IsDraft).Select(vr => (double?)vr.WeightedScore).FirstOrDefault(),
+            validator_name = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id && !vr.IsDraft)
+                .Select(vr => db.Users.Where(u => u.Id == vr.ValidatorId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault()).FirstOrDefault(),
+            jury_approval_count = db.JuryReviews.Count(jr => jr.ApplicationId == a.Id && !jr.IsDraft),
+            average_score = db.JuryReviews.Where(jr => jr.ApplicationId == a.Id && !jr.IsDraft).Average(jr => (double?)jr.WeightedScore) ?? 0.0 })
         .ToListAsync();
     return Results.Ok(apps);
 });
@@ -400,20 +624,94 @@ api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContex
     var user = await db.Users.FindAsync(uid.Value);
     if (user?.Role != "VALIDATOR" && user?.Role != "ADMIN") return Results.Forbid();
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
-        .Where(a => a.Status == "SUBMITTED")
+        .Where(a => a.Status == "SUBMITTED" || (a.Status == "UNDER_VALIDATOR_REVIEW" && a.ValidatorId == uid.Value))
         .Select(a => new { a.Id, a.Status, a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
-            user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null })
+            user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
+            draft_scores = db.ValidatorReviews
+                .Where(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && vr.IsDraft)
+                .Select(vr => new { vr.InnovationIpScore, vr.TeamStrengthScore, vr.BusinessPlanScore, vr.ImpactScore, vr.Remarks })
+                .FirstOrDefault()
+        })
         .ToListAsync();
     return Results.Ok(apps);
 });
 
-api.MapPost("/validator/approve/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+api.MapPost("/validator/approve/{appId}", async (int appId, ValidatorApprovalDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
-    var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
-    a.Status = "VALIDATOR_APPROVED"; a.ValidatorId = GetUid(ctx); a.ValidatorActionAt = DateTime.UtcNow;
-    await db.SaveChangesAsync();
-    await audit.LogAsync(GetUid(ctx), "VALIDATOR_APPROVE", "Application", appId, null, GetIp(ctx));
-    return Results.Ok(new { message = "Approved" });
+    try
+    {
+        var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+        var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
+
+        if (!dto.IsDraft)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Remarks))
+            {
+                return Results.BadRequest(new { message = "Remarks are mandatory for approval." });
+            }
+
+            if (dto.InnovationIpScore < 1 || dto.InnovationIpScore > 5 ||
+                dto.TeamStrengthScore < 1 || dto.TeamStrengthScore > 5 ||
+                dto.BusinessPlanScore < 1 || dto.BusinessPlanScore > 5 ||
+                dto.ImpactScore < 1 || dto.ImpactScore > 5)
+            {
+                return Results.BadRequest(new { message = "All scores must be between 1 and 5." });
+            }
+        }
+        else
+        {
+            if (dto.InnovationIpScore < 0 || dto.InnovationIpScore > 5 ||
+                dto.TeamStrengthScore < 0 || dto.TeamStrengthScore > 5 ||
+                dto.BusinessPlanScore < 0 || dto.BusinessPlanScore > 5 ||
+                dto.ImpactScore < 0 || dto.ImpactScore > 5)
+            {
+                return Results.BadRequest(new { message = "Draft scores must be between 0 and 5." });
+            }
+        }
+
+        double weightedScore = dto.InnovationIpScore * 0.25 + dto.TeamStrengthScore * 0.25 + dto.BusinessPlanScore * 0.25 + dto.ImpactScore * 0.25;
+
+        var review = await db.ValidatorReviews.FirstOrDefaultAsync(vr => vr.ApplicationId == appId && vr.ValidatorId == uid.Value);
+        if (review == null)
+        {
+            review = new ValidatorReview
+            {
+                ApplicationId = appId,
+                ValidatorId = uid.Value,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.ValidatorReviews.Add(review);
+        }
+
+        review.InnovationIpScore = dto.InnovationIpScore;
+        review.TeamStrengthScore = dto.TeamStrengthScore;
+        review.BusinessPlanScore = dto.BusinessPlanScore;
+        review.ImpactScore = dto.ImpactScore;
+        review.WeightedScore = weightedScore;
+        review.IsDraft = dto.IsDraft;
+        review.Remarks = dto.Remarks;
+
+        if (dto.IsDraft)
+        {
+            a.Status = "UNDER_VALIDATOR_REVIEW";
+            a.ValidatorId = uid;
+            a.ValidatorActionAt = DateTime.UtcNow;
+        }
+        else
+        {
+            a.Status = "VALIDATOR_APPROVED";
+            a.ValidatorId = uid;
+            a.ValidatorActionAt = DateTime.UtcNow;
+        }
+
+        await db.SaveChangesAsync();
+        await audit.LogAsync(uid, dto.IsDraft ? "VALIDATOR_SAVE_DRAFT" : "VALIDATOR_APPROVE", "Application", appId, $"Scores: IP={dto.InnovationIpScore}, Team={dto.TeamStrengthScore}, Biz={dto.BusinessPlanScore}, Impact={dto.ImpactScore}, Weighted={weightedScore}", GetIp(ctx));
+        return Results.Ok(new { message = dto.IsDraft ? "Draft review saved successfully" : "Approved with scores recorded" });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.ToString());
+    }
 });
 
 api.MapPost("/validator/reject/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
@@ -431,64 +729,94 @@ api.MapGet("/jury/applications", async (HttpContext ctx, InnovationDbContext db)
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var user = await db.Users.FindAsync(uid.Value);
     if (user?.Role != "JURY" && user?.Role != "ADMIN") return Results.Forbid();
-
+ 
     var reviewedAppIds = await db.JuryReviews
-        .Where(jr => jr.JuryId == uid.Value)
+        .Where(jr => jr.JuryId == uid.Value && !jr.IsDraft)
         .Select(jr => jr.ApplicationId)
         .ToListAsync();
-
+ 
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
         .Where(a => (a.Status == "VALIDATOR_APPROVED" || a.Status == "UNDER_JURY_REVIEW") && !reviewedAppIds.Contains(a.Id))
         .Select(a => new { a.Id, a.Status, a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
-            company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null })
+            company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
+            draft_scores = db.JuryReviews
+                .Where(jr => jr.ApplicationId == a.Id && jr.JuryId == uid.Value && jr.IsDraft)
+                .Select(jr => new { jr.InnovationIpScore, jr.TeamStrengthScore, jr.BusinessPlanScore, jr.ImpactScore, jr.Remarks })
+                .FirstOrDefault()
+        })
         .ToListAsync();
     return Results.Ok(apps);
 });
-
+ 
 api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var user = await db.Users.FindAsync(uid.Value);
     if (user?.Role != "JURY") return Results.Forbid();
-
+ 
     var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
     if (a.Status != "VALIDATOR_APPROVED" && a.Status != "UNDER_JURY_REVIEW")
     {
         return Results.BadRequest(new { message = "Application is not in a valid state for jury review." });
     }
-
+ 
     var existingReview = await db.JuryReviews.FirstOrDefaultAsync(jr => jr.ApplicationId == appId && jr.JuryId == uid.Value);
-    if (existingReview != null)
+    if (existingReview != null && !existingReview.IsDraft)
     {
         return Results.BadRequest(new { message = "You have already approved/reviewed this application." });
     }
-
-    if (dto.InnovationIpScore < 1 || dto.InnovationIpScore > 5 ||
-        dto.TeamStrengthScore < 1 || dto.TeamStrengthScore > 5 ||
-        dto.BusinessPlanScore < 1 || dto.BusinessPlanScore > 5 ||
-        dto.ImpactScore < 1 || dto.ImpactScore > 5)
+ 
+    if (!dto.IsDraft)
     {
-        return Results.BadRequest(new { message = "All scores must be between 1 and 5." });
+        if (string.IsNullOrWhiteSpace(dto.Remarks))
+        {
+            return Results.BadRequest(new { message = "Remarks are mandatory for approval." });
+        }
+
+        if (dto.InnovationIpScore < 1 || dto.InnovationIpScore > 5 ||
+            dto.TeamStrengthScore < 1 || dto.TeamStrengthScore > 5 ||
+            dto.BusinessPlanScore < 1 || dto.BusinessPlanScore > 5 ||
+            dto.ImpactScore < 1 || dto.ImpactScore > 5)
+        {
+            return Results.BadRequest(new { message = "All scores must be between 1 and 5." });
+        }
     }
-
-    double weightedScore = (dto.InnovationIpScore + dto.TeamStrengthScore + dto.BusinessPlanScore + dto.ImpactScore) / 4.0;
-
-    var review = new JuryReview
+    else
     {
-        ApplicationId = appId,
-        JuryId = uid.Value,
-        InnovationIpScore = dto.InnovationIpScore,
-        TeamStrengthScore = dto.TeamStrengthScore,
-        BusinessPlanScore = dto.BusinessPlanScore,
-        ImpactScore = dto.ImpactScore,
-        WeightedScore = weightedScore,
-        CreatedAt = DateTime.UtcNow
-    };
-    db.JuryReviews.Add(review);
-
-    var existingReviewsCount = await db.JuryReviews.CountAsync(jr => jr.ApplicationId == appId);
-    int totalApprovals = existingReviewsCount + 1; // including current review
-
+        if (dto.InnovationIpScore < 0 || dto.InnovationIpScore > 5 ||
+            dto.TeamStrengthScore < 0 || dto.TeamStrengthScore > 5 ||
+            dto.BusinessPlanScore < 0 || dto.BusinessPlanScore > 5 ||
+            dto.ImpactScore < 0 || dto.ImpactScore > 5)
+        {
+            return Results.BadRequest(new { message = "Draft scores must be between 0 and 5." });
+        }
+    }
+ 
+    double weightedScore = (dto.InnovationIpScore + dto.TeamStrengthScore + dto.BusinessPlanScore + dto.ImpactScore) / 4.0;
+ 
+    var review = existingReview;
+    if (review == null)
+    {
+        review = new JuryReview
+        {
+            ApplicationId = appId,
+            JuryId = uid.Value,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.JuryReviews.Add(review);
+    }
+ 
+    review.InnovationIpScore = dto.InnovationIpScore;
+    review.TeamStrengthScore = dto.TeamStrengthScore;
+    review.BusinessPlanScore = dto.BusinessPlanScore;
+    review.ImpactScore = dto.ImpactScore;
+    review.WeightedScore = weightedScore;
+    review.IsDraft = dto.IsDraft;
+    review.Remarks = dto.Remarks;
+ 
+    var existingFinalizedReviewsCount = await db.JuryReviews.CountAsync(jr => jr.ApplicationId == appId && jr.JuryId != uid.Value && !jr.IsDraft);
+    int totalApprovals = existingFinalizedReviewsCount + (dto.IsDraft ? 0 : 1);
+ 
     if (totalApprovals >= 3)
     {
         a.Status = "JURY_APPROVED";
@@ -499,11 +827,11 @@ api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, Inno
     {
         a.Status = "UNDER_JURY_REVIEW";
     }
-
+ 
     await db.SaveChangesAsync();
-    await audit.LogAsync(uid.Value, "JURY_APPROVE", "Application", appId, $"Scores: IP={dto.InnovationIpScore}, Team={dto.TeamStrengthScore}, Biz={dto.BusinessPlanScore}, Impact={dto.ImpactScore}, Weighted={weightedScore}", GetIp(ctx));
-
-    return Results.Ok(new { message = "Approval and scores recorded successfully", approvalsCount = totalApprovals });
+    await audit.LogAsync(uid.Value, dto.IsDraft ? "JURY_SAVE_DRAFT" : "JURY_APPROVE", "Application", appId, $"Scores: IP={dto.InnovationIpScore}, Team={dto.TeamStrengthScore}, Biz={dto.BusinessPlanScore}, Impact={dto.ImpactScore}, Weighted={weightedScore}", GetIp(ctx));
+ 
+    return Results.Ok(new { message = dto.IsDraft ? "Draft review saved successfully" : "Approval and scores recorded successfully", approvalsCount = totalApprovals });
 });
 
 api.MapPost("/jury/reject/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit) =>

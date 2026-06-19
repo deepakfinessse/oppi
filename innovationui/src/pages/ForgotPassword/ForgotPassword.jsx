@@ -10,12 +10,12 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [tempPassword, setTempPassword] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
     setIsSubmitting(true);
     
     try {
@@ -25,7 +25,7 @@ const ForgotPassword = () => {
       }
       setIsSubmitted(true);
     } catch (err) {
-      setError(err.message || 'Failed to send reset link. Please try again.');
+      setErrors({ email: err.message || 'Failed to send reset link. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -49,7 +49,6 @@ const ForgotPassword = () => {
                   </div>
 
                   <form onSubmit={handleSubmit} className="auth-form">
-                    {error && <div className="form-error">{error}</div>}
 
                     <div className="form-group">
                       <label>Email Id <span className="required">*</span></label>
@@ -58,10 +57,14 @@ const ForgotPassword = () => {
                         name="email" 
                         placeholder="name@example.com"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (errors.email) setErrors({});
+                        }}
                         required 
                       />
                     </div>
+                    {errors.email && <div className="field-error-text">{errors.email}</div>}
 
                     <button type="submit" className="submit-btn" disabled={isSubmitting}>
                       {isSubmitting ? 'SENDING...' : 'SEND RESET LINK'}

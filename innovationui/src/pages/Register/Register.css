@@ -2,18 +2,15 @@
 .register-page {
   background: linear-gradient(135deg, #5edcf2 0%, #4acbe0 100%);
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  /* Center vertically */
-  justify-content: center;
-  /* Center horizontally */
+  display: block;
+  padding: 5vh 2rem;
 }
 
 .register-container {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  max-width: 1000px;
+  margin: 0 auto;
+  display: block;
   padding: 2rem;
   position: relative;
   overflow: hidden;
@@ -75,7 +72,7 @@
 /* Right Form Section */
 .register-form-section {
   flex: 1;
-  padding: 2.5rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -84,19 +81,19 @@
 }
 
 .register-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .register-header h2 {
-  font-size: 2rem;
+  font-size: 1.3rem;
   color: #000000;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.2rem;
   font-weight: 800;
 }
 
 .register-header p {
   color: #333333;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 500;
 }
 
@@ -114,13 +111,13 @@
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.4rem;
   width: 100%;
 }
 
 .form-row {
   display: flex;
-  gap: 1.25rem;
+  gap: 0.5rem;
   width: 100%;
 }
 
@@ -128,12 +125,12 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.05rem;
   min-width: 0;
 }
 
 .form-group label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #000000;
 }
@@ -143,11 +140,12 @@
 }
 
 .form-group input {
-  padding: 0.7rem 1rem;
+  height: 34px;
+  padding: 0 0.5rem;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: 6px;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #1a1a1a;
   transition: border-color 0.2s;
   background-color: #ffffff;
@@ -178,11 +176,11 @@
 .mobile-input-group .country-code {
   display: flex;
   align-items: center;
-  padding: 0 0.75rem;
+  padding: 0 0.5rem;
   background-color: #ffffff;
   color: #000000;
   border-right: 1px solid #e5e7eb;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -201,19 +199,19 @@
   border-radius: 0;
   flex: 1;
   min-width: 0;
+  padding: 0.35rem 0.5rem;
 }
 
 .mobile-input-group input:focus {
   box-shadow: none;
 }
 
-/* Form Footer */
 .form-footer {
   display: flex;
   align-items: stretch;
   justify-content: space-between;
-  margin-top: 1rem;
-  gap: 1.25rem;
+  margin-top: 0.35rem;
+  gap: 0.75rem;
   width: 100%;
 }
 
@@ -227,12 +225,12 @@
   justify-content: space-between;
   background-color: #fafafa;
   border: 1px solid #d3d3d3;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #333;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  min-width: 240px;
+  min-width: 200px;
   height: 100%;
   box-sizing: border-box;
 }
@@ -276,10 +274,10 @@
   background: linear-gradient(135deg, #83e2f5 0%, #6cdaef 100%);
   color: #000000;
   border: none;
-  padding: 0 1.5rem;
-  border-radius: 8px;
+  padding: 0 1.25rem;
+  border-radius: 6px;
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.3s ease;
   flex: 1;
@@ -319,6 +317,13 @@
   border-radius: 8px;
   font-size: 0.85rem;
   margin-bottom: 0.5rem;
+}
+
+.field-helper-text {
+  color: #718096;
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+  padding-left: 0.25rem;
 }
 
 /* Responsiveness */
@@ -370,12 +375,10 @@
   }
 }
 
-/* Password Input Wrapper for Show/Hide Password Toggle */
 .password-input-wrapper {
   position: relative;
   width: 100%;
-  display: flex;
-  align-items: center;
+  display: block;
 }
 
 .password-input-wrapper input {
@@ -398,6 +401,8 @@
   z-index: 10;
   outline: none;
   border-radius: 4px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .password-toggle-btn:hover {
@@ -411,4 +416,108 @@
 .password-toggle-btn svg {
   display: block;
   pointer-events: none;
+}
+
+/* Password Requirements Styling */
+.password-requirements {
+  margin-top: 0.15rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.1rem 0.4rem;
+  background-color: #f8fafc;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid #edf2f7;
+}
+
+.password-requirements-inline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 0.5rem;
+  margin-top: 0.25rem;
+  padding: 0.15rem 0.25rem;
+  background-color: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 4px;
+}
+
+.password-requirements-inline .requirement {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.65rem;
+  color: #64748b;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.password-requirements-inline .requirement.met {
+  color: #16a34a;
+}
+
+.password-requirements-inline .req-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.password-requirements-inline .requirement:not(.met) .req-icon {
+  color: #94a3b8;
+}
+
+.password-requirements-inline .requirement.met .req-icon {
+  color: #16a34a;
+}
+
+.requirement {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.65rem;
+  color: #64748b;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.requirement.met {
+  color: #16a34a;
+}
+
+.req-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.requirement:not(.met) .req-icon {
+  color: #94a3b8;
+}
+
+.requirement.met .req-icon {
+  color: #16a34a;
+}
+
+.password-instruction-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  margin-top: 0.25rem;
+  color: #475569;
+  font-size: 0.65rem;
+  line-height: 1.35;
+}
+
+.password-instruction-msg svg {
+  color: #64748b;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
 }

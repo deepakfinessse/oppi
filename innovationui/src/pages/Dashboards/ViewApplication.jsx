@@ -14,6 +14,51 @@ const DataRow = ({ label, value }) => (
   </div>
 );
 
+function isImageFile(name, mimeType, fileType) {
+  if (mimeType?.startsWith('image/')) return true;
+  const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
+  return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+}
+
+function isVideoFile(name, mimeType, fileType) {
+  if (mimeType?.startsWith('video/')) return true;
+  const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
+  return ['mp4', 'mov'].includes(ext);
+}
+
+const PreviewFileCard = ({ file }) => {
+  const name = file.fileName || file.FileName;
+  const url = getFileUrl(file.filePath || file.FilePath);
+  const fileType = file.fileType || file.FileType;
+  const isImage = isImageFile(name, null, fileType);
+  const isVideo = isVideoFile(name, null, fileType);
+
+  return (
+    <div className="app-preview-card">
+      <div className="app-preview-media">
+        {url && isImage && (
+          <img src={url} alt={name} className="app-preview-thumb" />
+        )}
+        {url && isVideo && (
+          <video src={url} className="app-preview-thumb" controls />
+        )}
+        {(!url || (!isImage && !isVideo)) && (
+          <div className="app-preview-icon">{isVideo ? 'Video' : 'PDF'}</div>
+        )}
+      </div>
+      <div className="app-preview-details">
+        <span className="app-preview-section">{file.section || file.Section || 'Doc'}</span>
+        <span className="app-preview-name" title={name}>{name}</span>
+        {url && (
+          <a href={url} target="_blank" rel="noreferrer" className="app-preview-link no-print">
+            View full file
+          </a>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function ViewApplication({ isMine }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -160,6 +205,11 @@ export default function ViewApplication({ isMine }) {
         <div className="view-header no-print">
           <h2>Application #{app.id}</h2>
           <div style={{ display: 'flex', gap: '10px' }}>
+            {userRole === 'ADMIN' && (
+              <button className="btn-action edit-text" onClick={() => navigate(`/admin/edit-application/${app.id}`)}>
+                EDIT APPLICATION
+              </button>
+            )}
             <button className="btn-action approve" onClick={handleDownloadZip} disabled={downloading}>
               {downloading ? 'GENERATING ZIP...' : 'DOWNLOAD APPLICATION (ZIP)'}
             </button>
@@ -235,7 +285,43 @@ export default function ViewApplication({ isMine }) {
             </div>
           </div>
 
-          {(userRole === 'ADMIN' || userRole === 'JURY') && app.jury_reviews && app.jury_reviews.length > 0 && (
+          {(userRole === 'ADMIN' || userRole === 'VALIDATOR' || userRole === 'JURY') && app.validator_reviews && app.validator_reviews.length > 0 && (
+            <div className="dashboard-section no-print">
+              <h3>Validator Reviews Breakdown</h3>
+              <div className="table-responsive">
+                <table className="jury-scores-table">
+                  <thead>
+                    <tr>
+                      <th>Validator</th>
+                      <th>Innovation & IP (25%)</th>
+                      <th>Team Strength (25%)</th>
+                      <th>Business Plan (25%)</th>
+                      <th>Impact (25%)</th>
+                      <th>Weighted Score</th>
+                      <th>Remarks</th>
+                      <th>Reviewed At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {app.validator_reviews.map(r => (
+                      <tr key={r.id}>
+                        <td>{r.validator_name}</td>
+                        <td>{r.innovationIpScore} / 5</td>
+                        <td>{r.teamStrengthScore} / 5</td>
+                        <td>{r.businessPlanScore} / 5</td>
+                        <td>{r.impactScore} / 5</td>
+                        <td><strong>{r.weightedScore.toFixed(2)}</strong> / 5.00</td>
+                        <td>{r.remarks || '—'}</td>
+                        <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {(userRole === 'ADMIN' || userRole === 'VALIDATOR' || userRole === 'JURY') && app.jury_reviews && app.jury_reviews.length > 0 && (
             <div className="dashboard-section no-print">
               <h3>Jury Reviews Breakdown</h3>
               <div className="table-responsive">
@@ -248,6 +334,7 @@ export default function ViewApplication({ isMine }) {
                       <th>Business Plan (25%)</th>
                       <th>Impact (25%)</th>
                       <th>Weighted Score</th>
+                      <th>Remarks</th>
                       <th>Reviewed At</th>
                     </tr>
                   </thead>
@@ -260,6 +347,7 @@ export default function ViewApplication({ isMine }) {
                         <td>{r.businessPlanScore} / 5</td>
                         <td>{r.impactScore} / 5</td>
                         <td><strong>{r.weightedScore.toFixed(2)}</strong> / 5.00</td>
+                        <td>{r.remarks || '—'}</td>
                         <td>{new Date(r.createdAt).toLocaleDateString()}</td>
                       </tr>
                     ))}
@@ -272,16 +360,9 @@ export default function ViewApplication({ isMine }) {
           <div className="dashboard-section">
             <h3>Attached Files</h3>
             {app.file_uploads && app.file_uploads.length > 0 ? (
-              <div className="file-list">
+              <div className="app-preview-grid">
                 {app.file_uploads.map(f => (
-                  <div key={f.id} className="file-item">
-                    <span className="file-section">{f.section || f.Section}</span>
-                    <span className="file-name">{f.fileName || f.FileName}</span>
-                    <a href={getFileUrl(f.filePath || f.FilePath)} 
-                       target="_blank" rel="noreferrer" className="btn-action view no-print">
-                      View File
-                    </a>
-                  </div>
+                  <PreviewFileCard key={f.id} file={f} />
                 ))}
               </div>
             ) : (

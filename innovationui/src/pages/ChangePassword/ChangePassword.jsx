@@ -17,26 +17,36 @@ const ChangePassword = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setError('');
+    if (errors[name] || errors.form) {
+      setErrors(prev => ({ ...prev, [name]: '', form: '' }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
     setMessage('');
 
+    let hasError = false;
+    const newErrors = {};
+
     if (formData.newPassword !== formData.confirmPassword) {
-      setError('New passwords do not match');
-      return;
+      newErrors.confirmPassword = 'New passwords do not match';
+      hasError = true;
     }
 
     if (formData.newPassword.length < 6) {
-      setError('Password must be at least 6 characters');
+      newErrors.newPassword = 'Password must be at least 6 characters';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
       return;
     }
 
@@ -47,7 +57,7 @@ const ChangePassword = () => {
       setMessage('Password changed successfully! Redirecting...');
       setTimeout(() => navigate('/application', { replace: true }), 1500);
     } catch (err) {
-      setError(err.message || 'Failed to change password. Please try again.');
+      setErrors({ form: err.message || 'Failed to change password. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +80,6 @@ const ChangePassword = () => {
 
               <form onSubmit={handleSubmit} className="auth-form">
                 {message && <div className="form-success">{message}</div>}
-                {error && <div className="form-error">{error}</div>}
 
                 <div className="form-group">
                   <label>Current Password <span className="required">*</span></label>
@@ -114,6 +123,7 @@ const ChangePassword = () => {
                       {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  {errors.newPassword && <div className="field-error-text">{errors.newPassword}</div>}
                 </div>
 
                 <div className="form-group">
@@ -136,8 +146,10 @@ const ChangePassword = () => {
                       {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
                 </div>
 
+                {errors.form && <div className="form-error" style={{ marginBottom: '0.5rem' }}>{errors.form}</div>}
                 <button type="submit" className="submit-btn" disabled={isSubmitting}>
                   {isSubmitting ? 'UPDATING...' : 'CHANGE PASSWORD'}
                 </button>

@@ -35,10 +35,33 @@ async function request(path, options = {}) {
   const data = contentType.includes('application/json') ? await response.json() : await response.text();
 
   if (!response.ok) {
-    const message = Array.isArray(data?.errors)
-      ? data.errors.join(' ')
-      : data?.message || data || 'Request failed.';
-    throw new Error(message);
+    let message = 'Request failed.';
+    let errors = null;
+
+    if (data?.errors) {
+      if (Array.isArray(data.errors)) {
+        errors = data.errors;
+        message = data.errors.join(' ');
+      } else if (typeof data.errors === 'object') {
+        errors = [];
+        for (const key in data.errors) {
+          if (Array.isArray(data.errors[key])) {
+            errors.push(...data.errors[key]);
+          } else {
+            errors.push(String(data.errors[key]));
+          }
+        }
+        message = errors.join(' ');
+      }
+    } else {
+      message = data?.message || (typeof data === 'string' ? data : 'Request failed.');
+    }
+
+    const error = new Error(message);
+    if (errors) {
+      error.errors = errors;
+    }
+    throw error;
   }
 
   return data;
@@ -138,12 +161,14 @@ export const api = {
     selectedFiles.forEach((file) => formData.append('file', file));
     return request(`/application/upload/${applicationId}/${fileType}`, { method: 'POST', body: formData });
   },
+  deleteFile: (fileId) => request(`/application/upload/${fileId}`, { method: 'DELETE' }),
   getPreview: () => request(`/application/mine`),
   submitApplication: (applicationId) => request(`/application/submit/${applicationId}`, { method: 'POST' }),
   getAdminUsers: () => request('/admin/users'),
+  updateAdminUser: (id, payload) => request(`/admin/users/${id}`, { method: 'PUT', body: payload }),
   getAdminApps: () => request('/admin/applications'),
   getValidatorApps: () => request('/validator/applications'),
-  validatorApprove: (id) => request(`/validator/approve/${id}`, { method: 'POST' }),
+  validatorApprove: (id, payload) => request(`/validator/approve/${id}`, { method: 'POST', body: payload }),
   validatorReject: (id) => request(`/validator/reject/${id}`, { method: 'POST' }),
   getJuryApps: () => request('/jury/applications'),
   juryApprove: (id, payload) => request(`/jury/approve/${id}`, { method: 'POST', body: payload }),

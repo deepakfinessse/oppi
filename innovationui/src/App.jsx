@@ -58,6 +58,11 @@ function App() {
           <ViewApplication />
         </ProtectedRoute>
       } />
+      <Route path="/admin/edit-application/:id" element={
+        <ProtectedRoute role="ADMIN">
+          <ApplicationForm />
+        </ProtectedRoute>
+      } />
       {/* <Route path="/my-application" element={
         <ProtectedRoute>
           <ViewApplication isMine={true} />

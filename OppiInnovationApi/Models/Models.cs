@@ -133,8 +133,28 @@ public class JuryReview
     public int BusinessPlanScore { get; set; }
     public int ImpactScore { get; set; }
     public double WeightedScore { get; set; }
+    public bool IsDraft { get; set; } = false;
+    public string? Remarks { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public virtual Application Application { get; set; } = null!;
     public virtual User Jury { get; set; } = null!;
+}
+
+public class ValidatorReview
+{
+    public int Id { get; set; }
+    public int ApplicationId { get; set; }
+    public int ValidatorId { get; set; }
+    public int InnovationIpScore { get; set; }
+    public int TeamStrengthScore { get; set; }
+    public int BusinessPlanScore { get; set; }
+    public int ImpactScore { get; set; }
+    public double WeightedScore { get; set; }
+    public bool IsDraft { get; set; } = false;
+    public string? Remarks { get; set; }
+    public DateTime CreatedAt { get; set; }
+
+    public virtual Application Application { get; set; } = null!;
+    public virtual User Validator { get; set; } = null!;
 }

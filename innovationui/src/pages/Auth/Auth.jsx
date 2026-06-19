@@ -1,10 +1,52 @@
 // pages/Auth/Auth.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Info } from 'lucide-react';
 import { api, saveSession } from '../../services/api';
 import './Auth.css';
 import trophyImg from '../../assets/Trophy1.png';
+
+const parseValidationErrors = (err) => {
+  const newErrors = {};
+  const unmappedErrors = [];
+
+  const errorList = err.errors || (err.message ? [err.message] : []);
+
+  errorList.forEach(msg => {
+    const lower = msg.toLowerCase();
+    let mapped = false;
+
+    if (lower.includes("first_name") || lower.includes("first name") || lower.includes("first_ name")) {
+      newErrors.firstName = newErrors.firstName ? `${newErrors.firstName} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("last_name") || lower.includes("last name") || lower.includes("last_ name")) {
+      newErrors.lastName = newErrors.lastName ? `${newErrors.lastName} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("email")) {
+      newErrors.emailId = newErrors.emailId ? `${newErrors.emailId} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("mobile") || lower.includes("must be 10 digits") || lower.includes("mobile number") || lower.includes("mobilenumber")) {
+      newErrors.mobileNumber = newErrors.mobileNumber ? `${newErrors.mobileNumber} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("password") || lower.includes("need uppercase") || lower.includes("need lowercase") || lower.includes("need digit")) {
+      newErrors.password = newErrors.password ? `${newErrors.password} ${msg}` : msg;
+      mapped = true;
+    }
+
+    if (!mapped) {
+      unmappedErrors.push(msg);
+    }
+  });
+
+  return {
+    newErrors,
+    formError: unmappedErrors.length > 0 ? unmappedErrors.join(' ') : ''
+  };
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -13,7 +55,7 @@ const Auth = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -26,12 +68,14 @@ const Auth = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (error) setError('');
+    if (errors[name] || errors.form) {
+      setErrors(prev => ({ ...prev, [name]: '', form: '' }));
+    }
   };
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setError('');
+    setErrors({});
     setMessage('');
     setShowPassword(false);
     setShowConfirmPassword(false);
@@ -47,7 +91,7 @@ const Auth = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
     setIsSubmitting(true);
 
     try {
@@ -66,7 +110,12 @@ const Auth = () => {
         navigate('/application', { replace: true });
       }
     } catch (err) {
-      setError(err.message || 'Invalid email or password');
+      const { newErrors, formError } = parseValidationErrors(err);
+      setErrors(prev => ({
+        ...prev,
+        ...newErrors,
+        form: formError || (Object.keys(newErrors).length > 0 ? '' : (err.message || 'Invalid email or password'))
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -75,17 +124,31 @@ const Auth = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
+    let hasError = false;
+    const newErrors = {};
+
+    const passwordVal = formData.password || '';
+    const hasMinLength = passwordVal.length >= 8;
+    const hasUppercase = /[A-Z]/.test(passwordVal);
+    const hasLowercase = /[a-z]/.test(passwordVal);
+    const hasNumber = /\d/.test(passwordVal);
+
+    if (!hasMinLength || !hasUppercase || !hasLowercase || !hasNumber) {
+      newErrors.password = 'Password does not meet the requirements below';
+      hasError = true;
+    }
+
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      newErrors.confirmPassword = 'Passwords do not match';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    setError('');
+    setErrors({});
     setMessage('');
     setIsSubmitting(true);
 
@@ -98,7 +161,12 @@ const Auth = () => {
         setFormData(prev => ({ ...prev, emailId: '', password: '', confirmPassword: '' }));
       }, 1500);
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      const { newErrors, formError } = parseValidationErrors(err);
+      setErrors(prev => ({
+        ...prev,
+        ...newErrors,
+        form: formError || (Object.keys(newErrors).length > 0 ? '' : (err.message || 'Registration failed. Please try again.'))
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +199,6 @@ const Auth = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="auth-form">
-                {error && <div className="form-error">{error}</div>}
                 {message && <div className="form-success">{message}</div>}
 
                 {/* REGISTER FIELDS */}
@@ -148,6 +215,7 @@ const Auth = () => {
                           onChange={handleChange}
                           required
                         />
+                        {errors.firstName && <div className="field-error-text">{errors.firstName}</div>}
                       </div>
                       <div className="form-group">
                         <label>Last Name <span className="required">*</span></label>
@@ -159,6 +227,7 @@ const Auth = () => {
                           onChange={handleChange}
                           required
                         />
+                        {errors.lastName && <div className="field-error-text">{errors.lastName}</div>}
                       </div>
                     </div>
 
@@ -178,6 +247,7 @@ const Auth = () => {
                             required
                           />
                         </div>
+                        {errors.mobileNumber && <div className="field-error-text">{errors.mobileNumber}</div>}
                       </div>
                       <div className="form-group">
                         <label>Email Id <span className="required">*</span></label>
@@ -189,6 +259,7 @@ const Auth = () => {
                           onChange={handleChange}
                           required
                         />
+                        {errors.emailId && <div className="field-error-text">{errors.emailId}</div>}
                       </div>
                     </div>
                   </>
@@ -206,6 +277,7 @@ const Auth = () => {
                       onChange={handleChange}
                       required
                     />
+                    {errors.emailId && <div className="field-error-text">{errors.emailId}</div>}
                   </div>
                 )}
 
@@ -230,6 +302,7 @@ const Auth = () => {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  {errors.password && <div className="field-error-text">{errors.password}</div>}
                 </div>
 
                 {/* CONFIRM PASSWORD - Register only */}
@@ -254,6 +327,13 @@ const Auth = () => {
                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
+
+                    <div className="password-instruction-msg">
+                      <Info size={14} style={{ marginRight: '4px', verticalAlign: 'middle', flexShrink: 0 }} />
+                      <span>Password must contain at least 8 characters, including one uppercase letter (A–Z), one lowercase letter (a–z), and one number (0–9)</span>
+                    </div>
+
+                    {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
                   </div>
                 )}
 
@@ -282,6 +362,7 @@ const Auth = () => {
                   </div>
                 )}
 
+                {errors.form && <div className="form-error" style={{ marginBottom: '1rem' }}>{errors.form}</div>}
                 <button type="submit" className="submit-btn" disabled={isSubmitting}>
                   {isSubmitting
                     ? (isLogin ? 'LOGGING IN...' : 'REGISTERING...')

@@ -68,4 +68,26 @@ public class JuryApprovalDto
     public int TeamStrengthScore { get; set; }
     public int BusinessPlanScore { get; set; }
     public int ImpactScore { get; set; }
+    public bool IsDraft { get; set; }
+    public string? Remarks { get; set; }
+}
+
+public class ValidatorApprovalDto
+{
+    public int InnovationIpScore { get; set; }
+    public int TeamStrengthScore { get; set; }
+    public int BusinessPlanScore { get; set; }
+    public int ImpactScore { get; set; }
+    public bool IsDraft { get; set; }
+    public string? Remarks { get; set; }
+}
+
+public class UserUpdateDto
+{
+    public string FirstName { get; set; } = null!;
+    public string LastName { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string? Mobile { get; set; }
+    public string Role { get; set; } = null!;
+    public string? Password { get; set; }
 }

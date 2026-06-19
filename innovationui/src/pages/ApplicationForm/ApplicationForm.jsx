@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { api, getApplicationStorageKey, getSession, clearSession, getFileUrl } from '../../services/api';
 import oppiLogo from '../../assets/OPPI-logo-black.png';
 import FileUploadField from '../../components/FileUploadField/FileUploadField';
@@ -35,21 +35,21 @@ const section2Fields = [
   { name: 'websitePresence', label: 'Website', required: true },
   { name: 'socialMedia', label: 'Social media', required: true },
   { name: 'physicalOutlets', label: 'Physical outlets', required: true },
-  { name: 'uploads', label: 'Upload PDF, Photo or Video (up to 5 attachments, max 8MB each)', required: true, type: 'file', multiple: true },
+  { name: 'uploads', label: 'Upload PDF, PNG or JPEG (up to 5 attachments, max 8MB each)', required: true, type: 'file', multiple: true },
   { name: 'futurePlans', label: 'Future expansion plans over the next 3 years', required: true, type: 'textarea' },
 ];
 
 const section3Fields = [
   { name: 'customerHelp', label: 'How does your start-up help your customer and end-user', required: true, type: 'textarea' },
   { name: 'customerTestimonial', label: 'Customer Testimonial (If not applicable, please mention "NA" in the text space)', required: true, type: 'textarea' },
-  { name: 'customerTestimonialUpload', label: 'Upload Customer Testimonial (PDF, Photo or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Testimonial' },
+  { name: 'customerTestimonialUpload', label: 'Upload Customer Testimonial (PDF, PNG or JPEG, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Testimonial' },
   { name: 'numEmployees', label: 'Number of employees', required: true, type: 'number' },
   { name: 'boardDirectors', label: 'Details of board of directors', required: true, type: 'textarea' },
-  { name: 'boardDirectorsUpload', label: 'Upload details of board of directors (PDF, Photo or Video, up to 5, 8MB each)', required: true, type: 'file', multiple: true, fileType: 'Board' },
+  { name: 'boardDirectorsUpload', label: 'Upload details of board of directors (PDF, PNG or JPEG, up to 5, 8MB each)', required: true, type: 'file', multiple: true, fileType: 'Board' },
   { name: 'investors', label: 'Details of the investors', required: true, type: 'textarea' },
-  { name: 'investorsUpload', label: 'Upload Details of the investors (PDF, Photo or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Investors' },
+  { name: 'investorsUpload', label: 'Upload Details of the investors (PDF, PNG or JPEG, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Investors' },
   { name: 'mediaMentions', label: 'Media mentions / Accolades (academic publications, campus magazines, research publications, etc.)', required: false, type: 'textarea' },
-  { name: 'mediaMentionsUpload', label: 'Upload Media mentions / Accolades (PDF, Photo or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Media' },
+  { name: 'mediaMentionsUpload', label: 'Upload Media mentions / Accolades (PDF, PNG or JPEG, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Media' },
   { name: 'patents', label: 'Patents (Include approved and/or applied)', required: false, type: 'textarea' },
   { name: 'benefits', label: 'What are the benefits of your product/service: competitive analysis', required: true, type: 'textarea' },
 ];
@@ -180,6 +180,7 @@ function PreviewExistingFile({ file }) {
 function ApplicationForm() {
   const session = getSession();
   const navigate = useNavigate();
+  const { id: routeId } = useParams();
   const actionRef = useRef('next');
   const [activeStep, setActiveStep] = useState(0);
   const [files, setFiles] = useState({});
@@ -188,15 +189,19 @@ function ApplicationForm() {
   const [isSaving, setIsSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [applicationId, setApplicationId] = useState(() => {
+    if (routeId) return routeId;
     if (!session?.userId) return null;
     return localStorage.getItem(getApplicationStorageKey(session.userId));
   });
-  const [formData, setFormData] = useState(() => ({
-    firstName: session?.first_name || '',
-    lastName: session?.last_name || '',
-    email: session?.email || '',
-    mobile: session?.mobile || '',
-  }));
+  const [formData, setFormData] = useState(() => {
+    const isEditingSpecificApp = !!routeId;
+    return {
+      firstName: isEditingSpecificApp ? '' : (session?.first_name || ''),
+      lastName: isEditingSpecificApp ? '' : (session?.last_name || ''),
+      email: isEditingSpecificApp ? '' : (session?.email || ''),
+      mobile: isEditingSpecificApp ? '' : (session?.mobile || ''),
+    };
+  });
 
   const visibleSection1Fields = useMemo(
     () => section1Fields.filter((field) => !field.showIf || field.showIf(formData)),
@@ -209,17 +214,28 @@ function ApplicationForm() {
   useEffect(() => {
     const checkExisting = async () => {
       try {
-        const data = await api.getPreview();
-        if (data && data.status && data.status !== 'DRAFT') {
-          // navigate('/my-application', { replace: true });
-          navigate('/thank-you', { replace: true });
-          return; // Do not clear initializing state, let it redirect
-        } else if (data && data.status === 'DRAFT') {
+        const isEditingSpecificApp = !!routeId;
+        const data = isEditingSpecificApp ? await api.getAppReview(routeId) : await api.getPreview();
+        
+        if (data) {
+          if (!isEditingSpecificApp && data.status && data.status !== 'DRAFT') {
+            navigate('/thank-you', { replace: true });
+            return;
+          }
+
           setApplicationId(String(data.id));
 
           // Populate existing text data
           setFormData(prev => {
             const newData = { ...prev };
+
+            if (isEditingSpecificApp) {
+              const nameParts = (data.user_name || '').trim().split(/\s+/);
+              newData.firstName = nameParts[0] || '';
+              newData.lastName = nameParts.slice(1).join(' ') || '';
+              newData.email = data.user_email || '';
+              newData.mobile = data.user_mobile || '';
+            }
 
             if (data.personal_info) {
               newData.companyName = data.personal_info.companyName || data.personal_info.CompanyName || '';
@@ -261,8 +277,8 @@ function ApplicationForm() {
           if (data.file_uploads) {
             setExistingFiles(data.file_uploads);
           }
-          setIsInitializing(false);
         }
+        setIsInitializing(false);
       } catch (err) {
         // If no application exists, ignore.
         console.log(err);
@@ -270,7 +286,7 @@ function ApplicationForm() {
       }
     };
     checkExisting();
-  }, [navigate]);
+  }, [navigate, routeId]);
 
   if (!session?.token) {
     return <Navigate to="/login" replace />;
@@ -348,6 +364,20 @@ function ApplicationForm() {
     setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
+  const handleRemoveExistingFile = async (name, fileId) => {
+    if (!window.confirm('Are you sure you want to delete this file?')) return;
+    setServerError('');
+    setIsSaving(true);
+    try {
+      await api.deleteFile(fileId);
+      setExistingFiles((prev) => prev.filter((f) => (f.id || f.Id) !== fileId));
+    } catch (err) {
+      setServerError(err.message || 'Unable to delete file. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const validateFields = (fields) => {
     const newErrors = {};
 
@@ -393,8 +423,7 @@ function ApplicationForm() {
     try {
       await saveAction();
       if (actionRef.current === 'exit') {
-        // navigate('/my-application');
-        navigate('/thank-you');
+        navigate(routeId ? '/admin' : '/');
       } else {
         handleNext();
       }
@@ -529,6 +558,7 @@ function ApplicationForm() {
       selectedFiles={files[field.name] || []}
       onFilesChange={handleFilesChange}
       onRemoveNew={handleRemoveNewFile}
+      onRemoveExisting={handleRemoveExistingFile}
       disabled={isSaving}
       error={errors[field.name]}
     />
@@ -629,6 +659,9 @@ function ApplicationForm() {
             {applicationId && (
               <span className="application-id-badge">Application ID: {applicationId}</span>
             )}
+            {routeId && (
+              <button type="button" className="btn-header dashboard" onClick={() => navigate('/admin')}>BACK TO DASHBOARD</button>
+            )}
             <button type="button" className="btn-header change-pwd" onClick={() => navigate('/change-password')}>CHANGE PASSWORD</button>
             <button type="button" className="btn-header logout" onClick={handleLogout}>LOG OUT <span className="logout-icon">→</span></button>
           </div>
@@ -715,8 +748,15 @@ function ApplicationForm() {
                       </>
                  
                     )}
-                    {activeStep === 3 && (
-                      <button type="submit" onClick={() => { actionRef.current = 'next'; }} disabled={isSaving} className="btn-submit">{isSaving ? 'Submitting...' : 'Submit Application'}</button>
+                     {activeStep === 3 && (
+                      <button
+                        type={routeId ? 'button' : 'submit'}
+                        onClick={routeId ? () => navigate('/admin') : (() => { actionRef.current = 'next'; })}
+                        disabled={isSaving}
+                        className="btn-submit"
+                      >
+                        {routeId ? 'Finish & Return to Dashboard' : (isSaving ? 'Submitting...' : 'Submit Application')}
+                      </button>
                     )}
                   </div>
                 </div>

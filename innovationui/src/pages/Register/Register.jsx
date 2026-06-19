@@ -5,6 +5,49 @@ import { api } from '../../services/api';
 import './Register.css';
 import trophyImg from '../../assets/Trophy1.png';
 
+const parseValidationErrors = (err) => {
+  const newErrors = {};
+  const unmappedErrors = [];
+
+  const errorList = err.errors || (err.message ? [err.message] : []);
+
+  errorList.forEach(msg => {
+    const lower = msg.toLowerCase();
+    let mapped = false;
+
+    if (lower.includes("first_name") || lower.includes("first name") || lower.includes("first_ name")) {
+      newErrors.firstName = newErrors.firstName ? `${newErrors.firstName} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("last_name") || lower.includes("last name") || lower.includes("last_ name")) {
+      newErrors.lastName = newErrors.lastName ? `${newErrors.lastName} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("email")) {
+      newErrors.emailId = newErrors.emailId ? `${newErrors.emailId} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("mobile") || lower.includes("must be 10 digits") || lower.includes("mobile number") || lower.includes("mobilenumber")) {
+      newErrors.mobileNumber = newErrors.mobileNumber ? `${newErrors.mobileNumber} ${msg}` : msg;
+      mapped = true;
+    }
+    if (lower.includes("password") || lower.includes("need uppercase") || lower.includes("need lowercase") || lower.includes("need digit")) {
+      newErrors.password = newErrors.password ? `${newErrors.password} ${msg}` : msg;
+      newErrors.createPassword = newErrors.createPassword ? `${newErrors.createPassword} ${msg}` : msg;
+      mapped = true;
+    }
+
+    if (!mapped) {
+      unmappedErrors.push(msg);
+    }
+  });
+
+  return {
+    newErrors,
+    formError: unmappedErrors.length > 0 ? unmappedErrors.join(' ') : ''
+  };
+};
+
 const Register = () => {
   const navigate = useNavigate();
   const [showCreatePassword, setShowCreatePassword] = useState(false);
@@ -19,7 +62,7 @@ const Register = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,18 +70,40 @@ const Register = () => {
       ...prevState,
       [name]: value
     }));
+    // Clear error for the field being edited
+    if (errors[name] || errors.form) {
+      setErrors(prev => ({ ...prev, [name]: '', form: '' }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Add password validation
+    let hasError = false;
+    const newErrors = {};
+
+    const passwordVal = formData.createPassword || '';
+    const hasMinLength = passwordVal.length >= 8;
+    const hasUppercase = /[A-Z]/.test(passwordVal);
+    const hasLowercase = /[a-z]/.test(passwordVal);
+    const hasNumber = /\d/.test(passwordVal);
+
+    if (!hasMinLength || !hasUppercase || !hasLowercase || !hasNumber) {
+      newErrors.createPassword = 'Password does not meet the requirements below';
+      hasError = true;
+    }
+
     if (formData.createPassword !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      newErrors.confirmPassword = 'Passwords do not match';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
       return;
     }
 
-    setError('');
+    setErrors({});
     setMessage('');
     setIsSubmitting(true);
 
@@ -47,7 +112,12 @@ const Register = () => {
       setMessage('Registration successful. Redirecting to login...');
       setTimeout(() => navigate('/login', { replace: true }), 800);
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      const { newErrors, formError } = parseValidationErrors(err);
+      setErrors(prev => ({
+        ...prev,
+        ...newErrors,
+        form: formError || (Object.keys(newErrors).length > 0 ? '' : (err.message || 'Registration failed. Please try again.'))
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +140,6 @@ const Register = () => {
 
               <form onSubmit={handleSubmit} className="register-form">
                 {message && <div className="form-success">{message}</div>}
-                {error && <div className="form-error">{error}</div>}
 
                 <div className="form-row">
                   <div className="form-group">
@@ -83,6 +152,7 @@ const Register = () => {
                       onChange={handleChange}
                       required
                     />
+                    {errors.firstName && <div className="field-error-text">{errors.firstName}</div>}
                   </div>
                   <div className="form-group">
                     <label>Last Name <span className="required">*</span></label>
@@ -94,6 +164,7 @@ const Register = () => {
                       onChange={handleChange}
                       required
                     />
+                    {errors.lastName && <div className="field-error-text">{errors.lastName}</div>}
                   </div>
                 </div>
 
@@ -114,6 +185,7 @@ const Register = () => {
                         required
                       />
                     </div>
+                    {errors.mobileNumber && <div className="field-error-text">{errors.mobileNumber}</div>}
                   </div>
                   <div className="form-group">
                     <label>Email Id <span className="required">*</span></label>
@@ -125,10 +197,11 @@ const Register = () => {
                       onChange={handleChange}
                       required
                     />
+                    {errors.emailId && <div className="field-error-text">{errors.emailId}</div>}
                   </div>
                 </div>
 
-                <div className="form-group">
+                 <div className="form-group">
                   <label>Create Password <span className="required">*</span></label>
                   <div className="password-input-wrapper">
                     <input
@@ -147,9 +220,10 @@ const Register = () => {
                       {showCreatePassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  {errors.createPassword && <div className="field-error-text">{errors.createPassword}</div>}
                 </div>
 
-                <div className="form-group">
+                 <div className="form-group">
                   <label>Confirm Password <span className="required">*</span></label>
                   <div className="password-input-wrapper">
                     <input
@@ -168,6 +242,27 @@ const Register = () => {
                       {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+
+                  <div className="password-requirements">
+                    <div className={`requirement ${(formData.createPassword || '').length >= 8 ? 'met' : ''}`}>
+                      <span className="req-icon">{(formData.createPassword || '').length >= 8 ? '✓' : '○'}</span>
+                      <span>Min. 8 characters</span>
+                    </div>
+                    <div className={`requirement ${/[A-Z]/.test(formData.createPassword || '') ? 'met' : ''}`}>
+                      <span className="req-icon">{/[A-Z]/.test(formData.createPassword || '') ? '✓' : '○'}</span>
+                      <span>One uppercase (A-Z)</span>
+                    </div>
+                    <div className={`requirement ${/[a-z]/.test(formData.createPassword || '') ? 'met' : ''}`}>
+                      <span className="req-icon">{/[a-z]/.test(formData.createPassword || '') ? '✓' : '○'}</span>
+                      <span>One lowercase (a-z)</span>
+                    </div>
+                    <div className={`requirement ${/\d/.test(formData.createPassword || '') ? 'met' : ''}`}>
+                      <span className="req-icon">{/\d/.test(formData.createPassword || '') ? '✓' : '○'}</span>
+                      <span>One number (0-9)</span>
+                    </div>
+                  </div>
+
+                  {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
                 </div>
 
                 <div className="form-footer">
@@ -183,6 +278,7 @@ const Register = () => {
                       </div>
                     </div>
                   </div>
+                  {errors.form && <div className="form-error" style={{ marginBottom: '1rem' }}>{errors.form}</div>}
                   <button type="submit" className="btn-register" disabled={isSubmitting}>
                     {isSubmitting ? 'REGISTERING...' : 'REGISTER'}
                   </button>
