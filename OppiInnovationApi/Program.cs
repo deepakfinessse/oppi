@@ -1202,7 +1202,7 @@ app.MapGet("/jury-members", async (InnovationDbContext db) =>
     var members = await db.JuryMembers
         .OrderBy(m => m.SortOrder)
         .ThenBy(m => m.Name)
-        .Select(m => new { m.Id, m.Name, m.Role, m.ImageUrl, m.Type, m.SortOrder })
+        .Select(m => new { m.Id, m.Name, m.Email, m.Role, m.ImageUrl, m.Type, m.SortOrder })
         .ToListAsync();
     return Results.Ok(members);
 });
