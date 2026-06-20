@@ -1262,4 +1262,41 @@
   transform: none !important;
 }
 
+/* Premium Image Upload Dropzone */
+.file-dropzone {
+  border: 2px dashed #cbd5e1 !important;
+  background-color: #f8fafc !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  text-align: center !important;
+  transition: all 0.2s ease-in-out !important;
+  cursor: pointer !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.file-dropzone:hover {
+  border-color: #2563eb !important;
+  background-color: #f1f5f9 !important;
+}
+
+.dropzone-label {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  cursor: pointer !important;
+  font-size: 0.85rem !important;
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+
+.dropzone-label span {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.825rem !important;
+  color: #64748b !important;
+}
+
+
 
