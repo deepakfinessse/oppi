@@ -63,6 +63,7 @@ export default function ViewApplication({ isMine }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [app, setApp] = useState(null);
+  const [juryMembers, setJuryMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(false);
@@ -73,10 +74,14 @@ export default function ViewApplication({ isMine }) {
   useEffect(() => {
     const fetchApp = async () => {
       try {
-        const data = isMine ? await api.getPreview() : await api.getAppReview(id);
-        setApp(data);
+        const [appData, juryData] = await Promise.all([
+          isMine ? api.getPreview() : api.getAppReview(id),
+          api.getJuryMembers().catch(() => [])
+        ]);
+        setApp(appData);
+        setJuryMembers(juryData || []);
       } catch (err) {
-        setError('Failed to load application details', err.message);
+        setError('Failed to load application details');
       } finally {
         setLoading(false);
       }
@@ -190,6 +195,8 @@ export default function ViewApplication({ isMine }) {
     applicantMobile = app.user_mobile || '—';
   }
 
+  const totalJuries = juryMembers.filter(m => m.type === 'JURY').length;
+
   return (
     <DashboardLayout
       title={isMine ? 'Applicant Dashboard' : 'Application Review'}
@@ -233,7 +240,7 @@ export default function ViewApplication({ isMine }) {
                 {(userRole === 'ADMIN' || userRole === 'JURY') && (
                   <>
                     <div style={{ borderTop: '1px solid #cbd5e1', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
-                      <strong>Jury Approvals:</strong> {app.jury_approval_count || 0} / 3
+                      <strong>Jury Approvals:</strong> {app.jury_approval_count || 0} / {totalJuries || 3}
                     </div>
                     <div>
                       <strong>Overall Avg Score:</strong> {app.average_score ? app.average_score.toFixed(2) : '—'} / 5.00

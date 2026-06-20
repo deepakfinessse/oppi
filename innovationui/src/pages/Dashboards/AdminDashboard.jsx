@@ -117,7 +117,7 @@ export default function AdminDashboard() {
       name: member.name || '',
       email: member.email || '',
       role: member.role || '',
-      type: member.type || 'JURY',
+      type: member.type || 'USER',
       sortOrder: member.sortOrder || 0,
       password: '',
       imageFile: null
@@ -213,6 +213,8 @@ export default function AdminDashboard() {
     return numStr;
   };
 
+  const totalJuries = juryMembers.filter(m => m.type === 'JURY').length;
+
   // Filter Registered Users
   const filteredUsers = users.filter(u => {
     if (userFilter === 'ALL') return true;
@@ -258,7 +260,7 @@ export default function AdminDashboard() {
         { label: 'Company', key: 'company' },
         { label: 'Status', key: 'status' },
         { label: 'Validator Score', key: 'validator_score', format: (v) => v ? v.toFixed(2) : '—' },
-        { label: 'Jury Approval Score', key: 'jury_approval_count', format: (v, row) => `${v || 0}/3 (${row.average_score ? row.average_score.toFixed(2) : '—'})` }
+        { label: 'Jury Approval Score', key: 'jury_approval_count', format: (v, row) => `${v || 0}/${totalJuries || 3} (${row.average_score ? row.average_score.toFixed(2) : '—'})` }
       ];
     }
 
@@ -376,10 +378,10 @@ export default function AdminDashboard() {
                     <td>
                       {a.jury_approval_count > 0 ? (
                         <span>
-                          <strong>{a.jury_approval_count}/3</strong> ({a.average_score ? a.average_score.toFixed(2) : '0.00'})
+                          <strong>{a.jury_approval_count}/{totalJuries || 3}</strong> ({a.average_score ? a.average_score.toFixed(2) : '0.00'})
                         </span>
                       ) : (
-                        <span style={{ color: '#94a3b8' }}>0/3 (—)</span>
+                        <span style={{ color: '#94a3b8' }}>0/{totalJuries || 3} (—)</span>
                       )}
                     </td>
                     <td>
@@ -409,8 +411,8 @@ export default function AdminDashboard() {
           <div className="dashboard-section-header">
             <h3>Jury Board ({juryMembers.length})</h3>
             <div className="admin-header-actions">
-              <button 
-                className="btn-download" 
+              <button
+                className="btn-download"
                 style={{ background: '#2563eb', color: 'white', border: 'none' }}
                 onClick={handleAddJuryMember}
               >
@@ -437,10 +439,10 @@ export default function AdminDashboard() {
                   <tr key={m.id}>
                     <td>
                       {m.imageUrl ? (
-                        <img 
-                          src={getFileUrl(m.imageUrl)} 
-                          alt={m.name} 
-                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} 
+                        <img
+                          src={getFileUrl(m.imageUrl)}
+                          alt={m.name}
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
                         />
                       ) : (
                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: '#64748b' }}>
@@ -462,13 +464,13 @@ export default function AdminDashboard() {
                         <button className="btn-action edit" onClick={() => handleEditJuryMember(m)} title="Edit Member">
                           <Edit size={16} />
                         </button>
-                        <button 
-                          className="btn-action view" 
-                          style={{ color: '#dc2626' }} 
-                          onClick={() => handleDeleteJuryMember(m.id, m.name)} 
+                        <button
+                          className="btn-action view"
+                          style={{ color: '#dc2626' }}
+                          onClick={() => handleDeleteJuryMember(m.id, m.name)}
                           title="Delete Member"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
                         </button>
                       </div>
                     </td>
@@ -736,7 +738,7 @@ export default function AdminDashboard() {
                     style={{ display: 'none' }}
                   />
                   <label htmlFor="jury-image-upload" className="dropzone-label">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="upload-icon" style={{ color: '#2563eb', marginBottom: '4px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="upload-icon" style={{ color: '#2563eb', marginBottom: '4px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
                     <span>{juryForm.imageFile ? juryForm.imageFile.name : (selectedJuryMember ? "Click to change profile picture" : "Click to select profile picture")}</span>
                   </label>
                 </div>
