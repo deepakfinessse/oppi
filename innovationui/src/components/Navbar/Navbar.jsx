@@ -41,7 +41,7 @@ const Navbar = () => {
             </li>
           ))}
           <li>
-            <Link to="/auth" className="apply-btn" style={{ color: "white" }} onClick={() => setIsMobileMenuOpen(false)}>
+            <Link to="/auth" className="apply-btn" style={{ color: "white", border: "3px solid white" }} onClick={() => setIsMobileMenuOpen(false)}>
               APPLY NOW <ArrowRight size={18} />
             </Link>
           </li>
