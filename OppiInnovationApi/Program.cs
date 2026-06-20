@@ -169,8 +169,7 @@ using (var scope = app.Services.CreateScope())
         }
 
         // Seeding jury members and images
-        var uploadsDir = Path.Combine(app.Environment.WebRootPath, "uploads");
-        var juryUploadsDir = Path.Combine(uploadsDir, "jury");
+        var juryUploadsDir = Path.Combine(app.Environment.WebRootPath, "uploads", "jury");
         Directory.CreateDirectory(juryUploadsDir);
         
         var assetsDir = Path.Combine(Directory.GetCurrentDirectory(), "..", "innovationui", "src", "assets");
