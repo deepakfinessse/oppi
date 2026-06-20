@@ -163,6 +163,7 @@ public class JuryMember
 {
     public int Id { get; set; }
     public string Name { get; set; } = null!;
+    public string Email { get; set; } = null!;
     public string Role { get; set; } = null!;
     public string? ImageUrl { get; set; }
     public string Type { get; set; } = "JURY"; // Can be "VALIDATOR" or "JURY"

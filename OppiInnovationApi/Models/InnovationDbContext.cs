@@ -184,6 +184,7 @@ public class InnovationDbContext : DbContext
             e.ToTable("jury_members");
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.Name).HasColumnName("name").HasMaxLength(255);
+            e.Property(x => x.Email).HasColumnName("email").HasMaxLength(255);
             e.Property(x => x.Role).HasColumnName("role").HasMaxLength(500);
             e.Property(x => x.ImageUrl).HasColumnName("image_url").HasMaxLength(1000);
             e.Property(x => x.Type).HasColumnName("type").HasColumnType("enum('VALIDATOR','JURY')").HasDefaultValue("JURY");

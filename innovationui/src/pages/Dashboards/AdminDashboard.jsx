@@ -38,9 +38,11 @@ export default function AdminDashboard() {
   const [selectedJuryMember, setSelectedJuryMember] = useState(null);
   const [juryForm, setJuryForm] = useState({
     name: '',
+    email: '',
     role: '',
     type: 'JURY',
     sortOrder: 0,
+    password: '',
     imageFile: null
   });
   const [juryModalError, setJuryModalError] = useState('');
@@ -113,9 +115,11 @@ export default function AdminDashboard() {
     setSelectedJuryMember(member);
     setJuryForm({
       name: member.name || '',
+      email: member.email || '',
       role: member.role || '',
       type: member.type || 'JURY',
       sortOrder: member.sortOrder || 0,
+      password: '',
       imageFile: null
     });
     setJuryModalError('');
@@ -126,9 +130,11 @@ export default function AdminDashboard() {
     setSelectedJuryMember(null);
     setJuryForm({
       name: '',
+      email: '',
       role: '',
       type: 'JURY',
       sortOrder: 0,
+      password: '',
       imageFile: null
     });
     setJuryModalError('');
@@ -152,6 +158,8 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       formData.append('name', juryForm.name);
+      formData.append('email', juryForm.email);
+      formData.append('password', juryForm.password);
       formData.append('role', juryForm.role);
       formData.append('type', juryForm.type);
       formData.append('sortOrder', juryForm.sortOrder);
@@ -487,6 +495,7 @@ export default function AdminDashboard() {
                 <tr>
                   <th>Image</th>
                   <th>Name</th>
+                  <th>Email</th>
                   <th>Role</th>
                   <th>Type</th>
                   <th>Sort Order</th>
@@ -510,6 +519,7 @@ export default function AdminDashboard() {
                       )}
                     </td>
                     <td><strong>{m.name}</strong></td>
+                    <td>{m.email}</td>
                     <td>{m.role}</td>
                     <td>
                       <span className={`admin-role-badge ${m.type.toLowerCase()}`}>
@@ -536,7 +546,7 @@ export default function AdminDashboard() {
                 ))}
                 {juryMembers.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="text-center">No jury members found.</td>
+                    <td colSpan="7" className="text-center">No jury members found.</td>
                   </tr>
                 )}
               </tbody>
@@ -642,6 +652,30 @@ export default function AdminDashboard() {
                   onChange={(e) => setJuryForm(prev => ({ ...prev, name: e.target.value }))}
                   className="modal-input"
                   placeholder="Enter name"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="modal-label">Email *</label>
+                <input
+                  type="email"
+                  required
+                  value={juryForm.email}
+                  onChange={(e) => setJuryForm(prev => ({ ...prev, email: e.target.value }))}
+                  className="modal-input"
+                  placeholder="Enter email for login"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="modal-label">Password {selectedJuryMember ? '(leave blank to keep unchanged)' : '*'}</label>
+                <input
+                  type="password"
+                  required={!selectedJuryMember}
+                  value={juryForm.password}
+                  onChange={(e) => setJuryForm(prev => ({ ...prev, password: e.target.value }))}
+                  className="modal-input"
+                  placeholder={selectedJuryMember ? "New password" : "Enter password for login"}
                 />
               </div>
 
