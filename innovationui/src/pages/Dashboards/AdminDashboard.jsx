@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, ChevronDown, Download, Eye, Edit } from 'lucide-react';
-import { api, clearSession } from '../../services/api';
+import { api, clearSession, getFileUrl } from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
@@ -9,6 +9,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [apps, setApps] = useState([]);
+  const [juryMembers, setJuryMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -32,24 +33,41 @@ export default function AdminDashboard() {
   const [userModalError, setUserModalError] = useState('');
   const [userModalSubmitting, setUserModalSubmitting] = useState(false);
 
+  // Jury edit modal states
+  const [showJuryModal, setShowJuryModal] = useState(false);
+  const [selectedJuryMember, setSelectedJuryMember] = useState(null);
+  const [juryForm, setJuryForm] = useState({
+    name: '',
+    role: '',
+    type: 'JURY',
+    sortOrder: 0,
+    imageFile: null
+  });
+  const [juryModalError, setJuryModalError] = useState('');
+  const [juryModalSubmitting, setJuryModalSubmitting] = useState(false);
+
+
   // Dropdown Refs
   const userDropdownRef = useRef(null);
   const appDropdownRef = useRef(null);
 
   const fetchAdminData = useCallback(async () => {
     try {
-      const [uRes, aRes] = await Promise.all([
+      const [uRes, aRes, jRes] = await Promise.all([
         api.getAdminUsers(),
-        api.getAdminApps()
+        api.getAdminApps(),
+        api.getJuryMembers()
       ]);
       setUsers(uRes);
       setApps(aRes);
+      setJuryMembers(jRes || []);
     } catch (err) {
-      setError('Failed to fetch data or unauthorized.', err.message);
+      setError('Failed to fetch data or unauthorized.');
     } finally {
       setLoading(false);
     }
   }, []);
+
 
   useEffect(() => {
     fetchAdminData();
@@ -90,6 +108,71 @@ export default function AdminDashboard() {
       setUserModalSubmitting(false);
     }
   };
+
+  const handleEditJuryMember = (member) => {
+    setSelectedJuryMember(member);
+    setJuryForm({
+      name: member.name || '',
+      role: member.role || '',
+      type: member.type || 'JURY',
+      sortOrder: member.sortOrder || 0,
+      imageFile: null
+    });
+    setJuryModalError('');
+    setShowJuryModal(true);
+  };
+
+  const handleAddJuryMember = () => {
+    setSelectedJuryMember(null);
+    setJuryForm({
+      name: '',
+      role: '',
+      type: 'JURY',
+      sortOrder: 0,
+      imageFile: null
+    });
+    setJuryModalError('');
+    setShowJuryModal(true);
+  };
+
+  const handleDeleteJuryMember = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete ${name}?`)) return;
+    try {
+      await api.deleteJuryMember(id);
+      fetchAdminData();
+    } catch (err) {
+      alert(err.message || 'Failed to delete jury member.');
+    }
+  };
+
+  const handleJurySubmit = async (e) => {
+    e.preventDefault();
+    setJuryModalError('');
+    setJuryModalSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', juryForm.name);
+      formData.append('role', juryForm.role);
+      formData.append('type', juryForm.type);
+      formData.append('sortOrder', juryForm.sortOrder);
+      if (juryForm.imageFile) {
+        formData.append('image', juryForm.imageFile);
+      }
+
+      if (selectedJuryMember) {
+        await api.updateJuryMember(selectedJuryMember.id, formData);
+      } else {
+        await api.createJuryMember(formData);
+      }
+      setShowJuryModal(false);
+      fetchAdminData();
+    } catch (err) {
+      setJuryModalError(err.message || 'Failed to save jury member.');
+    } finally {
+      setJuryModalSubmitting(false);
+    }
+  };
+
 
   // Click outside listener to close dropdowns
   useEffect(() => {
@@ -382,8 +465,87 @@ export default function AdminDashboard() {
             </table>
           </div>
         </div>
+
+        {/* Jury Board Members Section */}
+        <div className="dashboard-section">
+          <div className="dashboard-section-header">
+            <h3>Jury Board ({juryMembers.length})</h3>
+            <div className="admin-header-actions">
+              <button 
+                className="btn-download" 
+                style={{ background: '#2563eb', color: 'white', border: 'none' }}
+                onClick={handleAddJuryMember}
+              >
+                ADD MEMBER
+              </button>
+            </div>
+          </div>
+
+          <div className="table-responsive">
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Type</th>
+                  <th>Sort Order</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {juryMembers.map(m => (
+                  <tr key={m.id}>
+                    <td>
+                      {m.imageUrl ? (
+                        <img 
+                          src={getFileUrl(m.imageUrl)} 
+                          alt={m.name} 
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} 
+                        />
+                      ) : (
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: '#64748b' }}>
+                          No image
+                        </div>
+                      )}
+                    </td>
+                    <td><strong>{m.name}</strong></td>
+                    <td>{m.role}</td>
+                    <td>
+                      <span className={`admin-role-badge ${m.type.toLowerCase()}`}>
+                        {m.type.toLowerCase()}
+                      </span>
+                    </td>
+                    <td>{m.sortOrder}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button className="btn-action edit" onClick={() => handleEditJuryMember(m)} title="Edit Member">
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          className="btn-action view" 
+                          style={{ color: '#dc2626' }} 
+                          onClick={() => handleDeleteJuryMember(m.id, m.name)} 
+                          title="Delete Member"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {juryMembers.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="text-center">No jury members found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
       {showUserModal && (
+
         <div className="modal-overlay">
           <div className="modal-container user-edit-modal">
             <div className="modal-header">
@@ -460,6 +622,88 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {showJuryModal && (
+        <div className="modal-overlay">
+          <div className="modal-container user-edit-modal">
+            <div className="modal-header">
+              <h3>{selectedJuryMember ? 'Edit Jury Member' : 'Add Jury Member'}</h3>
+              <button className="modal-close-btn" onClick={() => setShowJuryModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleJurySubmit} className="user-edit-form">
+              {juryModalError && <div className="dashboard-error">{juryModalError}</div>}
+
+              <div className="form-group">
+                <label className="modal-label">Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={juryForm.name}
+                  onChange={(e) => setJuryForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="modal-input"
+                  placeholder="Enter name"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="modal-label">Role *</label>
+                <input
+                  type="text"
+                  required
+                  value={juryForm.role}
+                  onChange={(e) => setJuryForm(prev => ({ ...prev, role: e.target.value }))}
+                  className="modal-input"
+                  placeholder="Enter role / designation"
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="modal-label">Type *</label>
+                  <select
+                    value={juryForm.type}
+                    onChange={(e) => setJuryForm(prev => ({ ...prev, type: e.target.value }))}
+                    className="modal-input"
+                    style={{ padding: '8px 12px', background: '#fff', border: '1px solid #cbd5e1' }}
+                  >
+                    <option value="JURY">Jury Member</option>
+                    <option value="VALIDATOR">Validator</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="modal-label">Sort Order</label>
+                  <input
+                    type="number"
+                    value={juryForm.sortOrder}
+                    onChange={(e) => setJuryForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))}
+                    className="modal-input"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="modal-label">Profile Image {selectedJuryMember ? '(optional, leave empty to keep current)' : '*'}</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  required={!selectedJuryMember}
+                  onChange={(e) => setJuryForm(prev => ({ ...prev, imageFile: e.target.files[0] }))}
+                  className="modal-input"
+                  style={{ border: 'none', padding: '5px 0' }}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-modal-cancel" onClick={() => setShowJuryModal(false)}>Cancel</button>
+                <button type="submit" className="btn-modal-save" disabled={juryModalSubmitting}>
+                  {juryModalSubmitting ? 'Saving...' : 'Save Member'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </DashboardLayout>
   );
 }

@@ -17,6 +17,7 @@ public class InnovationDbContext : DbContext
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<JuryReview> JuryReviews => Set<JuryReview>();
     public DbSet<ValidatorReview> ValidatorReviews => Set<ValidatorReview>();
+    public DbSet<JuryMember> JuryMembers => Set<JuryMember>();
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
@@ -178,5 +179,17 @@ public class InnovationDbContext : DbContext
             e.HasOne(x => x.Validator).WithMany().HasForeignKey(x => x.ValidatorId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.ApplicationId, x.ValidatorId }).IsUnique();
         });
+
+        mb.Entity<JuryMember>(e => {
+            e.ToTable("jury_members");
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.Name).HasColumnName("name").HasMaxLength(255);
+            e.Property(x => x.Role).HasColumnName("role").HasMaxLength(500);
+            e.Property(x => x.ImageUrl).HasColumnName("image_url").HasMaxLength(1000);
+            e.Property(x => x.Type).HasColumnName("type").HasColumnType("enum('VALIDATOR','JURY')").HasDefaultValue("JURY");
+            e.Property(x => x.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+        });
     }
 }
+

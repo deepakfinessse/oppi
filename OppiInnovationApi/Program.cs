@@ -142,12 +142,113 @@ using (var scope = app.Services.CreateScope())
                 }
             }
         }
+
+        // 5. Check/Create jury_members table
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'jury_members'";
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            if (count == 0)
+            {
+                using (var cmdCreate = conn.CreateCommand())
+                {
+                    cmdCreate.CommandText = @"
+                        CREATE TABLE `jury_members` (
+                          `id` INT NOT NULL AUTO_INCREMENT,
+                          `name` VARCHAR(255) NOT NULL,
+                          `role` VARCHAR(500) NOT NULL,
+                          `image_url` VARCHAR(1000) NULL,
+                          `type` ENUM('VALIDATOR','JURY') NOT NULL DEFAULT 'JURY',
+                          `sort_order` INT NOT NULL DEFAULT 0,
+                          `created_at` DATETIME NOT NULL,
+                          PRIMARY KEY (`id`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+                    await cmdCreate.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
+        // Seeding jury members and images
+        var uploadsDir = Path.Combine(app.Environment.WebRootPath, "uploads");
+        var juryUploadsDir = Path.Combine(uploadsDir, "jury");
+        Directory.CreateDirectory(juryUploadsDir);
+        
+        var assetsDir = Path.Combine(Directory.GetCurrentDirectory(), "..", "innovationui", "src", "assets");
+        if (Directory.Exists(assetsDir))
+        {
+            var filesToCopy = new[] {
+                "Ashutosh-Pastor-with-round-bg.png",
+                "meena-ganesh--with-round-bg.png",
+                "Dr-Karthikeyan-Ponnalagu--with-round-bg.png",
+                "director_new1--with-round-bg.png"
+            };
+            foreach (var f in filesToCopy)
+            {
+                var src = Path.Combine(assetsDir, f);
+                var dest = Path.Combine(juryUploadsDir, f);
+                if (File.Exists(src) && !File.Exists(dest))
+                {
+                    try
+                    {
+                        File.Copy(src, dest);
+                    }
+                    catch (Exception copyEx)
+                    {
+                        Console.WriteLine($"Image copy warning: {copyEx.Message}");
+                    }
+                }
+            }
+        }
+
+        if (!db.JuryMembers.Any())
+        {
+            db.JuryMembers.AddRange(
+                new JuryMember
+                {
+                    Name = "Ashutosh Pastor",
+                    Role = "Sr. Manager and Head - Incubation, Foundation for Innovation & Technology Transfer, IIT Delhi",
+                    ImageUrl = "/uploads/jury/Ashutosh-Pastor-with-round-bg.png",
+                    Type = "VALIDATOR",
+                    SortOrder = 1,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new JuryMember
+                {
+                    Name = "Meena Ganesh",
+                    Role = "Co-Founder & Chairperson Portea Medical, Trustee Bahaar Foundation",
+                    ImageUrl = "/uploads/jury/meena-ganesh--with-round-bg.png",
+                    Type = "JURY",
+                    SortOrder = 2,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new JuryMember
+                {
+                    Name = "Dr Karthikeyan Ponnalagu",
+                    Role = "Engineering Director, AI and ML platforms, Amex India pvt Ltd",
+                    ImageUrl = "/uploads/jury/Dr-Karthikeyan-Ponnalagu--with-round-bg.png",
+                    Type = "JURY",
+                    SortOrder = 3,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new JuryMember
+                {
+                    Name = "Shubhini A. Saraf",
+                    Role = "Director, National Institute of Pharmaceutical Education & Research (NIPER), Raebareli",
+                    ImageUrl = "/uploads/jury/director_new1--with-round-bg.png",
+                    Type = "JURY",
+                    SortOrder = 4,
+                    CreatedAt = DateTime.UtcNow
+                }
+            );
+            await db.SaveChangesAsync();
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Database migration error: {ex.Message}");
+        Console.WriteLine($"Database migration/seeding error: {ex.Message}");
     }
 }
+
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
@@ -617,6 +718,143 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
     return Results.Ok(apps);
 });
 
+api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    if (!req.HasFormContentType) return Results.BadRequest(new { message = "Invalid content type" });
+    var form = await req.ReadFormAsync();
+
+    var name = form["name"].ToString();
+    var role = form["role"].ToString();
+    var type = form["type"].ToString();
+    var sortOrderStr = form["sortOrder"].ToString();
+
+    if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(role))
+    {
+        return Results.BadRequest(new { message = "Name and Role are required." });
+    }
+
+    if (type != "VALIDATOR" && type != "JURY")
+    {
+        type = "JURY";
+    }
+
+    int sortOrder = 0;
+    int.TryParse(sortOrderStr, out sortOrder);
+
+    string? imageUrl = null;
+    if (form.Files.Count > 0)
+    {
+        var file = form.Files[0];
+        if (file.Length > 5 * 1024 * 1024) return Results.BadRequest(new { message = "Image file exceeds 5MB limit" });
+        var ext = Path.GetExtension(file.FileName).ToLower();
+        var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        if (!allowed.Contains(ext)) return Results.BadRequest(new { message = "Image format not allowed" });
+        
+        var uniqueName = $"{Guid.NewGuid()}{ext}";
+        imageUrl = await storage.UploadFileAsync(file, "jury", uniqueName);
+    }
+
+    var member = new JuryMember
+    {
+        Name = name,
+        Role = role,
+        Type = type,
+        SortOrder = sortOrder,
+        ImageUrl = imageUrl,
+        CreatedAt = DateTime.UtcNow
+    };
+
+    db.JuryMembers.Add(member);
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_CREATE_JURY", "JuryMember", member.Id, $"Added jury member: {name} ({type})", GetIp(ctx));
+
+    return Results.Ok(member);
+});
+
+api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    var member = await db.JuryMembers.FindAsync(id);
+    if (member == null) return Results.NotFound();
+
+    if (!req.HasFormContentType) return Results.BadRequest(new { message = "Invalid content type" });
+    var form = await req.ReadFormAsync();
+
+    var name = form["name"].ToString();
+    var role = form["role"].ToString();
+    var type = form["type"].ToString();
+    var sortOrderStr = form["sortOrder"].ToString();
+
+    if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(role))
+    {
+        return Results.BadRequest(new { message = "Name and Role are required." });
+    }
+
+    if (type != "VALIDATOR" && type != "JURY")
+    {
+        type = "JURY";
+    }
+
+    int sortOrder = 0;
+    int.TryParse(sortOrderStr, out sortOrder);
+
+    member.Name = name;
+    member.Role = role;
+    member.Type = type;
+    member.SortOrder = sortOrder;
+
+    if (form.Files.Count > 0)
+    {
+        var file = form.Files[0];
+        if (file.Length > 5 * 1024 * 1024) return Results.BadRequest(new { message = "Image file exceeds 5MB limit" });
+        var ext = Path.GetExtension(file.FileName).ToLower();
+        var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        if (!allowed.Contains(ext)) return Results.BadRequest(new { message = "Image format not allowed" });
+        
+        // Delete old image if exists
+        if (!string.IsNullOrEmpty(member.ImageUrl))
+        {
+            await storage.DeleteFileAsync(member.ImageUrl);
+        }
+
+        var uniqueName = $"{Guid.NewGuid()}{ext}";
+        member.ImageUrl = await storage.UploadFileAsync(file, "jury", uniqueName);
+    }
+
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_UPDATE_JURY", "JuryMember", id, $"Updated jury member: {name} ({type})", GetIp(ctx));
+
+    return Results.Ok(member);
+});
+
+api.MapDelete("/admin/jury/{id}", async (int id, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    var member = await db.JuryMembers.FindAsync(id);
+    if (member == null) return Results.NotFound();
+
+    if (!string.IsNullOrEmpty(member.ImageUrl))
+    {
+        await storage.DeleteFileAsync(member.ImageUrl);
+    }
+
+    db.JuryMembers.Remove(member);
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_DELETE_JURY", "JuryMember", id, $"Deleted jury member: {member.Name}", GetIp(ctx));
+
+    return Results.Ok(new { message = "Jury member deleted successfully" });
+});
+
 // ========== VALIDATOR ==========
 api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContext db) =>
 {
@@ -843,6 +1081,17 @@ api.MapPost("/jury/reject/{appId}", async (int appId, InnovationDbContext db, Ht
     return Results.Ok(new { message = "Final Rejected" });
 });
 
+app.MapGet("/jury-members", async (InnovationDbContext db) =>
+{
+    var members = await db.JuryMembers
+        .OrderBy(m => m.SortOrder)
+        .ThenBy(m => m.Name)
+        .Select(m => new { m.Id, m.Name, m.Role, m.ImageUrl, m.Type, m.SortOrder })
+        .ToListAsync();
+    return Results.Ok(members);
+});
+
 app.Run();
+
 } catch (Exception ex) { Log.Fatal(ex, "Fatal"); }
 finally { Log.CloseAndFlush(); }
