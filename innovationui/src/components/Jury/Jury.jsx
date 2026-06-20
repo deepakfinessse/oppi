@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import './Jury.css';
+import { api, getFileUrl } from '../../services/api';
 
 // Import images from assets
 import ashutoshImg from '../../assets/Ashutosh-Pastor-with-round-bg.png';
@@ -9,13 +10,13 @@ import karthikeyanImg from '../../assets/Dr-Karthikeyan-Ponnalagu--with-round-bg
 import shubraImg from '../../assets/director_new1--with-round-bg.png';
 
 const Jury = () => {
-  const validator = {
+  const defaultValidator = {
     name: "Ashutosh Pastor",
     role: "Sr. Manager and Head - Incubation, Foundation for Innovation & Technology Transfer, IIT Delhi",
     image: ashutoshImg
   };
 
-  const juryMembers = [
+  const defaultJuryMembers = [
     {
       name: "Meena Ganesh",
       role: "Co-Founder & Chairperson Portea Medical, Trustee Bahaar Foundation",
@@ -32,6 +33,50 @@ const Jury = () => {
       image: shubraImg
     }
   ];
+
+  const [validator, setValidator] = useState(defaultValidator);
+  const [juryMembers, setJuryMembers] = useState(defaultJuryMembers);
+
+  useEffect(() => {
+    let active = true;
+    const loadJury = async () => {
+      try {
+        const data = await api.getJuryMembers();
+        if (!active) return;
+        if (data && data.length > 0) {
+          const valData = data.filter(m => m.type === 'VALIDATOR');
+          const juryData = data.filter(m => m.type === 'JURY');
+          
+          if (valData.length > 0) {
+            setValidator({
+              name: valData[0].name,
+              role: valData[0].role,
+              image: getFileUrl(valData[0].imageUrl) || ashutoshImg
+            });
+          } else {
+            setValidator(defaultValidator);
+          }
+          
+          if (juryData.length > 0) {
+            setJuryMembers(juryData.map(m => ({
+              name: m.name,
+              role: m.role,
+              image: getFileUrl(m.imageUrl) || meenaImg
+            })));
+          } else {
+            setJuryMembers(defaultJuryMembers);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to fetch jury members from api, using local assets", err);
+      }
+    };
+    loadJury();
+    return () => {
+      active = false;
+    };
+  }, []);
+
 
   return (
     <section className="jury-section" id="jury">

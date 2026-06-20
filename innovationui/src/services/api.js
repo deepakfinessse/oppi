@@ -182,4 +182,8 @@ export const api = {
     method: 'POST',
     body: { Old_Password: oldPassword, New_Password: newPassword }
   }),
+  getJuryMembers: () => request('/jury-members'),
+  createJuryMember: (formData) => request('/admin/jury', { method: 'POST', body: formData }),
+  updateJuryMember: (id, formData) => request(`/admin/jury/${id}`, { method: 'PUT', body: formData }),
+  deleteJuryMember: (id) => request(`/admin/jury/${id}`, { method: 'DELETE' }),
 };

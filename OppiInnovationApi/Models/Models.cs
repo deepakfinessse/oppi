@@ -158,3 +158,16 @@ public class ValidatorReview
     public virtual Application Application { get; set; } = null!;
     public virtual User Validator { get; set; } = null!;
 }
+
+public class JuryMember
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string Role { get; set; } = null!;
+    public string? ImageUrl { get; set; }
+    public string Type { get; set; } = "JURY"; // Can be "VALIDATOR" or "JURY"
+    public int SortOrder { get; set; } = 0;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+

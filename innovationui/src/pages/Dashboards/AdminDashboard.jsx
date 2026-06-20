@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, ChevronDown, Download, Eye, Edit } from 'lucide-react';
-import { api, clearSession } from '../../services/api';
+import { api, clearSession, getFileUrl } from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
@@ -9,6 +9,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [apps, setApps] = useState([]);
+  const [juryMembers, setJuryMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -32,24 +33,43 @@ export default function AdminDashboard() {
   const [userModalError, setUserModalError] = useState('');
   const [userModalSubmitting, setUserModalSubmitting] = useState(false);
 
+  // Jury edit modal states
+  const [showJuryModal, setShowJuryModal] = useState(false);
+  const [selectedJuryMember, setSelectedJuryMember] = useState(null);
+  const [juryForm, setJuryForm] = useState({
+    name: '',
+    email: '',
+    role: '',
+    type: 'JURY',
+    sortOrder: 0,
+    password: '',
+    imageFile: null
+  });
+  const [juryModalError, setJuryModalError] = useState('');
+  const [juryModalSubmitting, setJuryModalSubmitting] = useState(false);
+
+
   // Dropdown Refs
   const userDropdownRef = useRef(null);
   const appDropdownRef = useRef(null);
 
   const fetchAdminData = useCallback(async () => {
     try {
-      const [uRes, aRes] = await Promise.all([
+      const [uRes, aRes, jRes] = await Promise.all([
         api.getAdminUsers(),
-        api.getAdminApps()
+        api.getAdminApps(),
+        api.getJuryMembers()
       ]);
       setUsers(uRes);
       setApps(aRes);
+      setJuryMembers(jRes || []);
     } catch (err) {
-      setError('Failed to fetch data or unauthorized.', err.message);
+      setError('Failed to fetch data or unauthorized.');
     } finally {
       setLoading(false);
     }
   }, []);
+
 
   useEffect(() => {
     fetchAdminData();
@@ -90,6 +110,77 @@ export default function AdminDashboard() {
       setUserModalSubmitting(false);
     }
   };
+
+  const handleEditJuryMember = (member) => {
+    setSelectedJuryMember(member);
+    setJuryForm({
+      name: member.name || '',
+      email: member.email || '',
+      role: member.role || '',
+      type: member.type || 'JURY',
+      sortOrder: member.sortOrder || 0,
+      password: '',
+      imageFile: null
+    });
+    setJuryModalError('');
+    setShowJuryModal(true);
+  };
+
+  const handleAddJuryMember = () => {
+    setSelectedJuryMember(null);
+    setJuryForm({
+      name: '',
+      email: '',
+      role: '',
+      type: 'JURY',
+      sortOrder: 0,
+      password: '',
+      imageFile: null
+    });
+    setJuryModalError('');
+    setShowJuryModal(true);
+  };
+
+  const handleDeleteJuryMember = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete ${name}?`)) return;
+    try {
+      await api.deleteJuryMember(id);
+      fetchAdminData();
+    } catch (err) {
+      alert(err.message || 'Failed to delete jury member.');
+    }
+  };
+
+  const handleJurySubmit = async (e) => {
+    e.preventDefault();
+    setJuryModalError('');
+    setJuryModalSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', juryForm.name);
+      formData.append('email', juryForm.email);
+      formData.append('password', juryForm.password);
+      formData.append('role', juryForm.role);
+      formData.append('type', juryForm.type);
+      formData.append('sortOrder', juryForm.sortOrder);
+      if (juryForm.imageFile) {
+        formData.append('image', juryForm.imageFile);
+      }
+
+      if (selectedJuryMember) {
+        await api.updateJuryMember(selectedJuryMember.id, formData);
+      } else {
+        await api.createJuryMember(formData);
+      }
+      setShowJuryModal(false);
+      fetchAdminData();
+    } catch (err) {
+      setJuryModalError(err.message || 'Failed to save jury member.');
+    } finally {
+      setJuryModalSubmitting(false);
+    }
+  };
+
 
   // Click outside listener to close dropdowns
   useEffect(() => {
@@ -219,76 +310,6 @@ export default function AdminDashboard() {
 
         <h1 className="admin-main-heading">Admin</h1>
 
-        {/* Registered Users Section */}
-        <div className="dashboard-section">
-          <div className="dashboard-section-header">
-            <h3>Registered Users({String(filteredUsers.length).padStart(2, '0')})</h3>
-            <div className="admin-header-actions">
-              <div className="filter-dropdown-container" ref={userDropdownRef}>
-                <button
-                  className={`btn-filter ${userFilter !== 'ALL' ? 'active-filter' : ''}`}
-                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                >
-                  FILTER <ChevronDown size={14} />
-                </button>
-                {userDropdownOpen && (
-                  <div className="dropdown-menu">
-                    <button className={userFilter === 'ALL' ? 'active' : ''} onClick={() => { setUserFilter('ALL'); setUserDropdownOpen(false); }}>All</button>
-                    <button className={userFilter === 'VALIDATOR' ? 'active' : ''} onClick={() => { setUserFilter('VALIDATOR'); setUserDropdownOpen(false); }}>Validator</button>
-                    <button className={userFilter === 'JURY' ? 'active' : ''} onClick={() => { setUserFilter('JURY'); setUserDropdownOpen(false); }}>Jury</button>
-                    <button className={userFilter === 'USER' ? 'active' : ''} onClick={() => { setUserFilter('USER'); setUserDropdownOpen(false); }}>User</button>
-                  </div>
-                )}
-              </div>
-              <button className="btn-download" onClick={() => handleDownloadCSV(filteredUsers, 'users')}>
-                DOWNLOAD <Download size={14} />
-              </button>
-            </div>
-          </div>
-
-          <div className="table-responsive">
-            <table className="dashboard-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Mobile</th>
-                  <th>Role</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map(u => (
-                  <tr key={u.id}>
-                    <td>{formatId(u.id)}</td>
-                    <td>{u.firstName} {u.lastName}</td>
-                    <td>{u.email}</td>
-                    <td>{u.mobile || '—'}</td>
-                    <td>
-                      <span className={`admin-role-badge ${u.role.toLowerCase()}`}>
-                        {u.role.toLowerCase()}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button className="btn-action edit" onClick={() => handleEditUser(u)} title="Edit User">
-                          <Edit size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filteredUsers.length === 0 && (
-                  <tr>
-                    <td colSpan="6" className="text-center">No users found.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
         {/* Submitted Applications Section */}
         <div className="dashboard-section">
           <div className="dashboard-section-header">
@@ -382,8 +403,159 @@ export default function AdminDashboard() {
             </table>
           </div>
         </div>
+
+        {/* Jury Board Members Section */}
+        <div className="dashboard-section">
+          <div className="dashboard-section-header">
+            <h3>Jury Board ({juryMembers.length})</h3>
+            <div className="admin-header-actions">
+              <button 
+                className="btn-download" 
+                style={{ background: '#2563eb', color: 'white', border: 'none' }}
+                onClick={handleAddJuryMember}
+              >
+                ADD MEMBER
+              </button>
+            </div>
+          </div>
+
+          <div className="table-responsive">
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Type</th>
+                  <th>Sort Order</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {juryMembers.map(m => (
+                  <tr key={m.id}>
+                    <td>
+                      {m.imageUrl ? (
+                        <img 
+                          src={getFileUrl(m.imageUrl)} 
+                          alt={m.name} 
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} 
+                        />
+                      ) : (
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: '#64748b' }}>
+                          No image
+                        </div>
+                      )}
+                    </td>
+                    <td><strong>{m.name}</strong></td>
+                    <td>{m.email}</td>
+                    <td>{m.role}</td>
+                    <td>
+                      <span className={`admin-role-badge ${m.type.toLowerCase()}`}>
+                        {m.type.toLowerCase()}
+                      </span>
+                    </td>
+                    <td>{m.sortOrder}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button className="btn-action edit" onClick={() => handleEditJuryMember(m)} title="Edit Member">
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          className="btn-action view" 
+                          style={{ color: '#dc2626' }} 
+                          onClick={() => handleDeleteJuryMember(m.id, m.name)} 
+                          title="Delete Member"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {juryMembers.length === 0 && (
+                  <tr>
+                    <td colSpan="7" className="text-center">No jury members found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Registered Users Section */}
+        <div className="dashboard-section">
+          <div className="dashboard-section-header">
+            <h3>Registered Users({String(filteredUsers.length).padStart(2, '0')})</h3>
+            <div className="admin-header-actions">
+              <div className="filter-dropdown-container" ref={userDropdownRef}>
+                <button
+                  className={`btn-filter ${userFilter !== 'ALL' ? 'active-filter' : ''}`}
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                >
+                  FILTER <ChevronDown size={14} />
+                </button>
+                {userDropdownOpen && (
+                  <div className="dropdown-menu">
+                    <button className={userFilter === 'ALL' ? 'active' : ''} onClick={() => { setUserFilter('ALL'); setUserDropdownOpen(false); }}>All</button>
+                    <button className={userFilter === 'VALIDATOR' ? 'active' : ''} onClick={() => { setUserFilter('VALIDATOR'); setUserDropdownOpen(false); }}>Validator</button>
+                    <button className={userFilter === 'JURY' ? 'active' : ''} onClick={() => { setUserFilter('JURY'); setUserDropdownOpen(false); }}>Jury</button>
+                    <button className={userFilter === 'USER' ? 'active' : ''} onClick={() => { setUserFilter('USER'); setUserDropdownOpen(false); }}>User</button>
+                  </div>
+                )}
+              </div>
+              <button className="btn-download" onClick={() => handleDownloadCSV(filteredUsers, 'users')}>
+                DOWNLOAD <Download size={14} />
+              </button>
+            </div>
+          </div>
+
+          <div className="table-responsive">
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Mobile</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map(u => (
+                  <tr key={u.id}>
+                    <td>{formatId(u.id)}</td>
+                    <td>{u.firstName} {u.lastName}</td>
+                    <td>{u.email}</td>
+                    <td>{u.mobile || '—'}</td>
+                    <td>
+                      <span className={`admin-role-badge ${u.role.toLowerCase()}`}>
+                        {u.role.toLowerCase()}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button className="btn-action edit" onClick={() => handleEditUser(u)} title="Edit User">
+                          <Edit size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="text-center">No users found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
       {showUserModal && (
+
         <div className="modal-overlay">
           <div className="modal-container user-edit-modal">
             <div className="modal-header">
@@ -460,6 +632,127 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {showJuryModal && (
+        <div className="modal-overlay">
+          <div className="modal-container user-edit-modal">
+            <div className="modal-header">
+              <h3>{selectedJuryMember ? 'Edit Jury Board Profile' : 'Add Jury Board Profile'}</h3>
+              <button className="modal-close-btn" onClick={() => setShowJuryModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleJurySubmit} className="user-edit-form">
+              {juryModalError && <div className="dashboard-error">{juryModalError}</div>}
+
+              {/* Row 1: Name and Email */}
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="modal-label">Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={juryForm.name}
+                    onChange={(e) => setJuryForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="modal-input"
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="modal-label">Login Email *</label>
+                  <input
+                    type="email"
+                    required
+                    value={juryForm.email}
+                    onChange={(e) => setJuryForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="modal-input"
+                    placeholder="name@example.com"
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Designation and Password */}
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="modal-label">Designation / Role *</label>
+                  <input
+                    type="text"
+                    required
+                    value={juryForm.role}
+                    onChange={(e) => setJuryForm(prev => ({ ...prev, role: e.target.value }))}
+                    className="modal-input"
+                    placeholder="e.g. Managing Director"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="modal-label">Login Password {selectedJuryMember ? '(optional)' : '*'}</label>
+                  <input
+                    type="password"
+                    required={!selectedJuryMember}
+                    value={juryForm.password}
+                    onChange={(e) => setJuryForm(prev => ({ ...prev, password: e.target.value }))}
+                    className="modal-input"
+                    placeholder={selectedJuryMember ? "Leave blank to keep current" : "Enter login password"}
+                  />
+                </div>
+              </div>
+
+              {/* Row 3: Board Role Type and Sort Order */}
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="modal-label">Board Role Type *</label>
+                  <select
+                    value={juryForm.type}
+                    onChange={(e) => setJuryForm(prev => ({ ...prev, type: e.target.value }))}
+                    className="modal-select"
+                  >
+                    <option value="JURY">Jury Member</option>
+                    <option value="VALIDATOR">Validator</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="modal-label">Display Sort Order</label>
+                  <input
+                    type="number"
+                    value={juryForm.sortOrder}
+                    onChange={(e) => setJuryForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))}
+                    className="modal-input"
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              {/* Row 4: Custom Image Dropzone */}
+              <div className="form-group">
+                <label className="modal-label">Profile Photo {selectedJuryMember ? '(optional)' : '*'}</label>
+                <div className="file-dropzone">
+                  <input
+                    type="file"
+                    id="jury-image-upload"
+                    accept="image/*"
+                    required={!selectedJuryMember}
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      setJuryForm(prev => ({ ...prev, imageFile: file }));
+                    }}
+                    style={{ display: 'none' }}
+                  />
+                  <label htmlFor="jury-image-upload" className="dropzone-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="upload-icon" style={{ color: '#2563eb', marginBottom: '4px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    <span>{juryForm.imageFile ? juryForm.imageFile.name : (selectedJuryMember ? "Click to change profile picture" : "Click to select profile picture")}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-modal-cancel" onClick={() => setShowJuryModal(false)}>Cancel</button>
+                <button type="submit" className="btn-modal-save" disabled={juryModalSubmitting}>
+                  {juryModalSubmitting ? 'Saving...' : 'Save Member'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </DashboardLayout>
   );
 }

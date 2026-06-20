@@ -142,12 +142,132 @@ using (var scope = app.Services.CreateScope())
                 }
             }
         }
+
+        // 5. Check/Create jury_members table
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'jury_members'";
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            if (count == 0)
+            {
+                using (var cmdCreate = conn.CreateCommand())
+                {
+                    cmdCreate.CommandText = @"
+                        CREATE TABLE `jury_members` (
+                          `id` INT NOT NULL AUTO_INCREMENT,
+                          `name` VARCHAR(255) NOT NULL,
+                          `email` VARCHAR(255) NOT NULL,
+                          `role` VARCHAR(500) NOT NULL,
+                          `image_url` VARCHAR(1000) NULL,
+                          `type` ENUM('VALIDATOR','JURY') NOT NULL DEFAULT 'JURY',
+                          `sort_order` INT NOT NULL DEFAULT 0,
+                          `created_at` DATETIME NOT NULL,
+                          PRIMARY KEY (`id`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+                    await cmdCreate.ExecuteNonQueryAsync();
+                }
+            }
+            else
+            {
+                using (var cmdCol = conn.CreateCommand())
+                {
+                    cmdCol.CommandText = "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'jury_members' AND column_name = 'email'";
+                    var colCount = Convert.ToInt32(await cmdCol.ExecuteScalarAsync());
+                    if (colCount == 0)
+                    {
+                        using (var cmdAlter = conn.CreateCommand())
+                        {
+                            cmdAlter.CommandText = "ALTER TABLE `jury_members` ADD COLUMN `email` VARCHAR(255) NOT NULL DEFAULT 'temp@oppi.com'";
+                            await cmdAlter.ExecuteNonQueryAsync();
+                        }
+                    }
+                }
+            }
+        }
+
+        // Seeding jury members and images
+        var juryUploadsDir = Path.Combine(app.Environment.WebRootPath, "uploads", "jury");
+        Directory.CreateDirectory(juryUploadsDir);
+        
+        var assetsDir = Path.Combine(Directory.GetCurrentDirectory(), "..", "innovationui", "src", "assets");
+        if (Directory.Exists(assetsDir))
+        {
+            var filesToCopy = new[] {
+                "Ashutosh-Pastor-with-round-bg.png",
+                "meena-ganesh--with-round-bg.png",
+                "Dr-Karthikeyan-Ponnalagu--with-round-bg.png",
+                "director_new1--with-round-bg.png"
+            };
+            foreach (var f in filesToCopy)
+            {
+                var src = Path.Combine(assetsDir, f);
+                var dest = Path.Combine(juryUploadsDir, f);
+                if (File.Exists(src) && !File.Exists(dest))
+                {
+                    try
+                    {
+                        File.Copy(src, dest);
+                    }
+                    catch (Exception copyEx)
+                    {
+                        Console.WriteLine($"Image copy warning: {copyEx.Message}");
+                    }
+                }
+            }
+        }
+
+        if (!db.JuryMembers.Any())
+        {
+            var seedData = new[]
+            {
+                new { Name = "Ashutosh Pastor", Email = "ashutosh@oppi.com", Role = "Sr. Manager and Head - Incubation, Foundation for Innovation & Technology Transfer, IIT Delhi", ImageUrl = "/uploads/jury/Ashutosh-Pastor-with-round-bg.png", Type = "VALIDATOR", SortOrder = 1 },
+                new { Name = "Meena Ganesh", Email = "meena@oppi.com", Role = "Co-Founder & Chairperson Portea Medical, Trustee Bahaar Foundation", ImageUrl = "/uploads/jury/meena-ganesh--with-round-bg.png", Type = "JURY", SortOrder = 2 },
+                new { Name = "Dr Karthikeyan Ponnalagu", Email = "karthikeyan@oppi.com", Role = "Engineering Director, AI and ML platforms, Amex India pvt Ltd", ImageUrl = "/uploads/jury/Dr-Karthikeyan-Ponnalagu--with-round-bg.png", Type = "JURY", SortOrder = 3 },
+                new { Name = "Shubhini A. Saraf", Email = "shubhini@oppi.com", Role = "Director, National Institute of Pharmaceutical Education & Research (NIPER), Raebareli", ImageUrl = "/uploads/jury/director_new1--with-round-bg.png", Type = "JURY", SortOrder = 4 }
+            };
+
+            foreach (var s in seedData)
+            {
+                var userExists = db.Users.Any(u => u.Email == s.Email);
+                if (!userExists)
+                {
+                    var parts = s.Name.Split(' ', 2);
+                    var firstName = parts[0];
+                    var lastName = parts.Length > 1 ? parts[1] : "";
+                    
+                    db.Users.Add(new User
+                    {
+                        FirstName = firstName,
+                        LastName = lastName,
+                        Email = s.Email,
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("OppiJury2026!"),
+                        Role = s.Type,
+                        IsActive = true,
+                        IsDeleted = false,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+
+                db.JuryMembers.Add(new JuryMember
+                {
+                    Name = s.Name,
+                    Email = s.Email,
+                    Role = s.Role,
+                    ImageUrl = s.ImageUrl,
+                    Type = s.Type,
+                    SortOrder = s.SortOrder,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+            await db.SaveChangesAsync();
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Database migration error: {ex.Message}");
+        Console.WriteLine($"Database migration/seeding error: {ex.Message}");
     }
 }
+
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
@@ -617,6 +737,240 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
     return Results.Ok(apps);
 });
 
+api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    if (!req.HasFormContentType) return Results.BadRequest(new { message = "Invalid content type" });
+    var form = await req.ReadFormAsync();
+
+    var name = form["name"].ToString();
+    var email = form["email"].ToString();
+    var password = form["password"].ToString();
+    var role = form["role"].ToString();
+    var type = form["type"].ToString();
+    var sortOrderStr = form["sortOrder"].ToString();
+
+    if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(email))
+    {
+        return Results.BadRequest(new { message = "Name, Role, and Email are required." });
+    }
+
+    if (type != "VALIDATOR" && type != "JURY")
+    {
+        type = "JURY";
+    }
+
+    int sortOrder = 0;
+    int.TryParse(sortOrderStr, out sortOrder);
+
+    // Sync with users table
+    var existingUser = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
+    if (existingUser != null)
+    {
+        var alreadyLinked = await db.JuryMembers.AnyAsync(m => m.Email == email);
+        if (alreadyLinked)
+        {
+            return Results.BadRequest(new { message = "This email is already registered as a Validator/Jury member." });
+        }
+        
+        existingUser.Role = type;
+        existingUser.IsActive = true;
+        existingUser.IsDeleted = false;
+        if (!string.IsNullOrWhiteSpace(password))
+        {
+            existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+        }
+    }
+    else
+    {
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            return Results.BadRequest(new { message = "Password is required to create login for new member." });
+        }
+
+        var parts = name.Split(' ', 2);
+        var firstName = parts[0];
+        var lastName = parts.Length > 1 ? parts[1] : "";
+
+        var newUser = new User
+        {
+            FirstName = firstName,
+            LastName = lastName,
+            Email = email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+            Role = type,
+            IsActive = true,
+            IsDeleted = false,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.Users.Add(newUser);
+    }
+
+    string? imageUrl = null;
+    if (form.Files.Count > 0)
+    {
+        var file = form.Files[0];
+        if (file.Length > 5 * 1024 * 1024) return Results.BadRequest(new { message = "Image file exceeds 5MB limit" });
+        var ext = Path.GetExtension(file.FileName).ToLower();
+        var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        if (!allowed.Contains(ext)) return Results.BadRequest(new { message = "Image format not allowed" });
+        
+        var uniqueName = $"{Guid.NewGuid()}{ext}";
+        imageUrl = await storage.UploadFileAsync(file, "jury", uniqueName);
+    }
+
+    var member = new JuryMember
+    {
+        Name = name,
+        Email = email,
+        Role = role,
+        Type = type,
+        SortOrder = sortOrder,
+        ImageUrl = imageUrl,
+        CreatedAt = DateTime.UtcNow
+    };
+
+    db.JuryMembers.Add(member);
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_CREATE_JURY", "JuryMember", member.Id, $"Added jury member: {name} ({type})", GetIp(ctx));
+
+    return Results.Ok(member);
+});
+
+api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    var member = await db.JuryMembers.FindAsync(id);
+    if (member == null) return Results.NotFound();
+
+    if (!req.HasFormContentType) return Results.BadRequest(new { message = "Invalid content type" });
+    var form = await req.ReadFormAsync();
+
+    var name = form["name"].ToString();
+    var email = form["email"].ToString();
+    var password = form["password"].ToString();
+    var role = form["role"].ToString();
+    var type = form["type"].ToString();
+    var sortOrderStr = form["sortOrder"].ToString();
+
+    if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(email))
+    {
+        return Results.BadRequest(new { message = "Name, Role, and Email are required." });
+    }
+
+    if (type != "VALIDATOR" && type != "JURY")
+    {
+        type = "JURY";
+    }
+
+    int sortOrder = 0;
+    int.TryParse(sortOrderStr, out sortOrder);
+
+    // Sync with users table
+    var oldEmail = member.Email;
+    if (email != oldEmail && await db.Users.AnyAsync(u => u.Email == email))
+    {
+        return Results.BadRequest(new { message = "The new email is already taken by another user." });
+    }
+
+    var associatedUser = await db.Users.FirstOrDefaultAsync(u => u.Email == oldEmail);
+    if (associatedUser != null)
+    {
+        var parts = name.Split(' ', 2);
+        associatedUser.FirstName = parts[0];
+        associatedUser.LastName = parts.Length > 1 ? parts[1] : "";
+        associatedUser.Email = email;
+        associatedUser.Role = type;
+        
+        if (!string.IsNullOrWhiteSpace(password))
+        {
+            associatedUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+        }
+    }
+    else
+    {
+        var parts = name.Split(' ', 2);
+        var firstName = parts[0];
+        var lastName = parts.Length > 1 ? parts[1] : "";
+
+        var newUser = new User
+        {
+            FirstName = firstName,
+            LastName = lastName,
+            Email = email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(string.IsNullOrWhiteSpace(password) ? "OppiJury2026!" : password),
+            Role = type,
+            IsActive = true,
+            IsDeleted = false,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.Users.Add(newUser);
+    }
+
+    member.Name = name;
+    member.Email = email;
+    member.Role = role;
+    member.Type = type;
+    member.SortOrder = sortOrder;
+
+    if (form.Files.Count > 0)
+    {
+        var file = form.Files[0];
+        if (file.Length > 5 * 1024 * 1024) return Results.BadRequest(new { message = "Image file exceeds 5MB limit" });
+        var ext = Path.GetExtension(file.FileName).ToLower();
+        var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        if (!allowed.Contains(ext)) return Results.BadRequest(new { message = "Image format not allowed" });
+        
+        // Delete old image if exists
+        if (!string.IsNullOrEmpty(member.ImageUrl))
+        {
+            await storage.DeleteFileAsync(member.ImageUrl);
+        }
+
+        var uniqueName = $"{Guid.NewGuid()}{ext}";
+        member.ImageUrl = await storage.UploadFileAsync(file, "jury", uniqueName);
+    }
+
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_UPDATE_JURY", "JuryMember", id, $"Updated jury member: {name} ({type})", GetIp(ctx));
+
+    return Results.Ok(member);
+});
+
+api.MapDelete("/admin/jury/{id}", async (int id, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    var member = await db.JuryMembers.FindAsync(id);
+    if (member == null) return Results.NotFound();
+
+    var associatedUser = await db.Users.FirstOrDefaultAsync(u => u.Email == member.Email);
+    if (associatedUser != null)
+    {
+        associatedUser.IsDeleted = true;
+        associatedUser.IsActive = false;
+    }
+
+    if (!string.IsNullOrEmpty(member.ImageUrl))
+    {
+        await storage.DeleteFileAsync(member.ImageUrl);
+    }
+
+    db.JuryMembers.Remove(member);
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_DELETE_JURY", "JuryMember", id, $"Deleted jury member: {member.Name}", GetIp(ctx));
+
+    return Results.Ok(new { message = "Jury member deleted successfully" });
+});
+
 // ========== VALIDATOR ==========
 api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContext db) =>
 {
@@ -843,6 +1197,17 @@ api.MapPost("/jury/reject/{appId}", async (int appId, InnovationDbContext db, Ht
     return Results.Ok(new { message = "Final Rejected" });
 });
 
+app.MapGet("/jury-members", async (InnovationDbContext db) =>
+{
+    var members = await db.JuryMembers
+        .OrderBy(m => m.SortOrder)
+        .ThenBy(m => m.Name)
+        .Select(m => new { m.Id, m.Name, m.Email, m.Role, m.ImageUrl, m.Type, m.SortOrder })
+        .ToListAsync();
+    return Results.Ok(members);
+});
+
 app.Run();
+
 } catch (Exception ex) { Log.Fatal(ex, "Fatal"); }
 finally { Log.CloseAndFlush(); }
