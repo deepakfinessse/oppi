@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ArrowRight } from 'lucide-react';
-import oppiLogo from '../../assets/OPPI-logo-black.png';
+import oppiLogo from '../../assets/Oppi-logo.png';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -27,7 +27,7 @@ const Navbar = () => {
   return (
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       <div className="container nav-container">
-        <div className="logo">
+        <div className="nav-brand">
           <img src={oppiLogo} alt="OPPI Logo" className="logo-img" />
         </div>
 
@@ -40,12 +40,13 @@ const Navbar = () => {
               </a>
             </li>
           ))}
-          <li>
-            <Link to="/auth" className="apply-btn" style={{ color: "white", border: "3px solid white" }} onClick={() => setIsMobileMenuOpen(false)}>
-              APPLY NOW <ArrowRight size={18} />
-            </Link>
-          </li>
         </ul>
+
+        <div className="nav-action">
+          <Link to="/auth" className="apply-btn" onClick={() => setIsMobileMenuOpen(false)}>
+            APPLY NOW <ArrowRight size={18} />
+          </Link>
+        </div>
 
         <div className="mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X /> : <Menu />}

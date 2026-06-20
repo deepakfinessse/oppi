@@ -26,9 +26,12 @@
 }
 
 .footer-logo {
-  height: 50px;
-  width: auto;
   object-fit: contain;
+  width: 311px;
+  height: 120px;
+  top: 70px;
+  left: 50px;
+  opacity: 1;
 }
 
 .vertical-divider {

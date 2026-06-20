@@ -72,8 +72,8 @@
   font-weight: 800;
   color: #1264B9;
   margin-bottom: 2.5rem;
-  text-align: end;
-  /* Changed from center to left */
+  text-align: center;
+  width: 100%;
 }
 
 .rules-list {
@@ -116,9 +116,6 @@
   width: 28px;
   /* Increased from 26px */
   height: 28px;
-  /* Increased from 26px */
-  /* border-radius: 50%; */
-  /* background: #1264B9; */
   color: #2D9BCE;
   margin-top: 0.1rem;
 }

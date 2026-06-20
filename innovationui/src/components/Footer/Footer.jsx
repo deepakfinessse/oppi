@@ -1,7 +1,7 @@
 import React from 'react';
 import { Mail, Phone, Globe, Send } from 'lucide-react';
 import './Footer.css';
-import oppiLogo from '../../assets/OPPI-logo-black.png';
+import oppiLogo from '../../assets/Oppi-logo.png';
 
 const Footer = () => {
   return (

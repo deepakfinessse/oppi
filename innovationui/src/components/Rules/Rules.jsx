@@ -1,6 +1,5 @@
 // components/Rules/Rules.jsx
 import React from 'react';
-import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import './Rules.css';
 import trophyImg from '../../assets/Trophy.png';
@@ -19,33 +18,25 @@ const Rules = () => {
   return (
     <section className="rules-section" id="eligibility">
       <div className="container">
+        <h2
+          className="rules-title"
+        >
+          Rules of Application
+        </h2>
+
         <div className="rules-container">
           <div className="rules-content">
-            <motion.h2
-              className="rules-title"
-              initial={{ opacity: 0, y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              Rules of Application
-            </motion.h2>
-
             <div className="rules-list">
               {rules.map((rule, index) => (
-                <motion.div
+                <div
                   key={index}
                   className="rule-card"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
                 >
                   <span className="rule-chevron">
                     <ChevronRight size={18} />
                   </span>
                   <span className="rule-text">{rule}</span>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>

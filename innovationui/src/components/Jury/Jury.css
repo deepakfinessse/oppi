@@ -55,11 +55,11 @@
 
 .jury-card {
   flex: 1;
-  min-width: 320px;
-  max-width: 380px;
+  max-height: 472px;
+  max-width: 327px;
   background: linear-gradient(180.09deg, rgba(5, 80, 156, 0.8) 0.07%, rgba(0, 188, 138, 0) 99.93%);
   backdrop-filter: blur(8px);
-  padding: 0 2rem 3.5rem;
+  padding: 0 3rem 1.5rem;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border: 3px solid #ffffff;
