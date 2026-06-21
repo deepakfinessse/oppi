@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Info } from 'lucide-react';
 import { api, saveSession } from '../../services/api';
 import './Auth.css';
-import trophyImg from '../../assets/Trophy1.png';
+import trophyImg from '../../assets/trophy.webp';
 
 const parseValidationErrors = (err) => {
   const newErrors = {};

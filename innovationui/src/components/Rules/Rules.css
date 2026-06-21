@@ -62,8 +62,9 @@
 }
 
 .trophy-image {
-  height: auto;
-  object-fit: contain;
+  /* height: auto;
+  object-fit: contain; */
+  width: 693px;
 }
 
 .rules-title {
