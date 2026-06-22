@@ -430,15 +430,30 @@ auth.MapPost("/login", async (LoginDto dto, InnovationDbContext db, JwtService j
             email = user.Email, mobile = user.Mobile, role = user.Role } });
 });
 
-auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db) =>
+auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db, EmailService emailService) =>
 {
     var user = db.Users.FirstOrDefault(x => x.Email == dto.Email);
     if (user == null) return Results.BadRequest(new { message = "Email not found" });
-    // In production, send email with temp password. For now, generate and return it.
     var newPwd = Guid.NewGuid().ToString()[..8] + "A1!";
     user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPwd);
     await db.SaveChangesAsync();
-    return Results.Ok(new { message = "New password generated", temp_password = newPwd });
+
+    var name = $"{user.FirstName} {user.LastName}".Trim();
+    if (string.IsNullOrWhiteSpace(name)) name = "User";
+
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            await emailService.SendForgotPasswordEmailAsync(user.Email, name, newPwd);
+        }
+        catch (Exception)
+        {
+            // Failures inside SendForgotPasswordEmailAsync are already logged
+        }
+    });
+
+    return Results.Ok(new { message = "New password generated and sent to email", temp_password = newPwd });
 });
 
 auth.MapPost("/change-password", async (ChangePasswordDto dto, HttpContext ctx, InnovationDbContext db) =>
@@ -737,7 +752,7 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
     return Results.Ok(apps);
 });
 
-api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit) =>
+api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit, EmailService emailService) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var user = await db.Users.FindAsync(uid.Value);
@@ -768,6 +783,7 @@ api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStor
 
     // Sync with users table
     var existingUser = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
+    bool isNewUser = (existingUser == null);
     if (existingUser != null)
     {
         var alreadyLinked = await db.JuryMembers.AnyAsync(m => m.Email == email);
@@ -837,10 +853,23 @@ api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStor
     await db.SaveChangesAsync();
     await audit.LogAsync(uid.Value, "ADMIN_CREATE_JURY", "JuryMember", member.Id, $"Added jury member: {name} ({type})", GetIp(ctx));
 
+    // Send invitation email in background
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            await emailService.SendJuryInvitationEmailAsync(email, name, type, password, isNewUser);
+        }
+        catch (Exception)
+        {
+            // Failures are already logged inside SendJuryInvitationEmailAsync
+        }
+    });
+
     return Results.Ok(member);
 });
 
-api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit) =>
+api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit, EmailService emailService) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var user = await db.Users.FindAsync(uid.Value);
@@ -880,6 +909,9 @@ api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbConte
     }
 
     var associatedUser = await db.Users.FirstOrDefaultAsync(u => u.Email == oldEmail);
+    bool isNewUser = (associatedUser == null);
+    bool passwordOrEmailChanged = !string.IsNullOrWhiteSpace(password) || email != oldEmail;
+
     if (associatedUser != null)
     {
         var parts = name.Split(' ', 2);
@@ -939,6 +971,22 @@ api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbConte
 
     await db.SaveChangesAsync();
     await audit.LogAsync(uid.Value, "ADMIN_UPDATE_JURY", "JuryMember", id, $"Updated jury member: {name} ({type})", GetIp(ctx));
+
+    // Send email updates if it was a new user, or if password/email was updated
+    if (isNewUser || passwordOrEmailChanged)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await emailService.SendJuryInvitationEmailAsync(email, name, type, password, isNewUser);
+            }
+            catch (Exception)
+            {
+                // Already logged
+            }
+        });
+    }
 
     return Results.Ok(member);
 });

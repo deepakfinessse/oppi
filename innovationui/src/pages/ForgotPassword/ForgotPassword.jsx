@@ -80,11 +80,11 @@ const ForgotPassword = () => {
                   <div style={{ fontSize: '3rem', color: '#0076BE', margin: '0 auto' }}>✓</div>
                   <div className="auth-header" style={{ textAlign: 'center', marginBottom: 0 }}>
                     <h2 style={{ fontSize: '1.8rem' }}>Check Your Email</h2>
-                    <p>We've processed your password reset request for <strong>{email}</strong>.</p>
+                    <p>We've sent a temporary password to <strong>{email}</strong>. Please check your inbox (and spam/junk folder) and use it to log in.</p>
                   </div>
                   {tempPassword && (
                     <div style={{ background: '#f8fafc', padding: '1.5rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-                      <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: '#64748b' }}>Your temporary password is:</p>
+                      <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: '#64748b' }}>Temporary Password (testing fallback):</p>
                       <code style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0076BE' }}>{tempPassword}</code>
                       <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#e53e3e' }}>Please log in and change it immediately.</p>
                     </div>
