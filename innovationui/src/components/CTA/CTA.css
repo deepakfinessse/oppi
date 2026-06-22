@@ -17,11 +17,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: repeating-linear-gradient(45deg,
+  /* background-image: repeating-linear-gradient(45deg,
       transparent,
       transparent 100px,
       rgba(0, 0, 0, 0.01) 100px,
-      rgba(0, 0, 0, 0.01) 200px);
+      rgba(0, 0, 0, 0.01) 200px); */
   pointer-events: none;
 }
 
@@ -79,7 +79,7 @@
 .cta-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(23, 100, 184, 0.25);
-  background: #13559c;
+  background: linear-gradient(90deg, #6ADAE5 0%, #1264B9 100%);
   color: #ffffff;
 }
 

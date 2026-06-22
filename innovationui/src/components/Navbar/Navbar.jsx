@@ -18,8 +18,8 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'ABOUT', href: '#about' },
-    { name: 'CATEGORIES', href: '#categories' },
-    { name: 'ELIGIBILITY', href: '#eligibility' },
+    { name: 'WHY PARTICIPATE', href: '#categories' },
+    { name: 'RULES', href: '#eligibility' },
     { name: 'JURY', href: '#jury' },
     { name: 'HELP', href: '#help' },
   ];

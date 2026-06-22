@@ -119,7 +119,7 @@
 }
 
 .apply-btn:hover {
-  background-color: #104384;
+  background: linear-gradient(90deg, #6ADAE5 0%, #1264B9 100%);
   color: #ffffff;
 }
 
