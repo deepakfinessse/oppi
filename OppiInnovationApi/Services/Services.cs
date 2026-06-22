@@ -62,6 +62,54 @@ public class JwtService
         foreach (var rt in tokens) rt.RevokedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
     }
+
+    public string GeneratePasswordResetToken(User user)
+    {
+        var key = _config["JwtSettings:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY") ?? "INNOVATION_SUPER_SECRET_KEY_FOR_TESTING_1234567890ABCDEF";
+        var claims = new[] {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim("purpose", "password_reset")
+        };
+        var token = new JwtSecurityToken(
+            _config["JwtSettings:Issuer"] ?? Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "OppiInnovation",
+            _config["JwtSettings:Audience"] ?? Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "OppiInnovationUsers",
+            claims,
+            expires: DateTime.UtcNow.AddMinutes(15),
+            signingCredentials: new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                SecurityAlgorithms.HmacSha256));
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public ClaimsPrincipal? ValidatePasswordResetToken(string token)
+    {
+        var key = _config["JwtSettings:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY") ?? "INNOVATION_SUPER_SECRET_KEY_FOR_TESTING_1234567890ABCDEF";
+        var tokenHandler = new JwtSecurityTokenHandler();
+        try
+        {
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = _config["JwtSettings:Issuer"] ?? Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "OppiInnovation",
+                ValidAudience = _config["JwtSettings:Audience"] ?? Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "OppiInnovationUsers",
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+            };
+
+            var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+            var purposeClaim = principal.FindFirst("purpose")?.Value;
+            if (purposeClaim != "password_reset") return null;
+
+            return principal;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }
 
 public class DomainService

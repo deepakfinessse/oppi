@@ -371,12 +371,11 @@ static string GetIp(HttpContext c) => c.Connection.RemoteIpAddress?.ToString() ?
 // ========== AUTH ==========
 var auth = app.MapGroup("/auth").RequireRateLimiting("auth");
 
-auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db, DomainService ds,
+auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
     JwtService jwt, AuditService audit, IValidator<RegisterDto> v, EmailService emailService, HttpContext ctx) =>
 {
     var vr = await v.ValidateAsync(dto);
     if (!vr.IsValid) return Results.BadRequest(new { errors = vr.Errors.Select(e => e.ErrorMessage) });
-    if (!ds.IsAllowed(dto.Email)) return Results.BadRequest(new { message = "Domain not allowed. Only authorized domains can register." });
     if (db.Users.Any(x => x.Email == dto.Email)) return Results.BadRequest(new { message = "Email already registered" });
 
     var user = new User { FirstName = dto.First_Name, LastName = dto.Last_Name, Email = dto.Email,
@@ -430,22 +429,33 @@ auth.MapPost("/login", async (LoginDto dto, InnovationDbContext db, JwtService j
             email = user.Email, mobile = user.Mobile, role = user.Role } });
 });
 
-auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db, EmailService emailService) =>
+auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db, EmailService emailService, JwtService jwt, HttpContext ctx) =>
 {
     var user = db.Users.FirstOrDefault(x => x.Email == dto.Email);
     if (user == null) return Results.BadRequest(new { message = "Email not found" });
-    var newPwd = Guid.NewGuid().ToString()[..8] + "A1!";
-    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPwd);
-    await db.SaveChangesAsync();
 
     var name = $"{user.FirstName} {user.LastName}".Trim();
     if (string.IsNullOrWhiteSpace(name)) name = "User";
+
+    var resetToken = jwt.GeneratePasswordResetToken(user);
+    
+    var origin = ctx.Request.Headers["Origin"].ToString();
+    if (string.IsNullOrWhiteSpace(origin))
+    {
+        origin = ctx.Request.Headers["Referer"].ToString();
+    }
+    if (string.IsNullOrWhiteSpace(origin))
+    {
+        origin = "http://innovationawards.indiaoppi.com";
+    }
+    origin = origin.TrimEnd('/');
+    var resetLink = $"{origin}/reset-password?token={Uri.EscapeDataString(resetToken)}";
 
     _ = Task.Run(async () =>
     {
         try
         {
-            await emailService.SendForgotPasswordEmailAsync(user.Email, name, newPwd);
+            await emailService.SendForgotPasswordEmailAsync(user.Email, name, resetLink);
         }
         catch (Exception)
         {
@@ -453,7 +463,43 @@ auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbConte
         }
     });
 
-    return Results.Ok(new { message = "New password generated and sent to email", temp_password = newPwd });
+    return Results.Ok(new { message = "Password reset link sent to email" });
+});
+
+auth.MapPost("/reset-password", async (ResetPasswordDto dto, InnovationDbContext db, JwtService jwt) =>
+{
+    if (string.IsNullOrWhiteSpace(dto.Token) || string.IsNullOrWhiteSpace(dto.Password))
+    {
+        return Results.BadRequest(new { message = "Token and password are required." });
+    }
+    
+    if (dto.Password.Length < 6)
+    {
+        return Results.BadRequest(new { message = "Password must be at least 6 characters long." });
+    }
+
+    var principal = jwt.ValidatePasswordResetToken(dto.Token);
+    if (principal == null)
+    {
+        return Results.BadRequest(new { message = "Invalid or expired password reset link." });
+    }
+
+    var email = principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+    if (string.IsNullOrEmpty(email))
+    {
+        return Results.BadRequest(new { message = "Invalid token claims." });
+    }
+
+    var user = db.Users.FirstOrDefault(x => x.Email == email);
+    if (user == null)
+    {
+        return Results.BadRequest(new { message = "User not found." });
+    }
+
+    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new { message = "Password has been reset successfully." });
 });
 
 auth.MapPost("/change-password", async (ChangePasswordDto dto, HttpContext ctx, InnovationDbContext db) =>
@@ -687,10 +733,36 @@ api.MapDelete("/application/upload/{fileId}", async (int fileId, InnovationDbCon
 // Submit
 api.MapPost("/application/submit/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
-    var a = await db.Applications.FindAsync(appId);
-    if (a == null) return Results.NotFound(); if (a.Status == "SUBMITTED") return Results.BadRequest(new { message = "Already submitted" });
-    a.Status = "SUBMITTED"; a.SubmittedAt = DateTime.UtcNow; await db.SaveChangesAsync();
+    var a = await db.Applications.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == appId);
+    if (a == null) return Results.NotFound();
+    if (a.Status == "SUBMITTED") return Results.BadRequest(new { message = "Already submitted" });
+    
+    a.Status = "SUBMITTED";
+    a.SubmittedAt = DateTime.UtcNow;
+    await db.SaveChangesAsync();
+    
     await audit.LogAsync(GetUid(ctx), "SUBMIT_APP", "Application", appId, null, GetIp(ctx));
+
+    // Send application submission email in background
+    var serviceProvider = ctx.RequestServices.GetRequiredService<IServiceProvider>();
+    var email = a.User.Email;
+    var name = $"{a.User.FirstName} {a.User.LastName}".Trim();
+    if (string.IsNullOrWhiteSpace(name)) name = "User";
+
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            using var scope = serviceProvider.CreateScope();
+            var emailSvc = scope.ServiceProvider.GetRequiredService<EmailService>();
+            await emailSvc.SendApplicationSubmissionEmailAsync(email, name, appId);
+        }
+        catch (Exception)
+        {
+            // Failures inside SendApplicationSubmissionEmailAsync are already logged
+        }
+    });
+
     return Results.Ok(new { message = "Submitted" });
 });
 

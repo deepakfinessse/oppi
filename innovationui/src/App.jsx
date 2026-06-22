@@ -4,6 +4,7 @@ import { Navigate, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home/Home';
 import Auth from './pages/Auth/Auth';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
+import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ApplicationForm from './pages/ApplicationForm/ApplicationForm';
 import AdminDashboard from './pages/Dashboards/AdminDashboard';
 import ValidatorDashboard from './pages/Dashboards/ValidatorDashboard';
@@ -28,6 +29,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/change-password" element={
         <ProtectedRoute>
           <ChangePassword />

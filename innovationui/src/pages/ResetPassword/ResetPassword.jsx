@@ -1,0 +1,129 @@
+import React, { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { api } from '../../services/api';
+import '../Auth/Auth.css'; // Reuse Auth CSS
+import trophyImg from '../../assets/Trophy1.png';
+
+const ResetPassword = () => {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
+
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({});
+
+    if (!token) {
+      setErrors({ form: 'Reset token is missing or invalid. Please request a new link.' });
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrors({ password: 'Password must be at least 6 characters long.' });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrors({ confirmPassword: 'Passwords do not match.' });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await api.resetPassword(token, password);
+      setIsSubmitted(true);
+    } catch (err) {
+      setErrors({ form: err.message || 'Failed to reset password. The link may have expired or is invalid.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-content-wrapper">
+          <div className="auth-card">
+            <div className="auth-image-section">
+              <img src={trophyImg} alt="OPPI Excellence in Innovation Award" className="auth-trophy" />
+            </div>
+
+            <div className="auth-form-section">
+              {!isSubmitted ? (
+                <>
+                  <div className="auth-header">
+                    <h2>Reset Password</h2>
+                    <p>Enter your new password below to complete the reset process.</p>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="auth-form">
+                    {errors.form && <div className="field-error-text" style={{ textAlign: 'center', marginBottom: '1rem' }}>{errors.form}</div>}
+
+                    <div className="form-group">
+                      <label>New Password <span className="required">*</span></label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
+                        }}
+                        required
+                      />
+                      {errors.password && <div className="field-error-text">{errors.password}</div>}
+                    </div>
+
+                    <div className="form-group">
+                      <label>Confirm New Password <span className="required">*</span></label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                        }}
+                        required
+                      />
+                      {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
+                    </div>
+
+                    <button type="submit" className="submit-btn" disabled={isSubmitting || !token}>
+                      {isSubmitting ? 'RESETTING...' : 'RESET PASSWORD'}
+                    </button>
+
+                    <div className="form-options" style={{ justifyContent: 'center', marginTop: '1rem' }}>
+                      <Link to="/auth" className="forgot-link">Back to Login</Link>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ fontSize: '3rem', color: '#0076BE', margin: '0 auto' }}>✓</div>
+                  <div className="auth-header" style={{ textAlign: 'center', marginBottom: 0 }}>
+                    <h2 style={{ fontSize: '1.8rem' }}>Password Reset Success</h2>
+                    <p>Your password has been reset successfully. You can now log in using your new password.</p>
+                  </div>
+                  <div style={{ marginTop: '1rem' }}>
+                    <Link to="/auth">
+                      <button className="submit-btn">BACK TO LOGIN</button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ResetPassword;

@@ -91,3 +91,9 @@ public class UserUpdateDto
     public string Role { get; set; } = null!;
     public string? Password { get; set; }
 }
+
+public class ResetPasswordDto
+{
+    public string Token { get; set; } = null!;
+    public string Password { get; set; } = null!;
+}
