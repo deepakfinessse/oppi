@@ -55,7 +55,7 @@ public class EmailService
                     <!-- Header -->
                     <tr>
                         <td align=""center"" style=""background-color: #ebf5f7; padding: 30px 20px; border-bottom: 1px solid #e1edf0;"">
-                            <img src=""cid:logo"" height=""65"" alt=""OPPI Logo"" style=""display: block; border: 0; outline: none; text-decoration: none;"" />
+                            <img src=""cid:logo@indiaoppi.com"" height=""65"" alt=""OPPI Logo"" style=""display: block; border: 0; outline: none; text-decoration: none;"" />
                         </td>
                     </tr>
                     <!-- Body Content -->
@@ -86,10 +86,12 @@ public class EmailService
         {
             var logoResource = new LinkedResource(logoPath)
             {
-                ContentId = "logo"
+                ContentId = "logo@indiaoppi.com"
             };
             logoResource.ContentType.MediaType = "image/png";
             logoResource.ContentType.Name = Path.GetFileName(logoPath);
+            logoResource.ContentDisposition.Inline = true;
+            logoResource.ContentDisposition.DispositionType = "inline";
             htmlView.LinkedResources.Add(logoResource);
         }
 
