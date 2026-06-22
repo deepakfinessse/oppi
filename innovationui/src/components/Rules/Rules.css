@@ -62,8 +62,7 @@
 }
 
 .trophy-image {
-  /* height: auto;
-  object-fit: contain; */
+  height: 1000px;
   width: 693px;
 }
 
