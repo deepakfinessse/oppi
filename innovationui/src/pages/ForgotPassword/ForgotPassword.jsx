@@ -4,7 +4,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import { api } from '../../services/api';
 import '../Auth/Auth.css'; // Reuse Auth CSS
-import trophyImg from '../../assets/Trophy1.png';
+import trophyImg from '../../assets/trophy-bg.webp';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
