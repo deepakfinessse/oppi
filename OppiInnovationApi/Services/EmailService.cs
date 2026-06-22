@@ -38,23 +38,21 @@ public class EmailService
             using var mail = new MailMessage();
             mail.From = new MailAddress(senderEmail, senderName);
             mail.To.Add(new MailAddress(recipientEmail, recipientName));
-            mail.Subject = "Registration Confirmation - OPPI Excellence in Innovation Award 2025";
+            mail.Subject = "Registration Confirmation - OPPI Excellence in Innovation Award 2026";
             
             mail.Body = $@"Dear {recipientName},
 
-We have received your registration for the OPPI Excellence in Innovation Award for Healthcare Start-up of the year 2025.
+Thank you for registering for the OPPI Excellence in Innovation Award for Healthcare Start-up of the year 2026.
 
-For your easy reference, I’ve attached a blank application form in Word format. You may find it helpful to fill in all the required details in this document beforehand and keep it handy while uploading files and completing the online application.
+To proceed with your application, please log in to the awards portal using your credentials:
+http://innovationawards.indiaoppi.com/ 
 
-This approach can help prevent any loss of data during the uploading process and ensure a smoother submission experience.
+For any technical assistance or queries related to the application process, please contact Ms. Clara Rodricks at clara.rodricks@indiaoppi.com or call +91 96190 80644.
 
-Please note, final submission must be done online.
+We look forward to receiving your application.
 
-To proceed with your application, please login here: http://innovationawards.indiaoppi.com/ 
-
-The last date for submission is 22nd August 2025. We look forward to your submission. 
-
-In case of any query, please feel free to reach out to me.";
+Warm regards,
+Team - OPPI Awards";
 
             mail.IsBodyHtml = false;
 
@@ -83,7 +81,7 @@ In case of any query, please feel free to reach out to me.";
         }
     }
 
-    public async Task SendForgotPasswordEmailAsync(string recipientEmail, string recipientName, string tempPassword)
+    public async Task SendForgotPasswordEmailAsync(string recipientEmail, string recipientName, string resetLink)
     {
         try
         {
@@ -102,22 +100,19 @@ In case of any query, please feel free to reach out to me.";
             using var mail = new MailMessage();
             mail.From = new MailAddress(senderEmail, senderName);
             mail.To.Add(new MailAddress(recipientEmail, recipientName));
-            mail.Subject = "Password Reset - OPPI Excellence in Innovation Award 2025";
+            mail.Subject = "Reset Password";
             
             mail.Body = $@"Dear {recipientName},
 
-We received a request to reset the password for your account on the OPPI Excellence in Innovation Award portal.
+Your password reset request has been received successfully.
 
-Your temporary password is: {tempPassword}
+To reset your password, please click the link below:
+{resetLink}
 
-Please log in to the portal using this password and immediately change your password by going to the Change Password section.
+For any technical assistance or queries related to the application process, please contact Ms. Clara Rodricks at clara.rodricks@indiaoppi.com or call +91 96190 80644.
 
-Portal URL: http://innovationawards.indiaoppi.com/
-
-If you did not request this password reset, please ignore this email or contact support if you have concerns.
-
-Regards,
-OPPI Excellence in Innovation Award Team";
+Warm regards,
+Team - OPPI Awards";
 
             mail.IsBodyHtml = false;
 
@@ -202,6 +197,58 @@ OPPI Excellence in Innovation Award Team";
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send jury/validator invitation email to {Email}.", recipientEmail);
+        }
+    }
+
+    public async Task SendApplicationSubmissionEmailAsync(string recipientEmail, string recipientName, int applicationId)
+    {
+        try
+        {
+            var smtpSection = _config.GetSection("SmtpSettings");
+            var host = smtpSection["Server"] ?? "smtp.gmail.com";
+            var portStr = smtpSection["Port"] ?? "587";
+            var enableSslStr = smtpSection["EnableSsl"] ?? "true";
+            var username = smtpSection["Username"] ?? "smtpindiaoppi@gmail.com";
+            var password = smtpSection["Password"] ?? "jafkaniynuahfkbe";
+            var senderEmail = smtpSection["SenderEmail"] ?? "smtpindiaoppi@gmail.com";
+            var senderName = smtpSection["SenderName"] ?? "OPPI Excellence in Innovation Award";
+
+            int port = int.TryParse(portStr, out var p) ? p : 587;
+            bool enableSsl = !bool.TryParse(enableSslStr, out var ssl) || ssl;
+
+            using var mail = new MailMessage();
+            mail.From = new MailAddress(senderEmail, senderName);
+            mail.To.Add(new MailAddress(recipientEmail, recipientName));
+            mail.Subject = "Application Submission - OPPI Excellence in Innovation Award 2026";
+            
+            mail.Body = $@"Dear {recipientName},
+
+Thank you for submitting your application for the OPPI Excellence in Innovation Award for Healthcare Start-up of the year 2026.
+
+Please note your application no. for future correspondence - {applicationId}
+
+Your application will be reviewed by our validator and, upon successful validation, forwarded to the Jury for evaluation.
+
+In the event that your application is not shortlisted, you will be notified via email.
+
+We appreciate your participation and wish you the very best in the evaluation process.
+
+Warm regards,
+Team - OPPI Awards";
+
+            mail.IsBodyHtml = false;
+
+            using var smtp = new SmtpClient(host, port);
+            smtp.Credentials = new NetworkCredential(username, password);
+            smtp.EnableSsl = enableSsl;
+
+            _logger.LogInformation("Sending application submission email to {Email}...", recipientEmail);
+            await smtp.SendMailAsync(mail);
+            _logger.LogInformation("Application submission email sent successfully to {Email}.", recipientEmail);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send application submission email to {Email}.", recipientEmail);
         }
     }
 }

@@ -178,6 +178,10 @@ export const api = {
     method: 'POST',
     body: { Email: email }
   }),
+  resetPassword: (token, password) => request('/auth/reset-password', {
+    method: 'POST',
+    body: { Token: token, Password: password }
+  }),
   changePassword: (oldPassword, newPassword) => request('/auth/change-password', {
     method: 'POST',
     body: { Old_Password: oldPassword, New_Password: newPassword }

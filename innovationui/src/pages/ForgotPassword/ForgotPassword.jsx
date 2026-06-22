@@ -17,7 +17,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setErrors({});
     setIsSubmitting(true);
-    
+
     try {
       const response = await api.forgotPassword(email);
       if (response && response.temp_password) {
@@ -39,7 +39,7 @@ const ForgotPassword = () => {
             <div className="auth-image-section">
               <img src={trophyImg} alt="OPPI Excellence in Innovation Award" className="auth-trophy" />
             </div>
-            
+
             <div className="auth-form-section">
               {!isSubmitted ? (
                 <>
@@ -52,16 +52,16 @@ const ForgotPassword = () => {
 
                     <div className="form-group">
                       <label>Email Id <span className="required">*</span></label>
-                      <input 
-                        type="email" 
-                        name="email" 
+                      <input
+                        type="email"
+                        name="email"
                         placeholder="name@example.com"
                         value={email}
                         onChange={(e) => {
                           setEmail(e.target.value);
                           if (errors.email) setErrors({});
                         }}
-                        required 
+                        required
                       />
                     </div>
                     {errors.email && <div className="field-error-text">{errors.email}</div>}
@@ -80,15 +80,8 @@ const ForgotPassword = () => {
                   <div style={{ fontSize: '3rem', color: '#0076BE', margin: '0 auto' }}>✓</div>
                   <div className="auth-header" style={{ textAlign: 'center', marginBottom: 0 }}>
                     <h2 style={{ fontSize: '1.8rem' }}>Check Your Email</h2>
-                    <p>We've sent a temporary password to <strong>{email}</strong>. Please check your inbox (and spam/junk folder) and use it to log in.</p>
+                    <p>We've sent a password reset link to <strong>{email}</strong>. Please check your inbox (and spam/junk folder) and click the link to reset your password.</p>
                   </div>
-                  {tempPassword && (
-                    <div style={{ background: '#f8fafc', padding: '1.5rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-                      <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: '#64748b' }}>Temporary Password (testing fallback):</p>
-                      <code style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0076BE' }}>{tempPassword}</code>
-                      <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#e53e3e' }}>Please log in and change it immediately.</p>
-                    </div>
-                  )}
                   <div style={{ marginTop: '1rem' }}>
                     <Link to="/auth">
                       <button className="submit-btn">BACK TO LOGIN</button>
