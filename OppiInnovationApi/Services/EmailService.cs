@@ -89,7 +89,7 @@ public class EmailService
                 ContentId = "oppi_logo",
                 TransferEncoding = System.Net.Mime.TransferEncoding.Base64
             };
-            logoResource.ContentDisposition.DispositionType = System.Net.Mime.DispositionTypeNames.Inline;
+            logoResource.ContentType.Name = Path.GetFileName(logoPath);
             htmlView.LinkedResources.Add(logoResource);
         }
 
