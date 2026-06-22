@@ -371,12 +371,11 @@ static string GetIp(HttpContext c) => c.Connection.RemoteIpAddress?.ToString() ?
 // ========== AUTH ==========
 var auth = app.MapGroup("/auth").RequireRateLimiting("auth");
 
-auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db, DomainService ds,
+auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
     JwtService jwt, AuditService audit, IValidator<RegisterDto> v, EmailService emailService, HttpContext ctx) =>
 {
     var vr = await v.ValidateAsync(dto);
     if (!vr.IsValid) return Results.BadRequest(new { errors = vr.Errors.Select(e => e.ErrorMessage) });
-    if (!ds.IsAllowed(dto.Email)) return Results.BadRequest(new { message = "Domain not allowed. Only authorized domains can register." });
     if (db.Users.Any(x => x.Email == dto.Email)) return Results.BadRequest(new { message = "Email already registered" });
 
     var user = new User { FirstName = dto.First_Name, LastName = dto.Last_Name, Email = dto.Email,
