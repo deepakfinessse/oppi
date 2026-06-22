@@ -31,6 +31,8 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<DomainService>();
 builder.Services.AddScoped<AuditService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddSingleton<ReminderEmailBackgroundService>();
+builder.Services.AddHostedService<ReminderEmailBackgroundService>(p => p.GetRequiredService<ReminderEmailBackgroundService>());
 builder.Services.AddScoped<IValidator<RegisterDto>, RegisterValidator>();
 builder.Services.AddScoped<IValidator<LoginDto>, LoginValidator>();
 
@@ -799,6 +801,16 @@ api.MapGet("/admin/users", async (HttpContext ctx, InnovationDbContext db) =>
     if (user?.Role != "ADMIN") return Results.Forbid();
     var users = await db.Users.Select(u => new { u.Id, u.FirstName, u.LastName, u.Email, u.Mobile, u.Role, u.CreatedAt }).ToListAsync();
     return Results.Ok(users);
+});
+
+api.MapPost("/admin/reminders/trigger", async (HttpContext ctx, InnovationDbContext db, ReminderEmailBackgroundService reminderService) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    reminderService.TriggerImmediateRun();
+    return Results.Ok(new { message = "Reminder email check triggered successfully" });
 });
 
 api.MapPut("/admin/users/{id}", async (int id, UserUpdateDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
