@@ -90,8 +90,6 @@ public class EmailService
             };
             logoResource.ContentType.MediaType = "image/png";
             logoResource.ContentType.Name = Path.GetFileName(logoPath);
-            logoResource.ContentDisposition.Inline = true;
-            logoResource.ContentDisposition.DispositionType = "inline";
             htmlView.LinkedResources.Add(logoResource);
         }
 
