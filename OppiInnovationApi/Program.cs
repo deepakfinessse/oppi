@@ -214,6 +214,31 @@ using (var scope = app.Services.CreateScope())
                     }
                 }
             }
+
+            // Copy logos and headers for emails
+            var mainUploadsDir = Path.Combine(app.Environment.WebRootPath, "uploads");
+            var logoFiles = new[] {
+                "Oppi-logo.png",
+                "OPPI-logo-black.png",
+                "OPPI-logo-white.png",
+                "innovation-header.jpg"
+            };
+            foreach (var f in logoFiles)
+            {
+                var src = Path.Combine(assetsDir, f);
+                var dest = Path.Combine(mainUploadsDir, f);
+                if (File.Exists(src) && !File.Exists(dest))
+                {
+                    try
+                    {
+                        File.Copy(src, dest);
+                    }
+                    catch (Exception copyEx)
+                    {
+                        Console.WriteLine($"Logo copy warning: {copyEx.Message}");
+                    }
+                }
+            }
         }
 
         if (!db.JuryMembers.Any())
