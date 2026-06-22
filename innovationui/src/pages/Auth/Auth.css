@@ -585,10 +585,8 @@
 }
 
 .auth-trophy {
-  width: 120%;           /* zoom in slightly */
-  height: 100%;
   object-fit: cover;
   object-position: center center;
   margin-left: -10%;     /* re-center after zoom */
-  margin-bottom: -20%;
+  margin-bottom: -28%;
 }
