@@ -44,7 +44,7 @@ const Navbar = () => {
 
         <div className="nav-action">
           <Link to="/auth" className="apply-btn" onClick={() => setIsMobileMenuOpen(false)}>
-            APPLY NOW <ArrowRight size={18} />
+            APPLY NOW <ArrowRight width={23} height={18} />
           </Link>
         </div>
 

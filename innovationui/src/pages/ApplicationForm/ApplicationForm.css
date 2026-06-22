@@ -1,5 +1,5 @@
 .application-page {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Poppins', sans-serif;
   background-color: #5dc6e1;
   min-height: 100vh;
   display: flex;
@@ -640,7 +640,7 @@
   align-items: center;
   min-height: 100vh;
   gap: 1rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Poppins', sans-serif;
   color: #64748b;
   font-weight: 500;
 }

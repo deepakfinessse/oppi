@@ -24,7 +24,7 @@ const CTA = () => {
             Applications close on 15th July 2026
           </p>
           <Link to="/auth" className="cta-btn">
-            APPLY NOW <ArrowRight size={20} />
+            APPLY NOW <ArrowRight width={28} height={22} />
           </Link>
         </motion.div>
       </div>

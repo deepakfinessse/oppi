@@ -17,7 +17,7 @@ const Quote = () => {
           <p className="quote-text">
             "Innovation in healthcare is not a luxury — it is the infrastructure of a healthier India."
           </p>
-          <span className="quote-author">— OPPI Mission Statement</span>
+          <span className="quote-author">— OPPI, Mission Statement</span>
         </div>
 
         <div className="quote-desc">

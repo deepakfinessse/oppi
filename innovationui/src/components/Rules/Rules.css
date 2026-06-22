@@ -1,7 +1,7 @@
 /* components/Rules/Rules.css */
 .rules-section {
   position: relative;
-  padding: 5rem 0;
+  padding: 5rem 0 0 0;
   /* Full section background image */
   background-image: url('../../assets/eligibility-bg.jpg');
   background-size: cover;
@@ -44,7 +44,7 @@
   flex: 1;
   min-width: 350px;
   /* Increased from 300px */
-  max-width: 70%;
+  max-width: 50%;
   /* Limit width to leave space for trophy */
   position: relative;
   z-index: 2;
@@ -57,13 +57,14 @@
   justify-content: flex-end;
   /* Align trophy to the right */
   align-items: flex-start;
-  margin-right: -2rem;
+  margin-right: -15rem;
   /* Shift further right */
+  max-width: 50%;
 }
 
 .trophy-image {
-  height: 1000px;
-  width: 693px;
+  height: 1250px;
+  /* width: 885px; */
 }
 
 .rules-title {

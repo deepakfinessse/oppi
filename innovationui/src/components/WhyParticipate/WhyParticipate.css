@@ -1,5 +1,5 @@
 .why-section {
-  padding: 4rem 0 8rem;
+  padding: 4rem 0 4rem;
   /* Matching the blue-cyan gradient from the image */
   background: linear-gradient(135deg, #48d1e3 0%, #2f9cd7 50%, #1a6abf 100%);
   background-image: url('../../assets/Areas-covered-bg.jpg');

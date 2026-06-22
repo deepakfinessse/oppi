@@ -1,3 +1,22 @@
+@font-face {
+  font-family: 'BodoniSvtyTwoITCTT';
+  src: url('../fonts/BodoniSvtyTwoITCTT-Book.woff2') format('woff2'),
+       url('../fonts/BodoniSvtyTwoITCTT-Book.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Add more @font-face blocks if you have Bold/Italic variants */
+@font-face {
+  font-family: 'BodoniSvtyTwoITCTT';
+  src: url('../fonts/BodoniSvtyTwoITCTT-Bold.woff2') format('woff2'),
+       url('../fonts/BodoniSvtyTwoITCTT-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 .quote-section {
   padding: 4rem 0 5rem;
   background: var(--white);
@@ -10,6 +29,7 @@
 }
 
 .quote-text {
+  font-family: 'BodoniSvtyTwoITCTT';
   color: var(--primary);
   margin: 0 0 0.75rem;
   font-weight: 400;

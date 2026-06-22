@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --primary: #0076BE;
@@ -25,7 +25,7 @@
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Poppins', sans-serif;
   color: var(--text-main);
   background-color: var(--background);
   line-height: 1.6;

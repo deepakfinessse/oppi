@@ -2,7 +2,7 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import './Rules.css';
-import trophyImg from '../../assets/trophy-bg.webp';
+import trophyImg from '../../assets/trophy.webp';
 
 const Rules = () => {
   const rules = [

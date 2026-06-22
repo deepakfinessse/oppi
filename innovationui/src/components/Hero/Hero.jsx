@@ -1,6 +1,7 @@
 // components/Hero/Hero.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import './Hero.css';
 // At the top of your React file
 import '@fontsource/bodoni-moda'; // or use an import in your CSS
@@ -59,7 +60,7 @@ const Hero = () => {
           </h1>
 
           <Link to="/auth" className="apply-now-btn">
-            APPLY NOW &rarr;
+            APPLY NOW <ArrowRight width={28} height={22} />
           </Link>
 
           <div className="deadline-wrapper">
