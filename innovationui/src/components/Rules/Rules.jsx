@@ -13,6 +13,7 @@ const Rules = () => {
     "OPPI reserves the right at its sole discretion to cancel, terminate, modify, or suspend the Excellence in Innovation Award or not award any entity in any sector or sub-sector.",
     "OPPI reserves the right to disqualify any candidate/entity that tampers with the submission process, commits fraud or is in violation of criminal and/or civil laws.",
     "The decisions of the Jury and the implementation committee shall be final and binding.",
+    "Applicants reapplying with the same product or service must clearly describe the key improvements, achievements, additional impact, and/or milestones attained since their previous submission."
   ];
 
   return (

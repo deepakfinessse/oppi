@@ -57,13 +57,13 @@
   justify-content: flex-end;
   /* Align trophy to the right */
   align-items: flex-start;
-  margin-right: -15rem;
+  margin-right: -20rem;
   /* Shift further right */
   max-width: 50%;
 }
 
 .trophy-image {
-  height: 1250px;
+  height: 1300px;
   /* width: 885px; */
 }
 
