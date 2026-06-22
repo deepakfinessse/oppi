@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mail;
+using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,22 @@ public class EmailService
 
     private void PopulateEmailHtmlBody(MailMessage mail, string bodyContent)
     {
+        // 1. Capture the plain text body from the main message body
+        string plainText = mail.Body;
+
+        // 2. Clear main message body & IsBodyHtml to avoid multipart conflicts
+        mail.Body = null;
+        mail.IsBodyHtml = false;
+        mail.AlternateViews.Clear();
+
+        // 3. Add plain text alternate view if present
+        if (!string.IsNullOrEmpty(plainText))
+        {
+            var plainView = AlternateView.CreateAlternateViewFromString(plainText, Encoding.UTF8, "text/plain");
+            mail.AlternateViews.Add(plainView);
+        }
+
+        // 4. Build the HTML template
         string htmlBody = $@"
 <!DOCTYPE html>
 <html>
@@ -60,20 +77,23 @@ public class EmailService
 </body>
 </html>";
 
-        var htmlView = AlternateView.CreateAlternateViewFromString(htmlBody, null, "text/html");
+        // 5. Create HTML alternate view
+        var htmlView = AlternateView.CreateAlternateViewFromString(htmlBody, Encoding.UTF8, "text/html");
         
+        // 6. Embed the logo CID resource
         var logoPath = Path.Combine(_env.WebRootPath, "uploads", "Oppi-logo.png");
         if (File.Exists(logoPath))
         {
-            var logoResource = new LinkedResource(logoPath, "image/png")
+            var logoResource = new LinkedResource(logoPath)
             {
                 ContentId = "logo"
             };
+            logoResource.ContentType.MediaType = "image/png";
+            logoResource.ContentType.Name = Path.GetFileName(logoPath);
             htmlView.LinkedResources.Add(logoResource);
         }
 
         mail.AlternateViews.Add(htmlView);
-        mail.IsBodyHtml = true;
     }
 
     public async Task SendRegistrationEmailAsync(string recipientEmail, string recipientName)
