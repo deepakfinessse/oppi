@@ -25,11 +25,11 @@ const Footer = () => {
           </div>
           <div className="contact-item">
             <Mail size={18} className="icon" />
-            <span>awards@indiaoppi.com</span>
+            <span>admin@indiaoppi.com</span>
           </div>
           <div className="contact-item">
             <Phone size={18} className="icon" />
-            <span>+91 00000 00000</span>
+            <span>+91 22 66627007</span>
           </div>
         </div>
 

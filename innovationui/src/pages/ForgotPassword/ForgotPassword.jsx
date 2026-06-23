@@ -5,6 +5,8 @@ import Footer from '../../components/Footer/Footer';
 import { api } from '../../services/api';
 import '../Auth/Auth.css'; // Reuse Auth CSS
 import trophyImg from '../../assets/trophy-bg.webp';
+import oppiLogo from '../../assets/Oppi-logo.png';
+import { LogOut } from 'lucide-react';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -35,6 +37,12 @@ const ForgotPassword = () => {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-content-wrapper">
+          <div className="auth-page-header">
+            <img src={oppiLogo} alt="OPPI Logo" className="auth-page-logo" />
+            <Link to="/" className="btn-back-home">
+              BACK TO HOME <LogOut size={16} className="btn-icon" />
+            </Link>
+          </div>
           <div className="auth-card">
             <div className="auth-image-section">
               <img src={trophyImg} alt="OPPI Excellence in Innovation Award" className="auth-trophy" />

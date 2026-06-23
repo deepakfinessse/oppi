@@ -4,7 +4,7 @@ import './FileUploadField.css';
 
 function isImageFile(name, mimeType, fileType) {
   const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
-  return ['jpg', 'jpeg', 'jpe'].includes(ext);
+  return ['jpg', 'jpeg', 'jpe', 'png'].includes(ext);
 }
 
 function isVideoFile(name, mimeType, fileType) {
@@ -31,7 +31,7 @@ function PreviewNewFile({ file, onRemove, disabled, formatFileSize }) {
   const isVideo = isVideoFile(name, file.type);
 
   return (
-    <li className="file-list-item new">
+    <li className="file-list-item">
       <div className="file-preview-thumbnail">
         {previewUrl && isImage && (
           <img src={previewUrl} alt={name} className="preview-thumb-img" />
@@ -69,7 +69,7 @@ function PreviewExistingFile({ file, onRemove, disabled, formatFileSize }) {
   const isVideo = isVideoFile(name, null, fileType);
 
   return (
-    <li className="file-list-item existing">
+    <li className="file-list-item">
       <div className="file-preview-thumbnail">
         {url && isImage && (
           <img src={url} alt={name} className="preview-thumb-img" />
@@ -107,7 +107,7 @@ function PreviewExistingFile({ file, onRemove, disabled, formatFileSize }) {
 const MAX_FILES = 5;
 const MAX_SIZE = 8 * 1024 * 1024;
 const ACCEPTED_TYPES = [
-  '.jpg', '.jpeg', '.jpe',
+  '.jpg', '.jpeg', '.jpe', '.png',
   '.pdf',
   '.asf', '.asx', '.wmv', '.wmx', '.wm', '.avi', '.divx', '.flv', '.mov', '.qt', '.mpeg', '.mpg', '.mpe', '.mp4', '.m4v', '.ogv', '.webm', '.mkv', '.3gp', '.3gpp', '.3g2', '.3gp2'
 ];
@@ -154,7 +154,7 @@ export default function FileUploadField({
 
     const invalidType = fileList.find((file) => !isAllowedFile(file));
     if (invalidType) {
-      setLocalError('Only PDF, JPEG/JPG, or allowed video files are allowed.');
+      setLocalError('Only PDF, PNG, JPEG/JPG, or allowed video files are allowed.');
       return;
     }
 
@@ -190,13 +190,14 @@ export default function FileUploadField({
   };
 
   const displayError = error || localError;
+  const isInvalid = displayError || (field.required && totalCount === 0);
 
   return (
     <div className="form-group file-upload-group">
       <label>{field.label} {field.required && <span className="required">*</span>}</label>
 
       <div
-        className={`file-dropzone ${isDragging ? 'dragging' : ''} ${isFull ? 'full' : ''} ${disabled ? 'disabled' : ''} ${displayError ? 'invalid' : ''}`}
+        className={`file-dropzone ${isDragging ? 'dragging' : ''} ${isFull ? 'full' : ''} ${disabled ? 'disabled' : ''} ${isInvalid ? 'invalid' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -215,7 +216,7 @@ export default function FileUploadField({
           type="file"
           name={field.name}
           multiple
-          accept=".jpg,.jpeg,.jpe,.pdf,.asf,.asx,.wmv,.wmx,.wm,.avi,.divx,.flv,.mov,.qt,.mpeg,.mpg,.mpe,.mp4,.m4v,.ogv,.webm,.mkv,.3gp,.3gpp,.3g2,.3gp2"
+          accept=".jpg,.jpeg,.jpe,.png,.pdf,.asf,.asx,.wmv,.wmx,.wm,.avi,.divx,.flv,.mov,.qt,.mpeg,.mpg,.mpe,.mp4,.m4v,.ogv,.webm,.mkv,.3gp,.3gpp,.3g2,.3gp2"
           onChange={handleInputChange}
           disabled={disabled || isFull}
           className="file-input-hidden"
@@ -237,7 +238,7 @@ export default function FileUploadField({
           </p>
         )}
         <p className="file-dropzone-hint">
-          Up to {MAX_FILES} files at a time · PDF, JPG, JPEG, JPE, or Video · 8MB each
+          Up to {MAX_FILES} files at a time &middot; PDF, PNG, or JPEG &middot; 8MB each
         </p>
         <p className="file-dropzone-count">{totalCount} of {MAX_FILES} files attached</p>
       </div>
