@@ -217,6 +217,7 @@ export default function AdminDashboard() {
 
   // Filter Registered Users
   const filteredUsers = users.filter(u => {
+    if (u.role?.toUpperCase() === 'ADMIN') return false;
     if (userFilter === 'ALL') return true;
     return u.role?.toUpperCase() === userFilter;
   });
