@@ -756,7 +756,9 @@ function ApplicationForm() {
                     )}
                     {activeStep < 3 && (
                       <>
-                        <button type="submit" onClick={() => { actionRef.current = 'exit'; }} disabled={isSaving} className="btn-save-exit">Save & Exit</button>
+                        {!routeId && (
+                          <button type="submit" onClick={() => { actionRef.current = 'exit'; }} disabled={isSaving} className="btn-save-exit">Save & Exit</button>
+                        )}
                         <button
                           type="submit"
                           onClick={() => { actionRef.current = 'next'; }}

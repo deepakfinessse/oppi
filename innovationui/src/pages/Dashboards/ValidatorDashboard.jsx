@@ -86,6 +86,17 @@ export default function ValidatorDashboard() {
   };
 
   const submitScores = async (isDraft = false) => {
+    if (!isDraft) {
+      if (!scores.innovationIp || !scores.teamStrength || !scores.businessPlan || !scores.impact) {
+        alert('Please provide all scores before approving.');
+        return;
+      }
+      if (!remarks.trim()) {
+        alert('Remarks are mandatory for approval. Please provide proper remarks before approving.');
+        return;
+      }
+    }
+
     try {
       setSubmitting(true);
       await api.validatorApprove(selectedAppId, {
@@ -179,7 +190,6 @@ export default function ValidatorDashboard() {
                 <div className="jury-criterion" key={c.key}>
                   <div className="jury-criterion-top">
                     <span className="jury-criterion-label">{c.label}</span>
-                    <span className="jury-criterion-weight">×{c.weight}</span>
                   </div>
                   <div className="jury-criterion-bottom">
                     <div className="jury-score-btns">
@@ -241,7 +251,7 @@ export default function ValidatorDashboard() {
               <button
                 className="btn-action approve"
                 onClick={() => submitScores(false)}
-                disabled={submitting || !scores.innovationIp || !scores.teamStrength || !scores.businessPlan || !scores.impact || !remarks.trim()}
+                disabled={submitting}
               >
                 {submitting ? 'Submitting...' : 'Approve'}
               </button>

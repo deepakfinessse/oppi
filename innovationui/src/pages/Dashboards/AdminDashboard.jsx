@@ -221,19 +221,18 @@ export default function AdminDashboard() {
     return u.role?.toUpperCase() === userFilter;
   });
 
-  // Filter Submitted Applications
+  // Filter Applications
   const filteredApps = apps.filter(a => {
     if (appFilter === 'ALL') return true;
     const statusUpper = a.status?.toUpperCase() || '';
-    if (appFilter === 'VALIDATOR') {
-      return statusUpper.includes('VALIDATOR') || (a.validator_score !== undefined && a.validator_score !== null);
-    }
-    if (appFilter === 'JURY') {
-      return statusUpper.includes('JURY') || statusUpper === 'UNDER_JURY_REVIEW';
-    }
-    if (appFilter === 'USER') {
-      return statusUpper === 'SUBMITTED';
-    }
+    if (appFilter === 'DRAFT') return statusUpper === 'DRAFT';
+    if (appFilter === 'SUBMITTED') return statusUpper === 'SUBMITTED';
+    if (appFilter === 'UNDER_VALIDATOR_REVIEW') return statusUpper === 'UNDER_VALIDATOR_REVIEW';
+    if (appFilter === 'VALIDATOR_APPROVED') return statusUpper === 'VALIDATOR_APPROVED';
+    if (appFilter === 'VALIDATOR_REJECTED') return statusUpper === 'VALIDATOR_REJECTED';
+    if (appFilter === 'UNDER_JURY_REVIEW') return statusUpper === 'UNDER_JURY_REVIEW';
+    if (appFilter === 'JURY_APPROVED') return statusUpper === 'JURY_APPROVED';
+    if (appFilter === 'JURY_REJECTED') return statusUpper === 'JURY_REJECTED';
     return true;
   });
 
@@ -309,13 +308,13 @@ export default function AdminDashboard() {
     >
       <div className="dashboard-content">
         {error && <div className="dashboard-error">{error}</div>}
+        <br />
+        {/* <h1 className="admin-main-heading">Admin</h1> */}
 
-        <h1 className="admin-main-heading">Admin</h1>
-
-        {/* Submitted Applications Section */}
+        {/* Applications Section */}
         <div className="dashboard-section">
           <div className="dashboard-section-header">
-            <h3>Submitted applications({String(filteredApps.length).padStart(2, '0')})</h3>
+            <h3>Applications ({String(filteredApps.length).padStart(2, '0')})</h3>
             <div className="admin-header-actions">
               <div className="filter-dropdown-container" ref={appDropdownRef}>
                 <button
@@ -325,11 +324,16 @@ export default function AdminDashboard() {
                   FILTER <ChevronDown size={14} />
                 </button>
                 {appDropdownOpen && (
-                  <div className="dropdown-menu">
+                  <div className="dropdown-menu" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                     <button className={appFilter === 'ALL' ? 'active' : ''} onClick={() => { setAppFilter('ALL'); setAppDropdownOpen(false); }}>All</button>
-                    <button className={appFilter === 'VALIDATOR' ? 'active' : ''} onClick={() => { setAppFilter('VALIDATOR'); setAppDropdownOpen(false); }}>Validator</button>
-                    <button className={appFilter === 'JURY' ? 'active' : ''} onClick={() => { setAppFilter('JURY'); setAppDropdownOpen(false); }}>Jury</button>
-                    <button className={appFilter === 'USER' ? 'active' : ''} onClick={() => { setAppFilter('USER'); setAppDropdownOpen(false); }}>User</button>
+                    <button className={appFilter === 'DRAFT' ? 'active' : ''} onClick={() => { setAppFilter('DRAFT'); setAppDropdownOpen(false); }}>Draft</button>
+                    <button className={appFilter === 'SUBMITTED' ? 'active' : ''} onClick={() => { setAppFilter('SUBMITTED'); setAppDropdownOpen(false); }}>Submitted</button>
+                    <button className={appFilter === 'UNDER_VALIDATOR_REVIEW' ? 'active' : ''} onClick={() => { setAppFilter('UNDER_VALIDATOR_REVIEW'); setAppDropdownOpen(false); }}>Under Validator Review</button>
+                    <button className={appFilter === 'VALIDATOR_APPROVED' ? 'active' : ''} onClick={() => { setAppFilter('VALIDATOR_APPROVED'); setAppDropdownOpen(false); }}>Validator Approved</button>
+                    <button className={appFilter === 'VALIDATOR_REJECTED' ? 'active' : ''} onClick={() => { setAppFilter('VALIDATOR_REJECTED'); setAppDropdownOpen(false); }}>Validator Rejected</button>
+                    <button className={appFilter === 'UNDER_JURY_REVIEW' ? 'active' : ''} onClick={() => { setAppFilter('UNDER_JURY_REVIEW'); setAppDropdownOpen(false); }}>Under Jury Review</button>
+                    <button className={appFilter === 'JURY_APPROVED' ? 'active' : ''} onClick={() => { setAppFilter('JURY_APPROVED'); setAppDropdownOpen(false); }}>Jury Approved</button>
+                    <button className={appFilter === 'JURY_REJECTED' ? 'active' : ''} onClick={() => { setAppFilter('JURY_REJECTED'); setAppDropdownOpen(false); }}>Jury Rejected</button>
                   </div>
                 )}
               </div>

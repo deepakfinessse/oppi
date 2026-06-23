@@ -53,7 +53,7 @@
 .dashboard-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  /* padding: 2rem; */
 }
 
 .dashboard-section {
@@ -103,7 +103,8 @@
   background-color: #f1f5f9;
 }
 
-.role-badge, .status-badge {
+.role-badge,
+.status-badge {
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.75rem;
@@ -111,16 +112,52 @@
   text-transform: uppercase;
 }
 
-.role-badge.admin { background: #fee2e2; color: #991b1b; }
-.role-badge.validator { background: #e0e7ff; color: #3730a3; }
-.role-badge.jury { background: #fef3c7; color: #92400e; }
-.role-badge.user { background: #f1f5f9; color: #475569; }
+.role-badge.admin {
+  background: #fee2e2;
+  color: #991b1b;
+}
 
-.status-badge.submitted { background: #dbeafe; color: #1e40af; }
-.status-badge.validator-approved { background: #dcfce7; color: #166534; }
-.status-badge.validator-rejected { background: #fee2e2; color: #991b1b; }
-.status-badge.jury-approved { background: #dcfce7; color: #166534; border: 1px solid #22c55e; }
-.status-badge.jury-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+.role-badge.validator {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.role-badge.jury {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.role-badge.user {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.status-badge.submitted {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge.validator-approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.validator-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge.jury-approved {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #22c55e;
+}
+
+.status-badge.jury-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #ef4444;
+}
 
 .action-buttons {
   display: flex;
@@ -148,10 +185,12 @@
   padding: 0.4rem;
   aspect-ratio: 1;
 }
+
 .btn-action.view:hover {
   background: #e2e8f0;
   color: #1e293b;
 }
+
 .btn-action.view svg {
   display: block;
 }
@@ -166,10 +205,12 @@
   padding: 0.4rem;
   aspect-ratio: 1;
 }
+
 .btn-action.edit:hover {
   background: #dbeafe;
   color: #1e40af;
 }
+
 .btn-action.edit svg {
   display: block;
 }
@@ -178,6 +219,7 @@
   background: #2563eb;
   color: white;
 }
+
 .btn-action.edit-text:hover {
   background: #1d4ed8;
 }
@@ -186,18 +228,25 @@
   background: #22c55e;
   color: white;
 }
-.btn-action.approve:hover { background: #16a34a; }
+
+.btn-action.approve:hover {
+  background: #16a34a;
+}
 
 .btn-action.reject {
   background: #ef4444;
   color: white;
 }
-.btn-action.reject:hover { background: #dc2626; }
+
+.btn-action.reject:hover {
+  background: #dc2626;
+}
 
 .btn-action.save {
   background: #64748b;
   color: white;
 }
+
 .btn-action.save:hover {
   background: #475569;
 }
@@ -320,14 +369,50 @@
   color: #334155;
 }
 
-.text-center { text-align: center; }
-.dashboard-loading { display: flex; justify-content: center; align-items: center; height: 100vh; color: #64748b; }
-.dashboard-error { background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
-.status-text { font-weight: 700; text-transform: uppercase; }
-.status-text.validator-rejected, .status-text.jury-rejected { color: #dc2626; }
-.status-text.validator-approved, .status-text.jury-approved { color: #16a34a; }
-.status-badge.under-jury-review { background: #fef3c7; color: #d97706; border: 1px solid #f59e0b; }
-.status-text.under-jury-review { color: #d97706; }
+.text-center {
+  text-align: center;
+}
+
+.dashboard-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: #64748b;
+}
+
+.dashboard-error {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-text {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-text.validator-rejected,
+.status-text.jury-rejected {
+  color: #dc2626;
+}
+
+.status-text.validator-approved,
+.status-text.jury-approved {
+  color: #16a34a;
+}
+
+.status-badge.under-jury-review {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #f59e0b;
+}
+
+.status-text.under-jury-review {
+  color: #d97706;
+}
 
 /* Modal overlay styling */
 .modal-overlay {
@@ -583,7 +668,8 @@
   font-size: 0.85rem;
 }
 
-.jury-scores-table th, .jury-scores-table td {
+.jury-scores-table th,
+.jury-scores-table td {
   border: 1px solid #e2e8f0;
   padding: 0.5rem 0.5rem;
   text-align: center;
@@ -601,13 +687,25 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleUp {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Admin Dashboard Premium Upgrades */
@@ -616,7 +714,7 @@
   background: #5dc6e1 !important;
   position: relative;
   overflow-x: hidden;
-  padding-bottom: 3rem;
+  /* padding-bottom: 3rem; */
 }
 
 .admin-dashboard-page::before {
@@ -817,8 +915,15 @@
 }
 
 @keyframes slideDownDropdown {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdown-menu button {
@@ -850,7 +955,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #00bcd4; /* cyan from mockup */
+  background: #00bcd4;
+  /* cyan from mockup */
   color: white;
   border: none;
   border-radius: 8px;
@@ -880,7 +986,8 @@
 }
 
 .admin-dashboard-page .dashboard-table th {
-  background-color: #f1f3f9; /* light grayish purple matching mockup */
+  background-color: #f1f3f9;
+  /* light grayish purple matching mockup */
   color: #475569;
   font-weight: 600;
   font-size: 0.875rem;
@@ -949,6 +1056,7 @@
 
 /* Floating header responsiveness overrides */
 @media (max-width: 768px) {
+
   .admin-dashboard-page .dashboard-header,
   .jury-dashboard-page .dashboard-header,
   .validator-dashboard-page .dashboard-header {
@@ -1297,6 +1405,3 @@
   font-size: 0.825rem !important;
   color: #64748b !important;
 }
-
-
-
