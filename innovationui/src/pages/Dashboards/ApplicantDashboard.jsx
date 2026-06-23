@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, clearSession } from '../../services/api';
+import { api, clearSession, formatIST } from '../../services/api';
 import JSZip from 'jszip';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
@@ -59,7 +59,7 @@ export default function ApplicantDashboard() {
               {app.status.replace('_', ' ')}
             </div>
             <p style={{ marginTop: '15px', color: '#666', fontSize: '0.95rem' }}>
-              Submitted on: {new Date(app.submitted_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' })}
+              Submitted on: {formatIST(app.submitted_at)}
             </p>
           </div>
 

@@ -9,6 +9,18 @@ export function getFileUrl(filePath) {
   return `${API_BASE_URL}${filePath}`;
 }
 
+export function formatIST(dateString) {
+  if (!dateString) return '—';
+  let d = String(dateString);
+  // Treat typical SQL string formats without timezone as UTC
+  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(\.\d+)?$/.test(d)) {
+    d = d.replace(' ', 'T') + 'Z';
+  }
+  const parsed = new Date(d);
+  if (isNaN(parsed.getTime())) return '—';
+  return parsed.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 async function request(path, options = {}) {
   const headers = new Headers(options.headers || {});
   const session = getSession();

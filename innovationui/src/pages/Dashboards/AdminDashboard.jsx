@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, ChevronDown, Download, Eye, Edit } from 'lucide-react';
-import { api, clearSession, getFileUrl } from '../../services/api';
+import { api, clearSession, getFileUrl, formatIST } from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
@@ -259,6 +259,7 @@ export default function AdminDashboard() {
         { label: 'Email', key: 'user_email' },
         { label: 'Company', key: 'company' },
         { label: 'Status', key: 'status' },
+        { label: 'Submitted Date', key: 'submitted_at', format: (v) => formatIST(v) },
         { label: 'Validator Score', key: 'validator_score', format: (v) => v ? v.toFixed(2) : '—' },
         { label: 'Jury Approval Score', key: 'jury_approval_count', format: (v, row) => `${v || 0}/${totalJuries || 3} (${row.average_score ? row.average_score.toFixed(2) : '—'})` }
       ];
@@ -353,6 +354,7 @@ export default function AdminDashboard() {
                   <th>Email</th>
                   <th>Company</th>
                   <th>Status</th>
+                  <th>Submitted Date</th>
                   <th>Validator score</th>
                   <th>Jury approval score</th>
                   <th>Actions</th>
@@ -369,6 +371,9 @@ export default function AdminDashboard() {
                       <span className={`status-badge ${a.status.toLowerCase().replace('_', '-')}`}>
                         {a.status}
                       </span>
+                    </td>
+                    <td>
+                      {formatIST(a.submitted_at)}
                     </td>
                     <td>
                       {a.validator_score ? (
@@ -403,7 +408,7 @@ export default function AdminDashboard() {
                 ))}
                 {filteredApps.length === 0 && (
                   <tr>
-                    <td colSpan="8" className="text-center">No applications found.</td>
+                    <td colSpan="9" className="text-center">No applications found.</td>
                   </tr>
                 )}
               </tbody>

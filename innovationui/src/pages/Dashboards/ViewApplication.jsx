@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api, clearSession, getSession, getFileUrl } from '../../services/api';
+import { api, clearSession, getSession, getFileUrl, formatIST } from '../../services/api';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import html2pdf from 'html2pdf.js';
@@ -267,7 +267,7 @@ export default function ViewApplication({ isMine }) {
               <div className="info-card highlight">
                 <h4>Status Info</h4>
                 <div><strong>Status:</strong> <span className={`status-text ${app.status.toLowerCase().replace('_', '-')}`}>{app.status}</span></div>
-                <div><strong>Submitted:</strong> {new Date(app.submitted_at).toLocaleString()}</div>
+                <div><strong>Submitted:</strong> {formatIST(app.submitted_at)}</div>
                 {(userRole === 'ADMIN' || userRole === 'JURY') && (
                   <>
                     <div style={{ borderTop: '1px solid #cbd5e1', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
@@ -350,7 +350,7 @@ export default function ViewApplication({ isMine }) {
                         <td>{r.impactScore} / 5</td>
                         <td><strong>{r.weightedScore.toFixed(2)}</strong> / 5.00</td>
                         <td>{r.remarks || '—'}</td>
-                        <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+                        <td>{formatIST(r.createdAt)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -386,7 +386,7 @@ export default function ViewApplication({ isMine }) {
                         <td>{r.impactScore} / 5</td>
                         <td><strong>{r.weightedScore.toFixed(2)}</strong> / 5.00</td>
                         <td>{r.remarks || '—'}</td>
-                        <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+                        <td>{formatIST(r.createdAt)}</td>
                       </tr>
                     ))}
                   </tbody>
