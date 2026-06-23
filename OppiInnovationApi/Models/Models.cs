@@ -32,6 +32,7 @@ public class Application
     public DateTime? SubmittedAt { get; set; }
     public DateTime? ValidatorActionAt { get; set; }
     public DateTime? JuryActionAt { get; set; }
+    public string? Remarks { get; set; }
     public DateTime CreatedAt { get; set; }
     public virtual User User { get; set; } = null!;
     public virtual PersonalInfo? PersonalInfo { get; set; }

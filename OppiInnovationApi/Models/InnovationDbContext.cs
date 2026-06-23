@@ -55,6 +55,7 @@ public class InnovationDbContext : DbContext
             e.Property(x => x.SubmittedAt).HasColumnName("submitted_at");
             e.Property(x => x.ValidatorActionAt).HasColumnName("validator_action_at");
             e.Property(x => x.JuryActionAt).HasColumnName("jury_action_at");
+            e.Property(x => x.Remarks).HasColumnName("remarks").HasColumnType("text");
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
             e.HasOne(x => x.User).WithMany(u => u.Applications).HasForeignKey(x => x.UserId);
         });

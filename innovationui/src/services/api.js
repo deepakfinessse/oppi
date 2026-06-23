@@ -190,10 +190,10 @@ export const api = {
   getAdminApps: () => request('/admin/applications'),
   getValidatorApps: () => request('/validator/applications'),
   validatorApprove: (id, payload) => request(`/validator/approve/${id}`, { method: 'POST', body: payload }),
-  validatorReject: (id) => request(`/validator/reject/${id}`, { method: 'POST' }),
+  validatorReject: (id, payload) => request(`/validator/reject/${id}`, { method: 'POST', body: payload }),
   getJuryApps: () => request('/jury/applications'),
   juryApprove: (id, payload) => request(`/jury/approve/${id}`, { method: 'POST', body: payload }),
-  juryReject: (id) => request(`/jury/reject/${id}`, { method: 'POST' }),
+  juryReject: (id, payload) => request(`/jury/reject/${id}`, { method: 'POST', body: payload }),
   getAppReview: (id) => request(`/application/review/${id}`),
   forgotPassword: (email) => request('/auth/forgot-password', {
     method: 'POST',

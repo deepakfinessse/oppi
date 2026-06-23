@@ -268,6 +268,11 @@ export default function ViewApplication({ isMine }) {
                 <h4>Status Info</h4>
                 <div><strong>Status:</strong> <span className={`status-text ${app.status.toLowerCase().replace('_', '-')}`}>{app.status}</span></div>
                 <div><strong>Submitted:</strong> {formatIST(app.submitted_at)}</div>
+                {app.remarks && (
+                  <div style={{ marginTop: '0.5rem', color: '#334155' }}>
+                    <strong>Remarks:</strong> {app.remarks}
+                  </div>
+                )}
                 {(userRole === 'ADMIN' || userRole === 'JURY') && (
                   <>
                     <div style={{ borderTop: '1px solid #cbd5e1', marginTop: '0.75rem', paddingTop: '0.75rem' }}>

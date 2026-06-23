@@ -152,6 +152,21 @@ using (var scope = app.Services.CreateScope())
             }
         }
 
+        // 4b. Check/Add remarks to applications
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'applications' AND column_name = 'remarks'";
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            if (count == 0)
+            {
+                using (var cmdAlter = conn.CreateCommand())
+                {
+                    cmdAlter.CommandText = "ALTER TABLE `applications` ADD COLUMN `remarks` TEXT NULL";
+                    await cmdAlter.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
         // 5. Check/Create jury_members table
         using (var cmd = conn.CreateCommand())
         {
@@ -596,7 +611,7 @@ api.MapGet("/application/mine", async (HttpContext ctx, InnovationDbContext db) 
         .Include(x => x.CompanyDetail).Include(x => x.FileUploads)
         .FirstOrDefaultAsync(x => x.UserId == uid.Value);
     if (a == null) return Results.NotFound(new { message = "No application" });
-    return Results.Ok(new { id = a.Id, status = a.Status, submitted_at = a.SubmittedAt,
+    return Results.Ok(new { id = a.Id, status = a.Status, submitted_at = a.SubmittedAt, remarks = a.Remarks,
         personal_info = a.PersonalInfo == null ? null : new { a.PersonalInfo.CompanyName, a.PersonalInfo.Designation,
             a.PersonalInfo.CategoryOfWork, a.PersonalInfo.OtherCategory, a.PersonalInfo.CompanyWebsite,
             a.PersonalInfo.CompanyBrief, a.PersonalInfo.Innovation, a.PersonalInfo.CompetitiveAnalysis,
@@ -657,7 +672,7 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
 
     double avgScore = juryReviews.Where(r => !r.IsDraft).Any() ? juryReviews.Where(r => !r.IsDraft).Average(r => r.WeightedScore) : 0.0;
 
-    return Results.Ok(new { id = a.Id, status = a.Status, submitted_at = a.SubmittedAt,
+    return Results.Ok(new { id = a.Id, status = a.Status, submitted_at = a.SubmittedAt, remarks = a.Remarks,
         user_name = a.User?.FirstName + " " + a.User?.LastName, user_email = a.User?.Email, user_mobile = a.User?.Mobile,
         personal_info = a.PersonalInfo == null ? null : new { a.PersonalInfo.CompanyName, a.PersonalInfo.Designation,
             a.PersonalInfo.CategoryOfWork, a.PersonalInfo.OtherCategory, a.PersonalInfo.CompanyWebsite,
@@ -1236,12 +1251,17 @@ api.MapPost("/validator/approve/{appId}", async (int appId, ValidatorApprovalDto
     }
 });
 
-api.MapPost("/validator/reject/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+api.MapPost("/validator/reject/{appId}", async (int appId, RejectionDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
     var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
+    if (string.IsNullOrWhiteSpace(dto.Remarks))
+    {
+        return Results.BadRequest(new { message = "Remarks are mandatory for rejection." });
+    }
     a.Status = "VALIDATOR_REJECTED"; a.ValidatorId = GetUid(ctx); a.ValidatorActionAt = DateTime.UtcNow;
+    a.Remarks = dto.Remarks;
     await db.SaveChangesAsync();
-    await audit.LogAsync(GetUid(ctx), "VALIDATOR_REJECT", "Application", appId, null, GetIp(ctx));
+    await audit.LogAsync(GetUid(ctx), "VALIDATOR_REJECT", "Application", appId, $"Remarks: {dto.Remarks}", GetIp(ctx));
     return Results.Ok(new { message = "Rejected" });
 });
 
@@ -1356,12 +1376,17 @@ api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, Inno
     return Results.Ok(new { message = dto.IsDraft ? "Draft review saved successfully" : "Approval and scores recorded successfully", approvalsCount = totalApprovals });
 });
 
-api.MapPost("/jury/reject/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+api.MapPost("/jury/reject/{appId}", async (int appId, RejectionDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
     var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
+    if (string.IsNullOrWhiteSpace(dto.Remarks))
+    {
+        return Results.BadRequest(new { message = "Remarks are mandatory for rejection." });
+    }
     a.Status = "JURY_REJECTED"; a.JuryId = GetUid(ctx); a.JuryActionAt = DateTime.UtcNow;
+    a.Remarks = dto.Remarks;
     await db.SaveChangesAsync();
-    await audit.LogAsync(GetUid(ctx), "JURY_REJECT", "Application", appId, null, GetIp(ctx));
+    await audit.LogAsync(GetUid(ctx), "JURY_REJECT", "Application", appId, $"Remarks: {dto.Remarks}", GetIp(ctx));
     return Results.Ok(new { message = "Final Rejected" });
 });
 
