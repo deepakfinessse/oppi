@@ -24,7 +24,7 @@ function isVideoFile(name, mimeType, fileType) {
   return ['asf', 'asx', 'wmv', 'wmx', 'wm', 'avi', 'divx', 'flv', 'mov', 'qt', 'mpeg', 'mpg', 'mpe', 'mp4', 'm4v', 'ogv', 'webm', 'mkv', '3gp', '3gpp', '3g2', '3gp2'].includes(ext);
 }
 
-const PreviewFileCard = ({ file }) => {
+const PreviewFileCard = ({ file, onRemove }) => {
   const name = file.fileName || file.FileName;
   const url = getFileUrl(file.filePath || file.FilePath);
   const fileType = file.fileType || file.FileType;
@@ -47,11 +47,31 @@ const PreviewFileCard = ({ file }) => {
       <div className="app-preview-details">
         <span className="app-preview-section">{file.section || file.Section || 'Doc'}</span>
         <span className="app-preview-name" title={name}>{name}</span>
-        {url && (
-          <a href={url} target="_blank" rel="noreferrer" className="app-preview-link no-print">
-            View full file
-          </a>
-        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+          {url && (
+            <a href={url} target="_blank" rel="noreferrer" className="app-preview-link no-print">
+              View full file
+            </a>
+          )}
+          {onRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              className="no-print"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#ef4444',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                padding: 0,
+              }}
+            >
+              Delete
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -86,6 +106,19 @@ export default function ViewApplication({ isMine }) {
     };
     fetchApp();
   }, [id, isMine]);
+
+  const handleRemoveExistingFile = async (fileId) => {
+    if (!window.confirm('Are you sure you want to delete this file?')) return;
+    try {
+      await api.deleteFile(fileId);
+      setApp((prev) => ({
+        ...prev,
+        file_uploads: prev.file_uploads.filter((f) => (f.id || f.Id) !== fileId),
+      }));
+    } catch (err) {
+      alert(err.message || 'Failed to delete file. Please try again.');
+    }
+  };
 
   const handleLogout = () => {
     clearSession();
@@ -366,9 +399,16 @@ export default function ViewApplication({ isMine }) {
             <h3>Attached Files</h3>
             {app.file_uploads && app.file_uploads.length > 0 ? (
               <div className="app-preview-grid">
-                {app.file_uploads.map(f => (
-                  <PreviewFileCard key={f.id} file={f} />
-                ))}
+                {app.file_uploads.map(f => {
+                  const canDelete = app.status === 'DRAFT' || userRole === 'ADMIN';
+                  return (
+                    <PreviewFileCard
+                      key={f.id}
+                      file={f}
+                      onRemove={canDelete ? () => handleRemoveExistingFile(f.id) : null}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <div className="no-data">No files attached.</div>

@@ -149,7 +149,7 @@ function PreviewNewFile({ file }) {
   );
 }
 
-function PreviewExistingFile({ file }) {
+function PreviewExistingFile({ file, onRemove }) {
   const name = file.fileName || file.FileName;
   const url = getFileUrl(file.filePath || file.FilePath);
   const fileType = file.fileType || file.FileType;
@@ -166,11 +166,30 @@ function PreviewExistingFile({ file }) {
         )}
       </div>
       <span className="preview-file-name">{name}</span>
-      {url && (
-        <a href={url} target="_blank" rel="noreferrer" className="preview-file-link">
-          View file
-        </a>
-      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+        {url && (
+          <a href={url} target="_blank" rel="noreferrer" className="preview-file-link">
+            View file
+          </a>
+        )}
+        {onRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#ef4444',
+              cursor: 'pointer',
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              padding: 0,
+            }}
+          >
+            Delete
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -319,7 +338,11 @@ function ApplicationForm() {
     return (
       <div className="preview-file-grid">
         {uploaded.map((file) => (
-          <PreviewExistingFile key={`existing-${file.id || file.Id}-${file.fileName || file.FileName}`} file={file} />
+          <PreviewExistingFile
+            key={`existing-${file.id || file.Id}-${file.fileName || file.FileName}`}
+            file={file}
+            onRemove={!isSaving ? () => handleRemoveExistingFile(field.name, file.id || file.Id) : null}
+          />
         ))}
         {newlySelected.map((file, idx) => (
           <PreviewNewFile key={`new-${file.name}-${idx}`} file={file} />
