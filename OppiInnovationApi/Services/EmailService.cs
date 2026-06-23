@@ -461,7 +461,7 @@ We have received your registration for the OPPI Excellence in Innovation Award f
 
 To proceed with your application, please login here: http://innovationawards.indiaoppi.com/ 
 
-The last date for submission is 31st July 2026. We look forward to your submission. 
+The last date for submission is 7th August 2026. We look forward to your submission. 
 
 For any technical assistance or queries related to the application process, please contact Ms. Clara Rodricks at clara.rodricks@indiaoppi.com or call +91 96190 80644.
 
@@ -478,7 +478,7 @@ Team - OPPI Awards";
 <p style=""margin: 0 0 25px 0; text-align: center;"">
     <a href=""http://innovationawards.indiaoppi.com/"" target=""_blank"" style=""display: inline-block; padding: 12px 28px; background-color: #165baf; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);"">Log in to Awards Portal</a>
 </p>
-<p style=""margin: 0 0 20px 0;"">The last date for submission is <strong>31st July 2026</strong>. We look forward to your submission.</p>
+<p style=""margin: 0 0 20px 0;"">The last date for submission is <strong>7th August 2026</strong>. We look forward to your submission.</p>
 <div style=""margin: 0 0 25px 0; font-size: 14px; color: #555555; border-left: 3px solid #2db4cc; padding-left: 12px; font-style: italic; line-height: 1.5;"">
     For any technical assistance or queries related to the application process, please contact Ms. Clara Rodricks at <a href=""mailto:clara.rodricks@indiaoppi.com"" style=""color: #165baf; text-decoration: underline;"">clara.rodricks@indiaoppi.com</a> or call <a href=""tel:+919619080644"" style=""color: #165baf; text-decoration: underline;"">+91 96190 80644</a>.
 </div>

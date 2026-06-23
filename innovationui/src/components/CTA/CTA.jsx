@@ -21,7 +21,7 @@ const CTA = () => {
           </h2>
           <p className="cta-subtitle">
             Join India's most distinguished roster of pharmaceutical innovators.<br />
-            Applications close on 15th July 2026
+            Applications close on 7th August 2026
           </p>
           <Link to="/auth" className="cta-btn">
             APPLY NOW <ArrowRight width={28} height={22} />

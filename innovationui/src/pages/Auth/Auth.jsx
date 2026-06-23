@@ -154,11 +154,14 @@ const Auth = () => {
 
     try {
       await api.register(formData);
-      setMessage('Registration successful! Please login.');
+      const session = await api.login({
+        emailId: formData.emailId,
+        password: formData.password
+      });
+      saveSession(session);
+      setMessage('Registration successful! Redirecting to application...');
       setTimeout(() => {
-        setIsLogin(true);
-        setMessage('');
-        setFormData(prev => ({ ...prev, emailId: '', password: '', confirmPassword: '' }));
+        navigate('/application', { replace: true });
       }, 1500);
     } catch (err) {
       const { newErrors, formError } = parseValidationErrors(err);

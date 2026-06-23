@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import { api } from '../../services/api';
+import { api, saveSession } from '../../services/api';
 import './Register.css';
 import trophyImg from '../../assets/Trophy1.png';
 
@@ -109,8 +109,13 @@ const Register = () => {
 
     try {
       await api.register(formData);
-      setMessage('Registration successful. Redirecting to login...');
-      setTimeout(() => navigate('/login', { replace: true }), 800);
+      const session = await api.login({
+        emailId: formData.emailId,
+        password: formData.createPassword
+      });
+      saveSession(session);
+      setMessage('Registration successful. Redirecting to application...');
+      setTimeout(() => navigate('/application', { replace: true }), 800);
     } catch (err) {
       const { newErrors, formError } = parseValidationErrors(err);
       setErrors(prev => ({

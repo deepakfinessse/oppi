@@ -186,6 +186,7 @@ function ApplicationForm() {
   const [serverError, setServerError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showSaveExitModal, setShowSaveExitModal] = useState(false);
   const [applicationId, setApplicationId] = useState(() => {
     if (routeId) return routeId;
     if (!session?.userId) return null;
@@ -285,6 +286,10 @@ function ApplicationForm() {
     };
     checkExisting();
   }, [navigate, routeId]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeStep]);
 
   if (!session?.token) {
     return <Navigate to="/login" replace />;
@@ -421,7 +426,7 @@ function ApplicationForm() {
     try {
       await saveAction();
       if (actionRef.current === 'exit') {
-        navigate(routeId ? '/admin' : '/');
+        setShowSaveExitModal(true);
       } else {
         handleNext();
       }
@@ -763,6 +768,26 @@ function ApplicationForm() {
           </div>
         </div>
       </div>
+      {showSaveExitModal && (
+        <div className="save-exit-modal-overlay">
+          <div className="save-exit-modal">
+            <div className="save-exit-modal-icon">✓</div>
+            <h2>Application Saved</h2>
+            <p>
+              Thank you for your registration. Your application is saved with us. You can fill up the complete application by 7th August’ 2026.
+            </p>
+            <button
+              onClick={() => {
+                setShowSaveExitModal(false);
+                navigate(routeId ? '/admin' : '/');
+              }}
+              className="save-exit-modal-btn"
+            >
+              Go Back to Home Page
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
