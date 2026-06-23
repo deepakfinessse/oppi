@@ -24,13 +24,26 @@
   box-sizing: border-box;
 }
 
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   color: var(--text-main);
   background-color: var(--background);
   line-height: 1.6;
-  overflow-x: hidden;
 }
+
+.home-page {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;

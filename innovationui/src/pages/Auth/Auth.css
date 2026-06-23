@@ -389,8 +389,7 @@
   }
 
   .auth-image-section {
-    flex: none;
-    height: 200px;
+    display: none;
   }
 
   .auth-image-overlay {

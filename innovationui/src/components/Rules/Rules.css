@@ -63,7 +63,8 @@
 }
 
 .trophy-image {
-  height: 1300px;
+  height: auto;
+  max-height: 1300px;
   /* width: 885px; */
 }
 

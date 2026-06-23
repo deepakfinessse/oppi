@@ -261,7 +261,7 @@ export default function AdminDashboard() {
         { label: 'Status', key: 'status' },
         { label: 'Submitted Date', key: 'submitted_at', format: (v) => formatIST(v) },
         { label: 'Validator Score', key: 'validator_score', format: (v) => v ? v.toFixed(2) : '—' },
-        { label: 'Jury Approval Score', key: 'jury_approval_count', format: (v, row) => `${v || 0}/${totalJuries || 3} (${row.average_score ? row.average_score.toFixed(2) : '—'})` }
+        { label: 'Jury Score', key: 'jury_approval_count', format: (v, row) => `${v || 0}/${totalJuries || 3} (${row.average_score ? row.average_score.toFixed(2) : '—'})` }
       ];
     }
 
@@ -356,7 +356,7 @@ export default function AdminDashboard() {
                   <th>Status</th>
                   <th>Submitted Date</th>
                   <th>Validator score</th>
-                  <th>Jury approval score</th>
+                  <th>Jury score</th>
                   <th>Actions</th>
                 </tr>
               </thead>
