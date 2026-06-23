@@ -91,6 +91,11 @@ jobs:
             sudo mkdir -p /var/www/oppi
             sudo cp -r /home/avian/oppi/* /var/www/oppi/
 
+            # Ensure nginx allows large file uploads (50MB)
+            if ! grep -q 'client_max_body_size' /etc/nginx/nginx.conf; then
+              sudo sed -i '/http {/a\        client_max_body_size 90m;' /etc/nginx/nginx.conf
+            fi
+
             # Restart Backend
             sudo systemctl restart oppi-api
 

@@ -31,6 +31,11 @@ async function request(path, options = {}) {
     return null;
   }
 
+  // Handle 413 Request Entity Too Large (nginx returns HTML, not JSON)
+  if (response.status === 413) {
+    throw new Error('The file(s) you are trying to upload are too large. Please reduce the file size (max 8MB per file) and try again.');
+  }
+
   const contentType = response.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await response.json() : await response.text();
 
@@ -53,11 +58,15 @@ async function request(path, options = {}) {
         }
         message = errors.join(' ');
       }
+    } else if (typeof data === 'string' && data.trim().startsWith('<')) {
+      // Response is HTML (e.g. from nginx error pages) — show a generic user-friendly message
+      message = `Server error (${response.status}). Please try again or contact support.`;
     } else {
       message = data?.message || (typeof data === 'string' ? data : 'Request failed.');
     }
 
     const error = new Error(message);
+    error.status = response.status;
     if (errors) {
       error.errors = errors;
     }
