@@ -149,16 +149,7 @@ Team - OPPI Awards";
 
             PopulateEmailHtmlBody(mail, htmlContent);
 
-            // Attach the blank application form Word file
-            var attachmentPath = Path.Combine(_env.WebRootPath, "templates", "Blank_Application_Form.doc");
-            if (File.Exists(attachmentPath))
-            {
-                mail.Attachments.Add(new Attachment(attachmentPath));
-            }
-            else
-            {
-                _logger.LogWarning("Blank application form attachment not found at path: {Path}", attachmentPath);
-            }
+            // No longer attaching blank application form as requested
 
             using var smtp = new SmtpClient(host, port);
             smtp.Credentials = new NetworkCredential(username, password);
