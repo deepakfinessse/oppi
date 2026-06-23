@@ -406,7 +406,7 @@ static string GetIp(HttpContext c) => c.Connection.RemoteIpAddress?.ToString() ?
 var auth = app.MapGroup("/auth").RequireRateLimiting("auth");
 
 auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
-    JwtService jwt, AuditService audit, IValidator<RegisterDto> v, EmailService emailService, HttpContext ctx) =>
+    JwtService jwt, AuditService audit, IValidator<RegisterDto> v, HttpContext ctx, IServiceScopeFactory scopeFactory) =>
 {
     var vr = await v.ValidateAsync(dto);
     if (!vr.IsValid) return Results.BadRequest(new { errors = vr.Errors.Select(e => e.ErrorMessage) });
@@ -422,20 +422,19 @@ auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
     await audit.LogAsync(user.Id, "REGISTER", "User", user.Id, null, GetIp(ctx));
 
     // Send registration email safely in background
-    var serviceProvider = ctx.RequestServices.GetRequiredService<IServiceProvider>();
     var email = user.Email;
     var name = $"{user.FirstName} {user.LastName}";
     _ = Task.Run(async () =>
     {
         try
         {
-            using var scope = serviceProvider.CreateScope();
+            using var scope = scopeFactory.CreateScope();
             var emailSvc = scope.ServiceProvider.GetRequiredService<EmailService>();
             await emailSvc.SendRegistrationEmailAsync(email, name);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Failures inside SendRegistrationEmailAsync are already logged
+            Log.Error(ex, "Failed to send registration email in background task for {Email}", email);
         }
     });
 
@@ -463,7 +462,7 @@ auth.MapPost("/login", async (LoginDto dto, InnovationDbContext db, JwtService j
             email = user.Email, mobile = user.Mobile, role = user.Role } });
 });
 
-auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db, EmailService emailService, JwtService jwt, HttpContext ctx) =>
+auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db, JwtService jwt, HttpContext ctx, IServiceScopeFactory scopeFactory) =>
 {
     var user = db.Users.FirstOrDefault(x => x.Email == dto.Email);
     if (user == null) return Results.BadRequest(new { message = "Email not found" });
@@ -489,11 +488,13 @@ auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbConte
     {
         try
         {
-            await emailService.SendForgotPasswordEmailAsync(user.Email, name, resetLink);
+            using var scope = scopeFactory.CreateScope();
+            var emailSvc = scope.ServiceProvider.GetRequiredService<EmailService>();
+            await emailSvc.SendForgotPasswordEmailAsync(user.Email, name, resetLink);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Failures inside SendForgotPasswordEmailAsync are already logged
+            Log.Error(ex, "Failed to send forgot password email in background task for {Email}", user.Email);
         }
     });
 
@@ -765,7 +766,7 @@ api.MapDelete("/application/upload/{fileId}", async (int fileId, InnovationDbCon
 });
 
 // Submit
-api.MapPost("/application/submit/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+api.MapPost("/application/submit/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit, IServiceScopeFactory scopeFactory) =>
 {
     var a = await db.Applications.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == appId);
     if (a == null) return Results.NotFound();
@@ -778,7 +779,6 @@ api.MapPost("/application/submit/{appId}", async (int appId, InnovationDbContext
     await audit.LogAsync(GetUid(ctx), "SUBMIT_APP", "Application", appId, null, GetIp(ctx));
 
     // Send application submission email in background
-    var serviceProvider = ctx.RequestServices.GetRequiredService<IServiceProvider>();
     var email = a.User.Email;
     var name = $"{a.User.FirstName} {a.User.LastName}".Trim();
     if (string.IsNullOrWhiteSpace(name)) name = "User";
@@ -787,13 +787,13 @@ api.MapPost("/application/submit/{appId}", async (int appId, InnovationDbContext
     {
         try
         {
-            using var scope = serviceProvider.CreateScope();
+            using var scope = scopeFactory.CreateScope();
             var emailSvc = scope.ServiceProvider.GetRequiredService<EmailService>();
             await emailSvc.SendApplicationSubmissionEmailAsync(email, name, appId);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Failures inside SendApplicationSubmissionEmailAsync are already logged
+            Log.Error(ex, "Failed to send application submission email in background task for application {AppId}", appId);
         }
     });
 
@@ -868,7 +868,7 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
     return Results.Ok(apps);
 });
 
-api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit, EmailService emailService) =>
+api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit, IServiceScopeFactory scopeFactory) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var user = await db.Users.FindAsync(uid.Value);
@@ -974,18 +974,20 @@ api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStor
     {
         try
         {
-            await emailService.SendJuryInvitationEmailAsync(email, name, type, password, isNewUser);
+            using var scope = scopeFactory.CreateScope();
+            var emailSvc = scope.ServiceProvider.GetRequiredService<EmailService>();
+            await emailSvc.SendJuryInvitationEmailAsync(email, name, type, password, isNewUser);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Failures are already logged inside SendJuryInvitationEmailAsync
+            Log.Error(ex, "Failed to send jury invitation email in background task for {Email}", email);
         }
     });
 
     return Results.Ok(member);
 });
 
-api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit, EmailService emailService) =>
+api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit, IServiceScopeFactory scopeFactory) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var user = await db.Users.FindAsync(uid.Value);
@@ -1095,11 +1097,13 @@ api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbConte
         {
             try
             {
-                await emailService.SendJuryInvitationEmailAsync(email, name, type, password, isNewUser);
+                using var scope = scopeFactory.CreateScope();
+                var emailSvc = scope.ServiceProvider.GetRequiredService<EmailService>();
+                await emailSvc.SendJuryInvitationEmailAsync(email, name, type, password, isNewUser);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Already logged
+                Log.Error(ex, "Failed to send jury invitation email update in background task for {Email}", email);
             }
         });
     }
