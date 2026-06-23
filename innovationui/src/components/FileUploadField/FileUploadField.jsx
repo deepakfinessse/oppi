@@ -3,15 +3,13 @@ import { getFileUrl } from '../../services/api';
 import './FileUploadField.css';
 
 function isImageFile(name, mimeType, fileType) {
-  if (mimeType?.startsWith('image/')) return true;
   const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
-  return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+  return ['jpg', 'jpeg', 'jpe'].includes(ext);
 }
 
 function isVideoFile(name, mimeType, fileType) {
-  if (mimeType?.startsWith('video/')) return true;
   const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
-  return ['mp4', 'mov'].includes(ext);
+  return ['asf', 'asx', 'wmv', 'wmx', 'wm', 'avi', 'divx', 'flv', 'mov', 'qt', 'mpeg', 'mpg', 'mpe', 'mp4', 'm4v', 'ogv', 'webm', 'mkv', '3gp', '3gpp', '3g2', '3gp2'].includes(ext);
 }
 
 function PreviewNewFile({ file, onRemove, disabled, formatFileSize }) {
@@ -108,7 +106,11 @@ function PreviewExistingFile({ file, onRemove, disabled, formatFileSize }) {
 
 const MAX_FILES = 5;
 const MAX_SIZE = 8 * 1024 * 1024;
-const ACCEPTED_TYPES = ['.pdf', '.jpg', '.jpeg', '.png'];
+const ACCEPTED_TYPES = [
+  '.jpg', '.jpeg', '.jpe',
+  '.pdf',
+  '.asf', '.asx', '.wmv', '.wmx', '.wm', '.avi', '.divx', '.flv', '.mov', '.qt', '.mpeg', '.mpg', '.mpe', '.mp4', '.m4v', '.ogv', '.webm', '.mkv', '.3gp', '.3gpp', '.3g2', '.3gp2'
+];
 
 function isAllowedFile(file) {
   const ext = `.${file.name.split('.').pop()?.toLowerCase()}`;
@@ -152,7 +154,7 @@ export default function FileUploadField({
 
     const invalidType = fileList.find((file) => !isAllowedFile(file));
     if (invalidType) {
-      setLocalError('Only PDF, PNG, or JPEG files are allowed.');
+      setLocalError('Only PDF, JPEG/JPG, or allowed video files are allowed.');
       return;
     }
 
@@ -213,7 +215,7 @@ export default function FileUploadField({
           type="file"
           name={field.name}
           multiple
-          accept=".pdf,.png,.jpg,.jpeg"
+          accept=".jpg,.jpeg,.jpe,.pdf,.asf,.asx,.wmv,.wmx,.wm,.avi,.divx,.flv,.mov,.qt,.mpeg,.mpg,.mpe,.mp4,.m4v,.ogv,.webm,.mkv,.3gp,.3gpp,.3g2,.3gp2"
           onChange={handleInputChange}
           disabled={disabled || isFull}
           className="file-input-hidden"
@@ -235,7 +237,7 @@ export default function FileUploadField({
           </p>
         )}
         <p className="file-dropzone-hint">
-          Up to {MAX_FILES} files at a time · PDF, PNG, or JPEG · 8MB each
+          Up to {MAX_FILES} files at a time · PDF, JPG, JPEG, JPE, or Video · 8MB each
         </p>
         <p className="file-dropzone-count">{totalCount} of {MAX_FILES} files attached</p>
       </div>

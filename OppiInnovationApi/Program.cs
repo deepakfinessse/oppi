@@ -730,7 +730,7 @@ api.MapPost("/application/upload/{appId}/{section}", async (int appId, string se
         if (file.Length > 8 * 1024 * 1024) return Results.BadRequest(new { message = $"File {file.FileName} exceeds 8MB limit" });
         
         var ext = Path.GetExtension(file.FileName).ToLower();
-        var allowed = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".mp4", ".mov" };
+        var allowed = new[] { ".jpg", ".jpeg", ".jpe", ".pdf", ".asf", ".asx", ".wmv", ".wmx", ".wm", ".avi", ".divx", ".flv", ".mov", ".qt", ".mpeg", ".mpg", ".mpe", ".mp4", ".m4v", ".ogv", ".webm", ".mkv", ".3gp", ".3gpp", ".3g2", ".3gp2" };
         if (!allowed.Contains(ext)) return Results.BadRequest(new { message = $"File {file.FileName} type not allowed" });
 
         var uniqueName = $"{Guid.NewGuid()}{ext}";

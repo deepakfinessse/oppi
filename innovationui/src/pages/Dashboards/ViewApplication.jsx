@@ -15,15 +15,13 @@ const DataRow = ({ label, value }) => (
 );
 
 function isImageFile(name, mimeType, fileType) {
-  if (mimeType?.startsWith('image/')) return true;
   const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
-  return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+  return ['jpg', 'jpeg', 'jpe'].includes(ext);
 }
 
 function isVideoFile(name, mimeType, fileType) {
-  if (mimeType?.startsWith('video/')) return true;
   const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
-  return ['mp4', 'mov'].includes(ext);
+  return ['asf', 'asx', 'wmv', 'wmx', 'wm', 'avi', 'divx', 'flv', 'mov', 'qt', 'mpeg', 'mpg', 'mpe', 'mp4', 'm4v', 'ogv', 'webm', 'mkv', '3gp', '3gpp', '3g2', '3gp2'].includes(ext);
 }
 
 const PreviewFileCard = ({ file }) => {
