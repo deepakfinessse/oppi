@@ -36,18 +36,24 @@ const Footer = () => {
         <div className="footer-col address-col divider-left">
           <h3>Mumbai :</h3>
           <p>
-            Organisation of Pharmaceutical Producers of India 1620, C Wing, ONE
-            BKC G Block, Plot No. C 66, Bandra Kurla Complex,
-            Bandra East, Mumbai 400051
+            Organisation of Pharmaceutical Producers of India<br />
+            1620, C Wing,<br />
+            ONE BKC G Block, Plot No. C 66,<br />
+            Bandra Kurla Complex,<br />
+            Bandra East,<br />
+            Mumbai 400051
           </p>
         </div>
 
         <div className="footer-col address-col divider-left">
           <h3>Delhi :</h3>
           <p>
-            Organisation of Pharmaceutical Producers of India, Avanta Business
-            Centre, Cabin No. 8, 3rd Floor, Ambadeep Building, K. G.
-            Marg, Connaught Place, New Delhi 110001
+            Organisation of Pharmaceutical Producers of India,<br />
+            Avanta Business Centre,<br />
+            Cabin No. 8, 3rd Floor,<br />
+            Ambadeep Building,<br />
+            K. G. Marg, Connaught Place,<br />
+            New Delhi 110001
           </p>
         </div>
       </div>

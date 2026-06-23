@@ -9,7 +9,7 @@ const Quote = () => {
   ];
 
   return (
-    <section className="quote-section">
+    <section className="quote-section" id="about">
       <div className="container">
         <div
           className="quote-content"

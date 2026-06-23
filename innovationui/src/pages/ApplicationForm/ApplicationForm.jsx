@@ -20,7 +20,7 @@ const section1Fields = [
   { name: 'companyName', label: 'Company Name', required: true },
   { name: 'designation', label: 'Designation', required: true },
   { name: 'category', label: 'Category of work', required: true, type: 'select', options: ['Healthcare finance', 'Products', 'Devices', 'Consultation', 'Services (Platform to connect for Ex video)', 'Others'] },
-  { name: 'categoryOther', label: 'Others (specify)', required: false, showIf: (data) => data.category === 'Others' },
+  { name: 'categoryOther', label: 'Others (specify)', required: true, showIf: (data) => data.category === 'Others' },
   { name: 'companyWebsite', label: 'Company Website', required: true },
   { name: 'companyBrief', label: 'Company Brief', required: true, type: 'textarea' },
   { name: 'innovation', label: 'Innovation in product or service?', required: true, type: 'textarea' },
@@ -84,8 +84,8 @@ function mapUploadedFiles(uploadResult, section, localFiles = []) {
   });
 }
 
-function getFieldError(field, value) {
-  if (field.showIf && !field.showIf({ [field.name]: value })) return '';
+function getFieldError(field, value, allData = {}) {
+  if (field.showIf && !field.showIf(allData)) return '';
 
   const trimmedValue = typeof value === 'string' ? value.trim() : value;
 
@@ -361,17 +361,27 @@ function ApplicationForm() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const nextData = { ...prev, [name]: value };
+      if (name === 'category' && value !== 'Others') {
+        nextData.categoryOther = '';
+      }
+      return nextData;
+    });
 
     const field = [...section1Fields, ...section2Fields, ...section3Fields].find((item) => item.name === name);
     if (field && errors[name]) {
-      const nextError = getFieldError(field, value);
+      const nextError = getFieldError(field, value, { ...formData, [name]: value });
       setErrors((prev) => ({ ...prev, [name]: nextError || undefined }));
+    }
+
+    if (name === 'category' && value !== 'Others') {
+      setErrors((prev) => ({ ...prev, categoryOther: undefined }));
     }
   };
 
   const handleFieldBlur = (field) => {
-    const nextError = getFieldError(field, formData[field.name]);
+    const nextError = getFieldError(field, formData[field.name], formData);
     if (nextError || errors[field.name]) {
       setErrors((prev) => ({ ...prev, [field.name]: nextError || undefined }));
     }
@@ -421,7 +431,7 @@ function ApplicationForm() {
       }
 
       if (field.type !== 'file') {
-        const nextError = getFieldError(field, formData[field.name]);
+        const nextError = getFieldError(field, formData[field.name], formData);
         if (nextError) {
           newErrors[field.name] = nextError;
         }
