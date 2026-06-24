@@ -49,11 +49,11 @@
 .quote-desc {
   max-width: 1040px;
   margin: 2.5rem auto 3.25rem;
-  font-size: 1.15rem;
-  color: #111111;
-  line-height: 1.12;
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.6;
   text-align: center;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .quote-desc p {
@@ -121,7 +121,7 @@
 
   .quote-desc {
     margin: 1.5rem auto 2rem;
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .quote-stats {
@@ -151,5 +151,11 @@
 
   .quote-text {
     font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .quote-desc {
+    font-size: 0.85rem;
   }
 }

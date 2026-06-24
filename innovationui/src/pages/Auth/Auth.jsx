@@ -182,16 +182,14 @@ const Auth = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-page-header">
-        <img src={oppiLogo} alt="OPPI Logo" className="auth-page-logo" />
-        <Link to="/" className="btn-back-home">
-          BACK TO HOME <LogOut size={16} className="btn-icon" />
-        </Link>
-      </div>
       <div className="auth-container">
-
         <div className="auth-content-wrapper">
-
+          <div className="auth-page-header">
+            <img src={oppiLogo} alt="OPPI Logo" className="auth-page-logo" />
+            <Link to="/" className="btn-back-home">
+              BACK TO HOME <LogOut size={16} className="btn-icon" />
+            </Link>
+          </div>
           <div className="auth-card">
             {/* Left Image Section */}
             <div className="auth-image-section">
@@ -294,59 +292,84 @@ const Auth = () => {
                 )}
 
                 {/* PASSWORD FIELDS */}
-                <div className="form-group">
-                  <label>{isLogin ? 'Password' : 'Create Password'} <span className="required">*</span></label>
-                  <div className="password-input-wrapper">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name="password"
-                      placeholder={isLogin ? "Enter your password" : "Create a strong password"}
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="password-toggle-btn"
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                  {errors.password && <div className="field-error-text">{errors.password}</div>}
-                </div>
-
-                {/* CONFIRM PASSWORD - Register only */}
-                {!isLogin && (
+                {isLogin ? (
                   <div className="form-group">
-                    <label>Confirm Password <span className="required">*</span></label>
+                    <label>Password <span className="required">*</span></label>
                     <div className="password-input-wrapper">
                       <input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        name="confirmPassword"
-                        placeholder="Confirm your password"
-                        value={formData.confirmPassword}
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        placeholder="Enter your password"
+                        value={formData.password}
                         onChange={handleChange}
                         required
                       />
                       <button
                         type="button"
                         className="password-toggle-btn"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
                       >
-                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
+                    {errors.password && <div className="field-error-text">{errors.password}</div>}
+                  </div>
+                ) : (
+                  <>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Create Password <span className="required">*</span></label>
+                        <div className="password-input-wrapper">
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            name="password"
+                            placeholder="Create a strong password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="password-toggle-btn"
+                            onClick={() => setShowPassword(!showPassword)}
+                            aria-label={showPassword ? "Hide password" : "Show password"}
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                        {errors.password && <div className="field-error-text">{errors.password}</div>}
+                      </div>
 
-                    <div className="password-instruction-msg">
+                      <div className="form-group">
+                        <label>Confirm Password <span className="required">*</span></label>
+                        <div className="password-input-wrapper">
+                          <input
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            name="confirmPassword"
+                            placeholder="Confirm your password"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="password-toggle-btn"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                          >
+                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                        {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
+                      </div>
+                    </div>
+
+                    <div className="password-instruction-msg" style={{ marginTop: '0.2rem' }}>
                       <Info size={14} style={{ marginRight: '4px', verticalAlign: 'middle', flexShrink: 0 }} />
                       <span>Password must contain at least 8 characters, including one uppercase letter (A–Z), one lowercase letter (a–z), and one number (0–9)</span>
                     </div>
-
-                    {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
-                  </div>
+                  </>
                 )}
 
                 {/* LOGIN OPTIONS */}
