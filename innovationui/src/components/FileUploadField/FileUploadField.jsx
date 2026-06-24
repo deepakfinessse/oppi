@@ -154,7 +154,7 @@ export default function FileUploadField({
 
     const invalidType = fileList.find((file) => !isAllowedFile(file));
     if (invalidType) {
-      setLocalError('Only PDF, PNG, JPEG/JPG, or allowed video files are allowed.');
+      setLocalError('Only PDF, PNG, JPEG/JPG, or video files (MP4, MOV, AVI, etc.) are allowed.');
       return;
     }
 
@@ -238,7 +238,7 @@ export default function FileUploadField({
           </p>
         )}
         <p className="file-dropzone-hint">
-          Up to {MAX_FILES} files at a time &middot; PDF, PNG, or JPEG &middot; 8MB each
+          Up to {MAX_FILES} files at a time &middot; PDF, PNG, JPEG or Video (MP4, MOV, AVI) &middot; 8MB each
         </p>
         <p className="file-dropzone-count">{totalCount} of {MAX_FILES} files attached</p>
       </div>

@@ -35,21 +35,21 @@ const section2Fields = [
   { name: 'websitePresence', label: 'Website', required: true },
   { name: 'socialMedia', label: 'Social media', required: true },
   { name: 'physicalOutlets', label: 'Physical outlets', required: true },
-  { name: 'uploads', label: 'Upload PDF, JPEG or Video (up to 5 attachments, max 8MB each)', required: true, type: 'file', multiple: true },
+  { name: 'uploads', label: 'Upload PDF, JPEG or Video (MP4/MOV/AVI) (up to 5 attachments, max 8MB each)', required: true, type: 'file', multiple: true },
   { name: 'futurePlans', label: 'Future expansion plans over the next 3 years', required: true, type: 'textarea' },
 ];
 
 const section3Fields = [
   { name: 'customerHelp', label: 'How does your start-up help your customer and end-user', required: true, type: 'textarea' },
   { name: 'customerTestimonial', label: 'Customer Testimonial (If not applicable, please mention "NA" in the text space)', required: true, type: 'textarea' },
-  { name: 'customerTestimonialUpload', label: 'Upload Customer Testimonial (PDF, JPEG or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Testimonial' },
+  { name: 'customerTestimonialUpload', label: 'Upload Customer Testimonial (PDF, JPEG or Video (MP4/MOV/AVI), up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Testimonial' },
   { name: 'numEmployees', label: 'Number of employees', required: true, type: 'number' },
   { name: 'boardDirectors', label: 'Details of board of directors', required: true, type: 'textarea' },
-  { name: 'boardDirectorsUpload', label: 'Upload details of board of directors (PDF, JPEG or Video, up to 5, 8MB each)', required: true, type: 'file', multiple: true, fileType: 'Board' },
+  { name: 'boardDirectorsUpload', label: 'Upload details of board of directors (PDF, JPEG or Video (MP4/MOV/AVI), up to 5, 8MB each)', required: true, type: 'file', multiple: true, fileType: 'Board' },
   { name: 'investors', label: 'Details of the investors', required: true, type: 'textarea' },
-  { name: 'investorsUpload', label: 'Upload Details of the investors (PDF, JPEG or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Investors' },
+  { name: 'investorsUpload', label: 'Upload Details of the investors (PDF, JPEG or Video (MP4/MOV/AVI), up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Investors' },
   { name: 'mediaMentions', label: 'Media mentions / Accolades (academic publications, campus magazines, research publications, etc.)', required: false, type: 'textarea' },
-  { name: 'mediaMentionsUpload', label: 'Upload Media mentions / Accolades (PDF, JPEG or Video, up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Media' },
+  { name: 'mediaMentionsUpload', label: 'Upload Media mentions / Accolades (PDF, JPEG or Video (MP4/MOV/AVI), up to 5, 8MB each)', required: false, type: 'file', multiple: true, fileType: 'Media' },
   { name: 'patents', label: 'Patents (Include approved and/or applied)', required: false, type: 'textarea' },
   { name: 'benefits', label: 'What are the benefits of your product/service: competitive analysis', required: true, type: 'textarea' },
 ];
@@ -204,7 +204,6 @@ function ApplicationForm() {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [showSaveExitModal, setShowSaveExitModal] = useState(false);
   const [applicationId, setApplicationId] = useState(() => {
     if (routeId) return routeId;
@@ -439,7 +438,29 @@ function ApplicationForm() {
     });
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    const errorKeys = Object.keys(newErrors);
+    if (errorKeys.length > 0) {
+      setTimeout(() => {
+        const firstErrorField = fields.find((f) => newErrors[f.name]);
+        if (firstErrorField) {
+          const element = document.getElementsByName(firstErrorField.name)[0];
+          if (element) {
+            if (firstErrorField.type === 'file') {
+              const container = element.closest('.form-group');
+              if (container) {
+                container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            } else {
+              element.focus({ preventScroll: true });
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        }
+      }, 50);
+    }
+
+    return errorKeys.length === 0;
   };
 
   const ensureApplication = async () => {
@@ -546,8 +567,7 @@ function ApplicationForm() {
     try {
       const id = await ensureApplication();
       await api.submitApplication(id);
-      setSubmitted(true);
-      setTimeout(() => navigate('/thank-you'), 2000);
+      navigate('/thank-you');
     } catch (err) {
       setServerError(err.message || 'Unable to submit. Please try again.');
     } finally {
@@ -714,15 +734,8 @@ function ApplicationForm() {
     </div>
   );
 
-  const renderThankYou = () => (
-    <div className="thank-you">
-      <h2>Thank you for your submission!</h2>
-      <p>Your application has been submitted successfully. Redirecting to your dashboard...</p>
-    </div>
-  );
-
   const renderStep = () => {
-    if (activeStep === 3) return submitted ? renderThankYou() : renderPreview();
+    if (activeStep === 3) return renderPreview();
     if (activeStep === 0) return renderSection1();
     if (activeStep === 1) return renderSection2();
     if (activeStep === 2) return renderSection3();
@@ -753,32 +766,30 @@ function ApplicationForm() {
         <div className="application-content-wrapper">
 
 
-          {!submitted && (
-            <div className="progress-tracker-container">
-              <nav className="section-nav" aria-label="Application sections">
-                {steps.map((label, idx) => (
-                  <div
-                    key={label}
-                    className={`section-nav-item ${activeStep === idx ? 'active' : ''} ${activeStep > idx ? 'completed' : ''}`}
-                  >
-                    <div className="step-circle">{idx + 1}</div>
-                    <span className="step-label">{label}</span>
-                  </div>
-                ))}
-              </nav>
-            </div>
-          )}
+          <div className="progress-tracker-container">
+            <nav className="section-nav" aria-label="Application sections">
+              {steps.map((label, idx) => (
+                <div
+                  key={label}
+                  className={`section-nav-item ${activeStep === idx ? 'active' : ''} ${activeStep > idx ? 'completed' : ''}`}
+                >
+                  <div className="step-circle">{idx + 1}</div>
+                  <span className="step-label">{label}</span>
+                </div>
+              ))}
+            </nav>
+          </div>
 
           <div className="application-card">
             {serverError && <p className="form-error">{serverError}</p>}
 
-            {!submitted && activeStep < 3 && (
+            {activeStep < 3 && (
               <div className="form-instructions">
                 <h3>Fill in your details</h3>
                 <p>All data entered during registration will be auto-filled. Please verify and complete the remaining fields.</p>
               </div>
             )}
-            {!submitted && activeStep === 3 && (
+            {activeStep === 3 && (
               <div className="form-instructions">
                 <h3>Review & Submit</h3>
                 <p>Please review your details before final submission.</p>
@@ -789,61 +800,59 @@ function ApplicationForm() {
               activeStep === 0 ? handleNextSection1 :
                 activeStep === 1 ? handleNextSection2 :
                   activeStep === 2 ? handleNextSection3 :
-                    activeStep === 3 && !submitted ? handleSubmit :
+                    activeStep === 3 ? handleSubmit :
                       undefined
             }>
               {renderStep()}
-              {!submitted && (
-                <div className="form-navigation">
-                  <div className="form-nav-left">
-                    {activeStep < 3 && (
-                      <div className="page-indicator">
-                        <span className="page-text">Page {activeStep + 1} of 4</span>
-                        <div className="page-progress-bar">
-                          <div className="page-progress-fill" style={{ width: `${((activeStep + 1) / 4) * 100}%` }}></div>
-                        </div>
+              <div className="form-navigation">
+                <div className="form-nav-left">
+                  {activeStep < 3 && (
+                    <div className="page-indicator">
+                      <span className="page-text">Page {activeStep + 1} of 4</span>
+                      <div className="page-progress-bar">
+                        <div className="page-progress-fill" style={{ width: `${((activeStep + 1) / 4) * 100}%` }}></div>
                       </div>
-                    )}
-                  </div>
-                  <div className="form-nav-right">
-                    {activeStep > 0 && activeStep < steps.length && (
-                      <button type="button" onClick={handleBack} disabled={isSaving} className="btn-prev">Previous</button>
-                    )}
-                    {activeStep < 3 && (
-                      <>
-                        {!routeId && (
-                          <button type="submit" onClick={() => { actionRef.current = 'exit'; }} disabled={isSaving} className="btn-save-exit">Save & Exit</button>
-                        )}
-                        <button
-                          type="submit"
-                          onClick={() => { actionRef.current = 'next'; }}
-                          disabled={isSaving}
-                          className="btn-next"
-                        >
-                          {isSaving ? 'Saving...' : (
-                            <>
-                              Continue <span aria-hidden="true">&nbsp;&nbsp;&nbsp;</span>
-                              <span aria-hidden="true">&gt;</span>
-                            </>
-                          )}
-                        </button>
-
-                      </>
-
-                    )}
-                    {activeStep === 3 && (
-                      <button
-                        type={routeId ? 'button' : 'submit'}
-                        onClick={routeId ? () => navigate('/admin') : (() => { actionRef.current = 'next'; })}
-                        disabled={isSaving}
-                        className="btn-submit"
-                      >
-                        {routeId ? 'Finish & Return to Dashboard' : (isSaving ? 'Submitting...' : 'Submit Application')}
-                      </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
-              )}
+                <div className="form-nav-right">
+                  {activeStep > 0 && activeStep < steps.length && (
+                    <button type="button" onClick={handleBack} disabled={isSaving} className="btn-prev">Previous</button>
+                  )}
+                  {activeStep < 3 && (
+                    <>
+                      {!routeId && (
+                        <button type="submit" onClick={() => { actionRef.current = 'exit'; }} disabled={isSaving} className="btn-save-exit">Save & Exit</button>
+                      )}
+                      <button
+                        type="submit"
+                        onClick={() => { actionRef.current = 'next'; }}
+                        disabled={isSaving}
+                        className="btn-next"
+                      >
+                        {isSaving ? 'Saving...' : (
+                          <>
+                            Continue <span aria-hidden="true">&nbsp;&nbsp;&nbsp;</span>
+                            <span aria-hidden="true">&gt;</span>
+                          </>
+                        )}
+                      </button>
+
+                    </>
+
+                  )}
+                  {activeStep === 3 && (
+                    <button
+                      type={routeId ? 'button' : 'submit'}
+                      onClick={routeId ? () => navigate('/admin') : (() => { actionRef.current = 'next'; })}
+                      disabled={isSaving}
+                      className="btn-submit"
+                    >
+                      {routeId ? 'Finish & Return to Dashboard' : (isSaving ? 'Submitting...' : 'Submit Application')}
+                    </button>
+                  )}
+                </div>
+              </div>
             </form>
           </div>
         </div>
