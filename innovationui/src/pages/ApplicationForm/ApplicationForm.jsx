@@ -234,7 +234,7 @@ function ApplicationForm() {
       try {
         const isEditingSpecificApp = !!routeId;
         const data = isEditingSpecificApp ? await api.getAppReview(routeId) : await api.getPreview();
-        
+
         if (data) {
           if (!isEditingSpecificApp && data.status && data.status !== 'DRAFT') {
             navigate('/thank-you', { replace: true });
@@ -636,36 +636,81 @@ function ApplicationForm() {
 
   const renderPreview = () => (
     <div className="section-fields preview-section">
-      <h3>Personal Information</h3>
-      <ul>
-        {visibleSection1Fields.filter((f) => f.type !== 'file').map((field) => (
-          <li key={field.name}><strong>{field.label}:</strong> {formData[field.name] || '-'}</li>
-        ))}
-      </ul>
-      <h3>About the Company</h3>
-      <ul>
-        {section2Fields.filter((f) => f.type !== 'file').map((field) => (
-          <li key={field.name}><strong>{field.label}:</strong> {formData[field.name] || '-'}</li>
-        ))}
-        {section2Fields.filter((f) => f.type === 'file').map((field) => (
-          <li key={field.name} className="preview-file-row">
-            <strong>{field.label}:</strong>
-            {renderPreviewFiles(field) || <span className="preview-empty">No files attached</span>}
-          </li>
-        ))}
-      </ul>
-      <h3>About the Company (contd.)</h3>
-      <ul>
-        {section3Fields.filter((f) => f.type !== 'file').map((field) => (
-          <li key={field.name}><strong>{field.label}:</strong> {formData[field.name] || '-'}</li>
-        ))}
-        {section3Fields.filter((f) => f.type === 'file').map((field) => (
-          <li key={field.name} className="preview-file-row">
-            <strong>{field.label}:</strong>
-            {renderPreviewFiles(field) || <span className="preview-empty">No files attached</span>}
-          </li>
-        ))}
-      </ul>
+      {/* Section 1: Personal Info */}
+      <div className="preview-card-group">
+        <div className="preview-card-header">
+          <div className="preview-card-title">
+            <span className="preview-card-icon">👤</span>
+            <h3>Personal Information</h3>
+          </div>
+        </div>
+        <div className="preview-card-body">
+          <ul className="preview-list">
+            {visibleSection1Fields.filter((f) => f.type !== 'file').map((field) => (
+              <li key={field.name} className="preview-row">
+                <span className="preview-label">{field.label}:</span>
+                <span className="preview-value">{formData[field.name] || '—'}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Section 2: About Company */}
+      <div className="preview-card-group">
+        <div className="preview-card-header">
+          <div className="preview-card-title">
+            <span className="preview-card-icon">🏢</span>
+            <h3>About the Company</h3>
+          </div>
+        </div>
+        <div className="preview-card-body">
+          <ul className="preview-list">
+            {section2Fields.filter((f) => f.type !== 'file').map((field) => (
+              <li key={field.name} className="preview-row">
+                <span className="preview-label">{field.label}:</span>
+                <span className="preview-value">{formData[field.name] || '—'}</span>
+              </li>
+            ))}
+            {section2Fields.filter((f) => f.type === 'file').map((field) => (
+              <li key={field.name} className="preview-file-row">
+                <span className="preview-label">{field.label}:</span>
+                <div className="preview-file-content">
+                  {renderPreviewFiles(field) || <span className="preview-empty">No files attached</span>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Section 3: Company Details */}
+      <div className="preview-card-group">
+        <div className="preview-card-header">
+          <div className="preview-card-title">
+            <span className="preview-card-icon">📊</span>
+            <h3>Company Details</h3>
+          </div>
+        </div>
+        <div className="preview-card-body">
+          <ul className="preview-list">
+            {section3Fields.filter((f) => f.type !== 'file').map((field) => (
+              <li key={field.name} className="preview-row">
+                <span className="preview-label">{field.label}:</span>
+                <span className="preview-value">{formData[field.name] || '—'}</span>
+              </li>
+            ))}
+            {section3Fields.filter((f) => f.type === 'file').map((field) => (
+              <li key={field.name} className="preview-file-row">
+                <span className="preview-label">{field.label}:</span>
+                <div className="preview-file-content">
+                  {renderPreviewFiles(field) || <span className="preview-empty">No files attached</span>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 
@@ -735,7 +780,7 @@ function ApplicationForm() {
             )}
             {!submitted && activeStep === 3 && (
               <div className="form-instructions">
-                <h3>Submit & Review</h3>
+                <h3>Review & Submit</h3>
                 <p>Please review your details before final submission.</p>
               </div>
             )}
@@ -775,18 +820,18 @@ function ApplicationForm() {
                           disabled={isSaving}
                           className="btn-next"
                         >
-                          {isSaving ? 'Saving...' : ( 
+                          {isSaving ? 'Saving...' : (
                             <>
                               Continue <span aria-hidden="true">&nbsp;&nbsp;&nbsp;</span>
                               <span aria-hidden="true">&gt;</span>
                             </>
                           )}
                         </button>
-                   
+
                       </>
-                 
+
                     )}
-                     {activeStep === 3 && (
+                    {activeStep === 3 && (
                       <button
                         type={routeId ? 'button' : 'submit'}
                         onClick={routeId ? () => navigate('/admin') : (() => { actionRef.current = 'next'; })}
