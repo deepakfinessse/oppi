@@ -133,6 +133,12 @@
 }
 
 @media (max-width: 992px) {
+  .nav-container {
+    justify-content: center;
+    position: relative;
+    width: 100%;
+  }
+
   .nav-links {
     position: absolute;
     top: 100%;
@@ -161,5 +167,9 @@
 
   .mobile-toggle {
     display: block;
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }
