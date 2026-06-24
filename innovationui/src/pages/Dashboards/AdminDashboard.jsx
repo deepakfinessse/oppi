@@ -47,6 +47,16 @@ export default function AdminDashboard() {
   });
   const [juryModalError, setJuryModalError] = useState('');
   const [juryModalSubmitting, setJuryModalSubmitting] = useState(false);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+
+  // Auto cleanup for preview object URL on unmount/change
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
 
 
   // Dropdown Refs
@@ -122,6 +132,10 @@ export default function AdminDashboard() {
       password: '',
       imageFile: null
     });
+    if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+    setImagePreviewUrl(member.imageUrl ? getFileUrl(member.imageUrl) : '');
     setJuryModalError('');
     setShowJuryModal(true);
   };
@@ -137,8 +151,20 @@ export default function AdminDashboard() {
       password: '',
       imageFile: null
     });
+    if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+    setImagePreviewUrl('');
     setJuryModalError('');
     setShowJuryModal(true);
+  };
+
+  const handleCloseJuryModal = () => {
+    if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+    setImagePreviewUrl('');
+    setShowJuryModal(false);
   };
 
   const handleDeleteJuryMember = async (id, name) => {
@@ -154,6 +180,17 @@ export default function AdminDashboard() {
   const handleJurySubmit = async (e) => {
     e.preventDefault();
     setJuryModalError('');
+
+    // Validation for profile photo
+    if (!selectedJuryMember && !juryForm.imageFile) {
+      setJuryModalError('Profile Photo is mandatory.');
+      return;
+    }
+    if (selectedJuryMember && !juryForm.imageFile && !selectedJuryMember.imageUrl) {
+      setJuryModalError('Profile Photo is mandatory.');
+      return;
+    }
+
     setJuryModalSubmitting(true);
     try {
       const formData = new FormData();
@@ -172,6 +209,12 @@ export default function AdminDashboard() {
       } else {
         await api.createJuryMember(formData);
       }
+      
+      // Cleanup preview URL
+      if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+      setImagePreviewUrl('');
       setShowJuryModal(false);
       fetchAdminData();
     } catch (err) {
@@ -354,7 +397,6 @@ export default function AdminDashboard() {
                   <th>Email</th>
                   <th>Company</th>
                   <th>Status</th>
-                  <th>Submitted Date</th>
                   <th>Validator score</th>
                   <th>Jury score</th>
                   <th>Actions</th>
@@ -371,9 +413,6 @@ export default function AdminDashboard() {
                       <span className={`status-badge ${a.status.toLowerCase().replace('_', '-')}`}>
                         {a.status}
                       </span>
-                    </td>
-                    <td>
-                      {formatIST(a.submitted_at)}
                     </td>
                     <td>
                       {a.validator_score ? (
@@ -408,7 +447,7 @@ export default function AdminDashboard() {
                 ))}
                 {filteredApps.length === 0 && (
                   <tr>
-                    <td colSpan="9" className="text-center">No applications found.</td>
+                    <td colSpan="8" className="text-center">No applications found.</td>
                   </tr>
                 )}
               </tbody>
@@ -650,7 +689,7 @@ export default function AdminDashboard() {
           <div className="modal-container user-edit-modal">
             <div className="modal-header">
               <h3>{selectedJuryMember ? 'Edit Jury Board Profile' : 'Add Jury Board Profile'}</h3>
-              <button className="modal-close-btn" onClick={() => setShowJuryModal(false)}>&times;</button>
+              <button className="modal-close-btn" onClick={handleCloseJuryModal}>&times;</button>
             </div>
             <form onSubmit={handleJurySubmit} className="user-edit-form">
               {juryModalError && <div className="dashboard-error">{juryModalError}</div>}
@@ -732,30 +771,61 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Row 4: Custom Image Dropzone */}
+              {/* Row 4: Custom Image Dropzone with Preview */}
               <div className="form-group">
-                <label className="modal-label">Profile Photo {selectedJuryMember ? '(optional)' : '*'}</label>
-                <div className="file-dropzone">
-                  <input
-                    type="file"
-                    id="jury-image-upload"
-                    accept="image/*"
-                    required={!selectedJuryMember}
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      setJuryForm(prev => ({ ...prev, imageFile: file }));
-                    }}
-                    style={{ display: 'none' }}
-                  />
-                  <label htmlFor="jury-image-upload" className="dropzone-label">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="upload-icon" style={{ color: '#2563eb', marginBottom: '4px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
-                    <span>{juryForm.imageFile ? juryForm.imageFile.name : (selectedJuryMember ? "Click to change profile picture" : "Click to select profile picture")}</span>
-                  </label>
+                <label className="modal-label">Profile Photo *</label>
+                <p className="jury-image-help-text">
+                  Allowed formats: JPG, JPEG, PNG, WEBP. Max size: 5MB. Recommended: Square dimensions (e.g. 400x400 px).
+                </p>
+                <div className="jury-image-preview-container">
+                  {imagePreviewUrl ? (
+                    <div className="jury-image-preview">
+                      <img src={imagePreviewUrl} alt="Jury Member Preview" />
+                    </div>
+                  ) : (
+                    <div className="jury-image-preview-placeholder">
+                      <span>No photo</span>
+                    </div>
+                  )}
+                  <div className="file-dropzone" style={{ flex: 1 }}>
+                    <input
+                      type="file"
+                      id="jury-image-upload"
+                      accept="image/jpeg, image/png, image/webp"
+                      required={!selectedJuryMember || !selectedJuryMember.imageUrl}
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          if (file.size > 5 * 1024 * 1024) {
+                            alert("Image file size exceeds the 5MB limit.");
+                            e.target.value = null;
+                            return;
+                          }
+                          const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                          if (!allowedTypes.includes(file.type)) {
+                            alert("Only JPG, JPEG, PNG, and WEBP formats are allowed.");
+                            e.target.value = null;
+                            return;
+                          }
+                          setJuryForm(prev => ({ ...prev, imageFile: file }));
+                          if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+                            URL.revokeObjectURL(imagePreviewUrl);
+                          }
+                          setImagePreviewUrl(URL.createObjectURL(file));
+                        }
+                      }}
+                      style={{ display: 'none' }}
+                    />
+                    <label htmlFor="jury-image-upload" className="dropzone-label">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="upload-icon" style={{ color: '#2563eb', marginBottom: '4px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
+                      <span>{juryForm.imageFile ? juryForm.imageFile.name : (selectedJuryMember ? "Click to change profile picture" : "Click to select profile picture")}</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="btn-modal-cancel" onClick={() => setShowJuryModal(false)}>Cancel</button>
+                <button type="button" className="btn-modal-cancel" onClick={handleCloseJuryModal}>Cancel</button>
                 <button type="submit" className="btn-modal-save" disabled={juryModalSubmitting}>
                   {juryModalSubmitting ? 'Saving...' : 'Save Member'}
                 </button>

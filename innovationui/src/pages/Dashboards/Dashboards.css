@@ -1509,3 +1509,57 @@
   font-size: 0.825rem !important;
   color: #64748b !important;
 }
+
+/* Jury Image Preview Styles */
+.jury-image-preview-container {
+  display: flex !important;
+  gap: 16px !important;
+  align-items: center !important;
+  margin-top: 8px !important;
+}
+
+.jury-image-preview {
+  position: relative !important;
+  width: 80px !important;
+  height: 80px !important;
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  overflow: hidden !important;
+  background-color: #f8fafc !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.jury-image-preview img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.jury-image-preview-placeholder {
+  width: 80px !important;
+  height: 80px !important;
+  border-radius: 8px !important;
+  border: 1px dashed #cbd5e1 !important;
+  background-color: #f8fafc !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.75rem !important;
+  color: #94a3b8 !important;
+  text-align: center !important;
+  padding: 4px !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+}
+
+.jury-image-help-text {
+  font-size: 0.75rem !important;
+  color: #64748b !important;
+  margin-top: 4px !important;
+  margin-bottom: 8px !important;
+  line-height: 1.4 !important;
+}

@@ -872,7 +872,7 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
     var user = await db.Users.FindAsync(uid.Value);
     if (user?.Role != "ADMIN") return Results.Forbid();
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
-        .Select(a => new { a.Id, a.Status, a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
+        .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
             validator_score = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id && !vr.IsDraft).Select(vr => (double?)vr.WeightedScore).FirstOrDefault(),
             validator_name = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id && !vr.IsDraft)
@@ -954,6 +954,11 @@ api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStor
             CreatedAt = DateTime.UtcNow
         };
         db.Users.Add(newUser);
+    }
+
+    if (form.Files.Count == 0)
+    {
+        return Results.BadRequest(new { message = "Profile photo is required." });
     }
 
     string? imageUrl = null;
@@ -1084,6 +1089,11 @@ api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbConte
     member.Type = type;
     member.SortOrder = sortOrder;
 
+    if (form.Files.Count == 0 && string.IsNullOrEmpty(member.ImageUrl))
+    {
+        return Results.BadRequest(new { message = "Profile photo is required." });
+    }
+
     if (form.Files.Count > 0)
     {
         var file = form.Files[0];
@@ -1162,7 +1172,7 @@ api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContex
     if (user?.Role != "VALIDATOR" && user?.Role != "ADMIN") return Results.Forbid();
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
         .Where(a => a.Status == "SUBMITTED" || (a.Status == "UNDER_VALIDATOR_REVIEW" && a.ValidatorId == uid.Value))
-        .Select(a => new { a.Id, a.Status, a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
+        .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
             draft_scores = db.ValidatorReviews
                 .Where(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && vr.IsDraft)
@@ -1279,7 +1289,7 @@ api.MapGet("/jury/applications", async (HttpContext ctx, InnovationDbContext db)
  
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
         .Where(a => (a.Status == "VALIDATOR_APPROVED" || a.Status == "UNDER_JURY_REVIEW") && !reviewedAppIds.Contains(a.Id))
-        .Select(a => new { a.Id, a.Status, a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
+        .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
             draft_scores = db.JuryReviews
                 .Where(jr => jr.ApplicationId == a.Id && jr.JuryId == uid.Value && jr.IsDraft)
