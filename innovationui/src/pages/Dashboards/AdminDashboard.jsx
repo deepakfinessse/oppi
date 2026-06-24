@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, ChevronDown, Download, Eye, Edit } from 'lucide-react';
+import { ArrowRight, ChevronDown, Download, Eye, Edit } from 'lucide-react';
 import { api, clearSession, getFileUrl, formatIST } from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
@@ -347,7 +347,7 @@ export default function AdminDashboard() {
       className="admin-dashboard-page"
       headerActions={
         <button className="admin-btn-logout" onClick={handleLogout}>
-          LOG OUT <LogOut size={16} />
+          LOG OUT <ArrowRight size={16} />
         </button>
       }
     >

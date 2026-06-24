@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import html2pdf from 'html2pdf.js';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
+import { ArrowRight } from 'lucide-react';
 
 const DataRow = ({ label, value }) => (
   <div className="data-row">
@@ -234,7 +235,7 @@ export default function ViewApplication({ isMine }) {
       headerActions={isMine ? (
         <>
           <button className="btn-action" onClick={handleChangePassword}>Change Password</button>
-          <button className="btn-logout" onClick={handleLogout}>Log Out</button>
+          <button className="btn-logout" onClick={handleLogout}>Log Out <ArrowRight size={16} /></button>
         </>
       ) : null}
       className={isMine ? 'applicant-dashboard' : 'review-dashboard'}

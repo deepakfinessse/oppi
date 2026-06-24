@@ -43,11 +43,22 @@
   color: #64748b;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-logout svg {
+  transition: transform 0.2s ease;
 }
 
 .btn-logout:hover {
   color: #ef4444;
+}
+
+.btn-logout:hover svg {
+  transform: translateX(4px);
 }
 
 .dashboard-content {
@@ -920,6 +931,11 @@
 .admin-btn-logout svg {
   width: 16px;
   height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.admin-btn-logout:hover svg {
+  transform: translateX(4px);
 }
 
 /* Centered Admin Heading */

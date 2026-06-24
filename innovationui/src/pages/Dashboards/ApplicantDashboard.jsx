@@ -4,6 +4,7 @@ import { api, clearSession, formatIST } from '../../services/api';
 import JSZip from 'jszip';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
+import { ArrowRight } from 'lucide-react';
 
 export default function ApplicantDashboard() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function ApplicantDashboard() {
       headerActions={
         <>
           <button className="btn-action" onClick={() => navigate('/change-password')}>Change Password</button>
-          <button className="btn-logout" onClick={handleLogout}>Log Out</button>
+          <button className="btn-logout" onClick={handleLogout}>Log Out <ArrowRight size={16} /></button>
         </>
       }
       className="applicant-dashboard"

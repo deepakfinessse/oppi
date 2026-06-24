@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, clearSession } from '../../services/api';
-import { Eye } from 'lucide-react';
+import { Eye, ArrowRight } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
@@ -147,7 +147,7 @@ export default function JuryDashboard() {
       <DashboardLayout
         title="Jury Dashboard"
         className="jury-dashboard-page"
-        headerActions={<button className="btn-logout" onClick={handleLogout}>Log Out</button>}
+        headerActions={<button className="btn-logout" onClick={handleLogout}>Log Out <ArrowRight size={16} /></button>}
       >
         <div className="dashboard-content">
           {error && <div className="dashboard-error">{error}</div>}

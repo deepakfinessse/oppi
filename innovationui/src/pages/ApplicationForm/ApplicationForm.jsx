@@ -4,6 +4,7 @@ import { api, getApplicationStorageKey, getSession, clearSession, getFileUrl } f
 import oppiLogo from '../../assets/OPPI-logo-black.png';
 import FileUploadField from '../../components/FileUploadField/FileUploadField';
 import './ApplicationForm.css';
+import { ArrowRight } from 'lucide-react';
 
 const steps = [
   'Personal Info',
@@ -757,7 +758,7 @@ function ApplicationForm() {
               <button type="button" className="btn-header dashboard" onClick={() => navigate('/admin')}>BACK TO DASHBOARD</button>
             )}
             <button type="button" className="btn-header change-pwd" onClick={() => navigate('/change-password')}>CHANGE PASSWORD</button>
-            <button type="button" className="btn-header logout" onClick={handleLogout}>LOG OUT <span className="logout-icon">→</span></button>
+            <button type="button" className="btn-header logout" onClick={handleLogout}>LOG OUT <ArrowRight size={16} /></button>
           </div>
         </header>
       </div>

@@ -108,12 +108,16 @@
   gap: 0.5rem;
 }
 
-.btn-header.logout .logout-icon {
-  font-size: 1.1rem;
+.btn-header.logout svg {
+  transition: transform 0.3s ease;
 }
 
 .btn-header.logout:hover {
   background: #0f4bb5;
+}
+
+.btn-header.logout:hover svg {
+  transform: translateX(4px);
 }
 
 /* Main container */

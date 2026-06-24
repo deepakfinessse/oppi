@@ -1,7 +1,7 @@
 // pages/Auth/Auth.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Info, LogOut } from 'lucide-react';
+import { Eye, EyeOff, Info, ArrowRight } from 'lucide-react';
 import { api, saveSession } from '../../services/api';
 import './Auth.css';
 import trophyImg from '../../assets/trophy-bg.webp';
@@ -187,7 +187,7 @@ const Auth = () => {
           <div className="auth-page-header">
             <img src={oppiLogo} alt="OPPI Logo" className="auth-page-logo" />
             <Link to="/" className="btn-back-home">
-              BACK TO HOME <LogOut size={16} className="btn-icon" />
+              BACK TO HOME <ArrowRight size={16} className="btn-icon" />
             </Link>
           </div>
           <div className="auth-card">
