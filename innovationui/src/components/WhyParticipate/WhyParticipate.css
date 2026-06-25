@@ -83,6 +83,7 @@
   /* Solid darker blue for the bottom half */
   background: rgba(23, 90, 166, 0.85);
   padding: 1.8rem 1.5rem;
+  height: 100px;
   min-height: 120px;
   display: flex;
   align-items: center;
