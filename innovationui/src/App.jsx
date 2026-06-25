@@ -1,6 +1,6 @@
 // App.jsx
-import React from 'react';
-import { Navigate, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home/Home';
 import Auth from './pages/Auth/Auth';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
@@ -16,6 +16,16 @@ import ChangePassword from './pages/ChangePassword/ChangePassword';
 import { getSession } from './services/api';
 import './App.css';
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function ProtectedRoute({ children, role }) {
   const session = getSession();
   if (!session?.token) return <Navigate to="/auth" replace />;
@@ -25,7 +35,9 @@ function ProtectedRoute({ children, role }) {
 
 function App() {
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -77,6 +89,7 @@ function App() {
       } />
       <Route path="/home" element={<Home />} />
     </Routes>
+    </>
   );
 }
 

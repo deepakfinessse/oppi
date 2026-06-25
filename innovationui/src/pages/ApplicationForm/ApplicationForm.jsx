@@ -880,6 +880,7 @@ function ApplicationForm() {
               onClick={() => {
                 setShowSaveExitModal(false);
                 navigate(routeId ? '/admin' : '/');
+                window.scrollTo(0, 0);
               }}
               className="save-exit-modal-btn"
             >
