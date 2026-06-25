@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Info } from 'lucide-react';
 import { api } from '../../services/api';
 import '../Auth/Auth.css';
 import trophyImg from '../../assets/Trophy1.png';
@@ -40,8 +40,14 @@ const ChangePassword = () => {
       hasError = true;
     }
 
-    if (formData.newPassword.length < 6) {
-      newErrors.newPassword = 'Password must be at least 6 characters';
+    const passwordVal = formData.newPassword || '';
+    const hasMinLength = passwordVal.length >= 8;
+    const hasUppercase = /[A-Z]/.test(passwordVal);
+    const hasLowercase = /[a-z]/.test(passwordVal);
+    const hasNumber = /\d/.test(passwordVal);
+
+    if (!hasMinLength || !hasUppercase || !hasLowercase || !hasNumber) {
+      newErrors.newPassword = 'Password does not meet the requirements';
       hasError = true;
     }
 
@@ -124,6 +130,10 @@ const ChangePassword = () => {
                     </button>
                   </div>
                   {errors.newPassword && <div className="field-error-text">{errors.newPassword}</div>}
+                  <div className="password-instruction-msg" style={{ marginTop: '0.3rem' }}>
+                    <Info size={14} style={{ marginRight: '4px', verticalAlign: 'middle', flexShrink: 0 }} />
+                    <span>Password must contain at least 8 characters, including one uppercase letter (A–Z), one lowercase letter (a–z), and one number (0–9)</span>
+                  </div>
                 </div>
 
                 <div className="form-group">

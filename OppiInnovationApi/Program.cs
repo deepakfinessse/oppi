@@ -490,11 +490,15 @@ auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbConte
     var origin = ctx.Request.Headers["Origin"].ToString();
     if (string.IsNullOrWhiteSpace(origin))
     {
-        origin = ctx.Request.Headers["Referer"].ToString();
+        var referer = ctx.Request.Headers["Referer"].ToString();
+        if (!string.IsNullOrWhiteSpace(referer) && System.Uri.TryCreate(referer, System.UriKind.Absolute, out var refererUri))
+        {
+            origin = $"{refererUri.Scheme}://{refererUri.Authority}";
+        }
     }
     if (string.IsNullOrWhiteSpace(origin))
     {
-        origin = "http://innovationawards.indiaoppi.com";
+        origin = "https://innovationawards.indiaoppi.com";
     }
     origin = origin.TrimEnd('/');
     var resetLink = $"{origin}/reset-password?token={Uri.EscapeDataString(resetToken)}";
@@ -523,9 +527,12 @@ auth.MapPost("/reset-password", async (ResetPasswordDto dto, InnovationDbContext
         return Results.BadRequest(new { message = "Token and password are required." });
     }
     
-    if (dto.Password.Length < 6)
+    if (dto.Password.Length < 8 ||
+        !dto.Password.Any(char.IsUpper) ||
+        !dto.Password.Any(char.IsLower) ||
+        !dto.Password.Any(char.IsDigit))
     {
-        return Results.BadRequest(new { message = "Password must be at least 6 characters long." });
+        return Results.BadRequest(new { message = "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number." });
     }
 
     var principal = jwt.ValidatePasswordResetToken(dto.Token);
@@ -558,6 +565,16 @@ auth.MapPost("/change-password", async (ChangePasswordDto dto, HttpContext ctx, 
     var user = await db.Users.FindAsync(uid.Value); if (user == null) return Results.NotFound();
     if (!BCrypt.Net.BCrypt.Verify(dto.Old_Password, user.PasswordHash))
         return Results.BadRequest(new { message = "Current password is incorrect" });
+    
+    if (string.IsNullOrWhiteSpace(dto.New_Password) ||
+        dto.New_Password.Length < 8 ||
+        !dto.New_Password.Any(char.IsUpper) ||
+        !dto.New_Password.Any(char.IsLower) ||
+        !dto.New_Password.Any(char.IsDigit))
+    {
+        return Results.BadRequest(new { message = "New password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number." });
+    }
+
     user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.New_Password);
     await db.SaveChangesAsync();
     return Results.Ok(new { message = "Password changed" });
@@ -753,7 +770,7 @@ api.MapPost("/application/upload/{appId}/{section}", async (int appId, string se
         if (file.Length > 8 * 1024 * 1024) return Results.BadRequest(new { message = $"File {file.FileName} exceeds 8MB limit" });
         
         var ext = Path.GetExtension(file.FileName).ToLower();
-        var allowed = new[] { ".jpg", ".jpeg", ".jpe", ".pdf", ".asf", ".asx", ".wmv", ".wmx", ".wm", ".avi", ".divx", ".flv", ".mov", ".qt", ".mpeg", ".mpg", ".mpe", ".mp4", ".m4v", ".ogv", ".webm", ".mkv", ".3gp", ".3gpp", ".3g2", ".3gp2" };
+        var allowed = new[] { ".jpg", ".jpeg", ".jpe", ".png", ".pdf", ".asf", ".asx", ".wmv", ".wmx", ".wm", ".avi", ".divx", ".flv", ".mov", ".qt", ".mpeg", ".mpg", ".mpe", ".mp4", ".m4v", ".ogv", ".webm", ".mkv", ".3gp", ".3gpp", ".3g2", ".3gp2" };
         if (!allowed.Contains(ext)) return Results.BadRequest(new { message = $"File {file.FileName} type not allowed" });
 
         var uniqueName = $"{Guid.NewGuid()}{ext}";

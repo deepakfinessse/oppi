@@ -17,7 +17,7 @@ const DataRow = ({ label, value }) => (
 
 function isImageFile(name, mimeType, fileType) {
   const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
-  return ['jpg', 'jpeg', 'jpe'].includes(ext);
+  return ['jpg', 'jpeg', 'jpe', 'png'].includes(ext);
 }
 
 function isVideoFile(name, mimeType, fileType) {

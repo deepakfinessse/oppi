@@ -57,7 +57,7 @@ const section3Fields = [
 
 function isImageFile(name, mimeType, fileType) {
   const ext = (fileType || name?.split('.').pop() || '').toLowerCase().replace(/^\./, '');
-  return ['jpg', 'jpeg', 'jpe'].includes(ext);
+  return ['jpg', 'jpeg', 'jpe', 'png'].includes(ext);
 }
 
 function isVideoFile(name, mimeType, fileType) {
@@ -528,9 +528,14 @@ function ApplicationForm() {
         futurePlans: formData.futurePlans,
       });
       if (files.uploads?.length) {
-        const uploadResult = await api.uploadFiles(id, 'ReachDocs', files.uploads);
-        setExistingFiles((prev) => [...prev, ...mapUploadedFiles(uploadResult, 'ReachDocs', files.uploads)]);
-        setFiles((prev) => ({ ...prev, uploads: [] }));
+        try {
+          const uploadResult = await api.uploadFiles(id, 'ReachDocs', files.uploads);
+          setExistingFiles((prev) => [...prev, ...mapUploadedFiles(uploadResult, 'ReachDocs', files.uploads)]);
+          setFiles((prev) => ({ ...prev, uploads: [] }));
+        } catch (uploadErr) {
+          setErrors((prev) => ({ ...prev, uploads: uploadErr.message }));
+          throw uploadErr;
+        }
       }
     });
   };
@@ -553,9 +558,14 @@ function ApplicationForm() {
       });
 
       for (const field of section3Fields.filter((item) => item.type === 'file' && files[item.name]?.length)) {
-        const uploadResult = await api.uploadFiles(id, field.fileType, files[field.name]);
-        setExistingFiles((prev) => [...prev, ...mapUploadedFiles(uploadResult, field.fileType, files[field.name])]);
-        setFiles((prev) => ({ ...prev, [field.name]: [] }));
+        try {
+          const uploadResult = await api.uploadFiles(id, field.fileType, files[field.name]);
+          setExistingFiles((prev) => [...prev, ...mapUploadedFiles(uploadResult, field.fileType, files[field.name])]);
+          setFiles((prev) => ({ ...prev, [field.name]: [] }));
+        } catch (uploadErr) {
+          setErrors((prev) => ({ ...prev, [field.name]: uploadErr.message }));
+          throw uploadErr;
+        }
       }
     });
   };
