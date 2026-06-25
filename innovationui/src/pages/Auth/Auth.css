@@ -177,7 +177,7 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 1.1rem;
   width: 100%;
 }
 
@@ -326,6 +326,31 @@
   margin-bottom: 2px;
 }
 
+
+/* Register Actions Row */
+.register-actions-row {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  margin-top: 1.2rem; /* Breathing space */
+}
+
+.register-actions-row .recaptcha {
+  flex: 1.3;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.register-actions-row .submit-btn {
+  flex: 1;
+  margin-top: 0; /* Reset top margin inside flex container */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Submit Button */
 .submit-btn {
   width: 100%;
@@ -437,6 +462,15 @@
     flex-direction: column;
     gap: 0.5rem;
     align-items: flex-start;
+  }
+
+  .register-actions-row {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .register-actions-row .submit-btn {
+    width: 100%;
   }
 
   .auth-form-section {

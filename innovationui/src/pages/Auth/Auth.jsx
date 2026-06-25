@@ -68,7 +68,12 @@ const Auth = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'mobileNumber') {
+      const cleanValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData(prev => ({ ...prev, [name]: cleanValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     if (errors[name] || errors.form) {
       setErrors(prev => ({ ...prev, [name]: '', form: '' }));
     }
@@ -383,26 +388,29 @@ const Auth = () => {
                   </div>
                 )}
 
-                {/* reCAPTCHA - Register only */}
-                {!isLogin && (
-                  <div className="recaptcha">
-                    <label className="checkbox-label">
-                      <input type="checkbox" required />
-                      <span>I'm not a robot</span>
-                    </label>
-                    <div className="recaptcha-brand">
-                      <img src="https://www.gstatic.com/recaptcha/api2/logo_48.png" alt="reCAPTCHA" />
-                      <span>reCAPTCHA</span>
-                    </div>
-                  </div>
-                )}
-
                 {errors.form && <div className="form-error" style={{ marginBottom: '1rem' }}>{errors.form}</div>}
-                <button type="submit" className="submit-btn" disabled={isSubmitting}>
-                  {isSubmitting
-                    ? (isLogin ? 'LOGGING IN...' : 'REGISTERING...')
-                    : (isLogin ? 'LOG IN' : 'REGISTER')}
-                </button>
+                
+                {!isLogin ? (
+                  <div className="register-actions-row">
+                    <div className="recaptcha">
+                      <label className="checkbox-label">
+                        <input type="checkbox" required />
+                        <span>I'm not a robot</span>
+                      </label>
+                      <div className="recaptcha-brand">
+                        <img src="https://www.gstatic.com/recaptcha/api2/logo_48.png" alt="reCAPTCHA" />
+                        <span>reCAPTCHA</span>
+                      </div>
+                    </div>
+                    <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                      {isSubmitting ? 'REGISTERING...' : 'REGISTER'}
+                    </button>
+                  </div>
+                ) : (
+                  <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                    {isSubmitting ? 'LOGGING IN...' : 'LOG IN'}
+                  </button>
+                )}
               </form>
             </div>
           </div>
