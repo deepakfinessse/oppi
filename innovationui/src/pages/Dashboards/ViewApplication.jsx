@@ -78,6 +78,27 @@ const PreviewFileCard = ({ file, onRemove }) => {
   );
 };
 
+const RelatedFiles = ({ files, section, onRemove }) => {
+  const sectionFiles = (files || []).filter(
+    f => (f.section || f.Section)?.toLowerCase() === section.toLowerCase()
+  );
+
+  if (sectionFiles.length === 0) return null;
+
+  return (
+    <div className="related-files-container" style={{ marginTop: '10px', marginBottom: '20px', padding: '12px 15px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+      <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
+        Attached {section === 'ReachDocs' ? 'Documents / Media' : `${section} Files`}
+      </div>
+      <div className="app-preview-grid" style={{ marginTop: '5px' }}>
+        {sectionFiles.map(f => (
+          <PreviewFileCard key={f.id} file={f} onRemove={onRemove ? () => onRemove(f.id) : null} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function ViewApplication({ isMine }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -294,6 +315,7 @@ export default function ViewApplication({ isMine }) {
   const pi = app.personal_info || {};
   const cr = app.company_reach || {};
   const cd = app.company_detail || {};
+  const canDelete = app.status === 'DRAFT' || userRole === 'ADMIN';
 
   // Fix for 'my-application' Applicant Info fields:
   // If view is 'mine', display current user's info from session if available, otherwise fallback to app object or '—'
@@ -417,6 +439,7 @@ export default function ViewApplication({ isMine }) {
               <DataRow label="Website Details" value={cr.websiteDetails || cr.WebsiteDetails} />
               <DataRow label="Social Media" value={cr.socialMedia || cr.SocialMedia} />
               <DataRow label="Physical Outlets" value={cr.physicalOutlets || cr.PhysicalOutlets} />
+              <RelatedFiles files={app.file_uploads} section="ReachDocs" onRemove={canDelete ? handleRemoveExistingFile : null} />
               <DataRow label="Future Expansion (3 Yrs)" value={cr.futureExpansion || cr.FutureExpansion} />
             </div>
           </div>
@@ -426,17 +449,21 @@ export default function ViewApplication({ isMine }) {
             <div className="section-data">
               <DataRow label="Customer Benefit" value={cd.customerBenefit || cd.CustomerBenefit} />
               <DataRow label="Testimonial" value={cd.testimonial || cd.Testimonial} />
+              <RelatedFiles files={app.file_uploads} section="Testimonial" onRemove={canDelete ? handleRemoveExistingFile : null} />
               <DataRow label="Employees" value={cd.employeeCount || cd.EmployeeCount} />
               <DataRow label="Board of Directors" value={cd.boardOfDirectors || cd.BoardOfDirectors} />
+              <RelatedFiles files={app.file_uploads} section="Board" onRemove={canDelete ? handleRemoveExistingFile : null} />
               <DataRow label="Investors" value={cd.investorsDetails || cd.InvestorsDetails} />
+              <RelatedFiles files={app.file_uploads} section="Investors" onRemove={canDelete ? handleRemoveExistingFile : null} />
               <DataRow label="Media Mentions" value={cd.mediaMentions || cd.MediaMentions} />
+              <RelatedFiles files={app.file_uploads} section="Media" onRemove={canDelete ? handleRemoveExistingFile : null} />
               <DataRow label="Patents" value={cd.patents || cd.Patents} />
               <DataRow label="Product Benefits" value={cd.productBenefits || cd.ProductBenefits} />
             </div>
           </div>
 
           {(userRole === 'ADMIN' || userRole === 'VALIDATOR' || userRole === 'JURY') && app.validator_reviews && app.validator_reviews.length > 0 && (
-            <div className="dashboard-section no-print">
+            <div className="dashboard-section">
               <h3>Validator Reviews Breakdown</h3>
               <div className="table-responsive">
                 <table className="jury-scores-table">
@@ -450,7 +477,7 @@ export default function ViewApplication({ isMine }) {
                       <th>Weighted Score</th>
                       <th>Remarks</th>
                       <th>Reviewed At</th>
-                      {userRole === 'ADMIN' && <th>Actions</th>}
+                      {userRole === 'ADMIN' && <th className="no-print">Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -465,7 +492,7 @@ export default function ViewApplication({ isMine }) {
                         <td>{r.remarks || '—'}</td>
                         <td>{formatIST(r.createdAt)}</td>
                         {userRole === 'ADMIN' && (
-                          <td>
+                          <td className="no-print">
                             <button
                               className="btn-action edit"
                               style={{ padding: '4px 8px', fontSize: '0.8rem' }}
@@ -484,7 +511,7 @@ export default function ViewApplication({ isMine }) {
           )}
 
           {(userRole === 'ADMIN' || userRole === 'VALIDATOR' || userRole === 'JURY') && app.jury_reviews && app.jury_reviews.length > 0 && (
-            <div className="dashboard-section no-print">
+            <div className="dashboard-section">
               <h3>Jury Reviews Breakdown</h3>
               <div className="table-responsive">
                 <table className="jury-scores-table">
@@ -498,7 +525,7 @@ export default function ViewApplication({ isMine }) {
                       <th>Weighted Score</th>
                       <th>Remarks</th>
                       <th>Reviewed At</th>
-                      {userRole === 'ADMIN' && <th>Actions</th>}
+                      {userRole === 'ADMIN' && <th className="no-print">Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -513,7 +540,7 @@ export default function ViewApplication({ isMine }) {
                         <td>{r.remarks || '—'}</td>
                         <td>{formatIST(r.createdAt)}</td>
                         {userRole === 'ADMIN' && (
-                          <td>
+                          <td className="no-print">
                             <button
                               className="btn-action edit"
                               style={{ padding: '4px 8px', fontSize: '0.8rem' }}
@@ -531,25 +558,29 @@ export default function ViewApplication({ isMine }) {
             </div>
           )}
 
-          <div className="dashboard-section">
-            <h3>Attached Files</h3>
-            {app.file_uploads && app.file_uploads.length > 0 ? (
-              <div className="app-preview-grid">
-                {app.file_uploads.map(f => {
-                  const canDelete = app.status === 'DRAFT' || userRole === 'ADMIN';
-                  return (
+          {/* Other/Unrecognized Attached Files */}
+          {(() => {
+            const recognizedSections = ['reachdocs', 'testimonial', 'board', 'investors', 'media'];
+            const remainingFiles = (app.file_uploads || []).filter(
+              f => !recognizedSections.includes((f.section || f.Section || '').toLowerCase())
+            );
+            if (remainingFiles.length === 0) return null;
+
+            return (
+              <div className="dashboard-section">
+                <h3>Other Attached Files</h3>
+                <div className="app-preview-grid">
+                  {remainingFiles.map(f => (
                     <PreviewFileCard
                       key={f.id}
                       file={f}
                       onRemove={canDelete ? () => handleRemoveExistingFile(f.id) : null}
                     />
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-            ) : (
-              <div className="no-data">No files attached.</div>
-            )}
-          </div>
+            );
+          })()}
         </div>
       </div>
 
