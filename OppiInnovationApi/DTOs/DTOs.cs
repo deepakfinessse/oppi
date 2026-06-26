@@ -102,3 +102,18 @@ public class RejectionDto
 {
     public string Remarks { get; set; } = null!;
 }
+
+public class AdminReviewUpdateDto
+{
+    public int InnovationIpScore { get; set; }
+    public int TeamStrengthScore { get; set; }
+    public int BusinessPlanScore { get; set; }
+    public int ImpactScore { get; set; }
+    public string? Remarks { get; set; }
+}
+
+public class AdminRemarksUpdateDto
+{
+    public string? Remarks { get; set; }
+}
+

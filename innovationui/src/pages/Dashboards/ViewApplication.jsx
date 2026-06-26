@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, clearSession, getSession, getFileUrl, formatIST } from '../../services/api';
 import JSZip from 'jszip';
@@ -87,26 +87,116 @@ export default function ViewApplication({ isMine }) {
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(false);
 
+  // Admin edit modals states
+  const [showEditRemarksModal, setShowEditRemarksModal] = useState(false);
+  const [appRemarksForm, setAppRemarksForm] = useState('');
+  const [submittingRemarks, setSubmittingRemarks] = useState(false);
+  const [remarksError, setRemarksError] = useState('');
+
+  const [showEditReviewModal, setShowEditReviewModal] = useState(false);
+  const [editReviewType, setEditReviewType] = useState(''); // 'validator' or 'jury'
+  const [selectedReviewId, setSelectedReviewId] = useState(null);
+  const [reviewForm, setReviewForm] = useState({
+    innovationIpScore: 5,
+    teamStrengthScore: 5,
+    businessPlanScore: 5,
+    impactScore: 5,
+    remarks: ''
+  });
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewModalError, setReviewModalError] = useState('');
+
   const session = getSession();
   const userRole = session?.role;
 
-  useEffect(() => {
-    const fetchApp = async () => {
-      try {
-        const [appData, juryData] = await Promise.all([
-          isMine ? api.getPreview() : api.getAppReview(id),
-          api.getJuryMembers().catch(() => [])
-        ]);
-        setApp(appData);
-        setJuryMembers(juryData || []);
-      } catch (err) {
-        setError('Failed to load application details');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchApp();
+  const fetchApp = useCallback(async () => {
+    try {
+      const [appData, juryData] = await Promise.all([
+        isMine ? api.getPreview() : api.getAppReview(id),
+        api.getJuryMembers().catch(() => [])
+      ]);
+      setApp(appData);
+      setJuryMembers(juryData || []);
+    } catch (err) {
+      setError('Failed to load application details');
+    } finally {
+      setLoading(false);
+    }
   }, [id, isMine]);
+
+  useEffect(() => {
+    fetchApp();
+  }, [fetchApp]);
+
+  const handleEditAppRemarks = () => {
+    setAppRemarksForm(app?.remarks || '');
+    setRemarksError('');
+    setShowEditRemarksModal(true);
+  };
+
+  const handleEditReview = (review, type) => {
+    setEditReviewType(type);
+    setSelectedReviewId(review.id);
+    setReviewForm({
+      innovationIpScore: review.innovationIpScore || 5,
+      teamStrengthScore: review.teamStrengthScore || 5,
+      businessPlanScore: review.businessPlanScore || 5,
+      impactScore: review.impactScore || 5,
+      remarks: review.remarks || ''
+    });
+    setReviewModalError('');
+    setShowEditReviewModal(true);
+  };
+
+  const handleRemarksSubmit = async (e) => {
+    e.preventDefault();
+    setRemarksError('');
+    setSubmittingRemarks(true);
+    try {
+      await api.updateAdminApplicationRemarks(app.id, appRemarksForm);
+      setShowEditRemarksModal(false);
+      fetchApp();
+    } catch (err) {
+      setRemarksError(err.message || 'Failed to update remarks.');
+    } finally {
+      setSubmittingRemarks(false);
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    setReviewModalError('');
+    if (!reviewForm.remarks.trim()) {
+      setReviewModalError('Remarks are mandatory.');
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      const payload = {
+        innovationIpScore: Number(reviewForm.innovationIpScore),
+        teamStrengthScore: Number(reviewForm.teamStrengthScore),
+        businessPlanScore: Number(reviewForm.businessPlanScore),
+        impactScore: Number(reviewForm.impactScore),
+        remarks: reviewForm.remarks
+      };
+      if (editReviewType === 'validator') {
+        await api.updateAdminValidatorReview(selectedReviewId, payload);
+      } else {
+        await api.updateAdminJuryReview(selectedReviewId, payload);
+      }
+      setShowEditReviewModal(false);
+      fetchApp();
+    } catch (err) {
+      setReviewModalError(err.message || 'Failed to update review.');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const calculateModalWeightedScore = () => {
+    const { innovationIpScore, teamStrengthScore, businessPlanScore, impactScore } = reviewForm;
+    return ((Number(innovationIpScore) + Number(teamStrengthScore) + Number(businessPlanScore) + Number(impactScore)) / 4.0).toFixed(2);
+  };
 
   const handleRemoveExistingFile = async (fileId) => {
     if (!window.confirm('Are you sure you want to delete this file?')) return;
@@ -269,9 +359,25 @@ export default function ViewApplication({ isMine }) {
                 <h4>Status Info</h4>
                 <div><strong>Status:</strong> <span className={`status-text ${app.status.toLowerCase().replace('_', '-')}`}>{app.status}</span></div>
                 <div><strong>Submitted:</strong> {formatIST(app.submitted_at)}</div>
-                {app.remarks && (
-                  <div style={{ marginTop: '0.5rem', color: '#334155' }}>
-                    <strong>Remarks:</strong> {app.remarks}
+                {(app.remarks || userRole === 'ADMIN') && (
+                  <div style={{ marginTop: '0.5rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <div><strong>Remarks:</strong> {app.remarks || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>None</span>}</div>
+                    {userRole === 'ADMIN' && (
+                      <button
+                        onClick={handleEditAppRemarks}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#2563eb',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem',
+                          textDecoration: 'underline',
+                          padding: '0 4px',
+                        }}
+                      >
+                        Edit
+                      </button>
+                    )}
                   </div>
                 )}
                 {(userRole === 'ADMIN' || userRole === 'JURY') && (
@@ -344,6 +450,7 @@ export default function ViewApplication({ isMine }) {
                       <th>Weighted Score</th>
                       <th>Remarks</th>
                       <th>Reviewed At</th>
+                      {userRole === 'ADMIN' && <th>Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -357,6 +464,17 @@ export default function ViewApplication({ isMine }) {
                         <td><strong>{r.weightedScore.toFixed(2)}</strong> / 5.00</td>
                         <td>{r.remarks || '—'}</td>
                         <td>{formatIST(r.createdAt)}</td>
+                        {userRole === 'ADMIN' && (
+                          <td>
+                            <button
+                              className="btn-action edit"
+                              style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                              onClick={() => handleEditReview(r, 'validator')}
+                            >
+                              Edit
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -380,6 +498,7 @@ export default function ViewApplication({ isMine }) {
                       <th>Weighted Score</th>
                       <th>Remarks</th>
                       <th>Reviewed At</th>
+                      {userRole === 'ADMIN' && <th>Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -393,6 +512,17 @@ export default function ViewApplication({ isMine }) {
                         <td><strong>{r.weightedScore.toFixed(2)}</strong> / 5.00</td>
                         <td>{r.remarks || '—'}</td>
                         <td>{formatIST(r.createdAt)}</td>
+                        {userRole === 'ADMIN' && (
+                          <td>
+                            <button
+                              className="btn-action edit"
+                              style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                              onClick={() => handleEditReview(r, 'jury')}
+                            >
+                              Edit
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -422,6 +552,125 @@ export default function ViewApplication({ isMine }) {
           </div>
         </div>
       </div>
+
+      {showEditRemarksModal && (
+        <div className="modal-overlay">
+          <div className="modal-container user-edit-modal">
+            <div className="modal-header">
+              <h3>Edit Application Remarks</h3>
+              <button className="modal-close-btn" onClick={() => setShowEditRemarksModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleRemarksSubmit}>
+              {remarksError && <div className="modal-error" style={{ color: '#ef4444', marginBottom: '10px' }}>{remarksError}</div>}
+              <div style={{ marginBottom: '15px' }}>
+                <label className="modal-label">Remarks</label>
+                <textarea
+                  className="modal-input"
+                  style={{ minHeight: '100px', fontFamily: 'inherit', width: '100%', boxSizing: 'border-box' }}
+                  value={appRemarksForm}
+                  onChange={(e) => setAppRemarksForm(e.target.value)}
+                  placeholder="Enter application remarks..."
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn-modal-cancel" onClick={() => setShowEditRemarksModal(false)}>Cancel</button>
+                <button type="submit" className="btn-modal-save" disabled={submittingRemarks}>
+                  {submittingRemarks ? 'Saving...' : 'Save Remarks'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showEditReviewModal && (
+        <div className="modal-overlay">
+          <div className="modal-container user-edit-modal">
+            <div className="modal-header">
+              <h3>Edit {editReviewType === 'validator' ? 'Validator' : 'Jury'} Review</h3>
+              <button className="modal-close-btn" onClick={() => setShowEditReviewModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleReviewSubmit}>
+              {reviewModalError && <div className="modal-error" style={{ color: '#ef4444', marginBottom: '10px' }}>{reviewModalError}</div>}
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <div>
+                  <label className="modal-label">Innovation & IP</label>
+                  <select
+                    className="modal-select"
+                    value={reviewForm.innovationIpScore}
+                    onChange={(e) => setReviewForm(prev => ({ ...prev, innovationIpScore: Number(e.target.value) }))}
+                  >
+                    {[1, 2, 3, 4, 5].map(val => (
+                      <option key={val} value={val}>{val}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="modal-label">Founding Team</label>
+                  <select
+                    className="modal-select"
+                    value={reviewForm.teamStrengthScore}
+                    onChange={(e) => setReviewForm(prev => ({ ...prev, teamStrengthScore: Number(e.target.value) }))}
+                  >
+                    {[1, 2, 3, 4, 5].map(val => (
+                      <option key={val} value={val}>{val}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="modal-label">Business Plan</label>
+                  <select
+                    className="modal-select"
+                    value={reviewForm.businessPlanScore}
+                    onChange={(e) => setReviewForm(prev => ({ ...prev, businessPlanScore: Number(e.target.value) }))}
+                  >
+                    {[1, 2, 3, 4, 5].map(val => (
+                      <option key={val} value={val}>{val}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="modal-label">Impact</label>
+                  <select
+                    className="modal-select"
+                    value={reviewForm.impactScore}
+                    onChange={(e) => setReviewForm(prev => ({ ...prev, impactScore: Number(e.target.value) }))}
+                  >
+                    {[1, 2, 3, 4, 5].map(val => (
+                      <option key={val} value={val}>{val}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '15px', padding: '10px', background: '#f8fafc', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: '500', color: '#475569' }}>Weighted Total Score</span>
+                <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a' }}>{calculateModalWeightedScore()}</span>
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label className="modal-label">Remarks *</label>
+                <textarea
+                  className="modal-input"
+                  style={{ minHeight: '80px', fontFamily: 'inherit', width: '100%', boxSizing: 'border-box' }}
+                  value={reviewForm.remarks}
+                  onChange={(e) => setReviewForm(prev => ({ ...prev, remarks: e.target.value }))}
+                  placeholder="Enter remarks..."
+                  required
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-modal-cancel" onClick={() => setShowEditReviewModal(false)}>Cancel</button>
+                <button type="submit" className="btn-modal-save" disabled={submittingReview}>
+                  {submittingReview ? 'Saving...' : 'Save Review'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
