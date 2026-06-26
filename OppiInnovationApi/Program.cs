@@ -838,7 +838,16 @@ api.MapGet("/admin/users", async (HttpContext ctx, InnovationDbContext db) =>
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var user = await db.Users.FindAsync(uid.Value);
     if (user?.Role != "ADMIN") return Results.Forbid();
-    var users = await db.Users.Select(u => new { u.Id, u.FirstName, u.LastName, u.Email, u.Mobile, u.Role, u.CreatedAt }).ToListAsync();
+    var users = await db.Users.Select(u => new { 
+        u.Id, 
+        u.FirstName, 
+        u.LastName, 
+        u.Email, 
+        u.Mobile, 
+        u.Role, 
+        u.CreatedAt,
+        ApplicationStatus = db.Applications.Where(a => a.UserId == u.Id).Select(a => a.Status).FirstOrDefault()
+    }).ToListAsync();
     return Results.Ok(users);
 });
 

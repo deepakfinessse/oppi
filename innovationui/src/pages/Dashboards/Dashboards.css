@@ -1174,6 +1174,21 @@
   color: #475569;
 }
 
+.admin-role-badge.new {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.admin-role-badge.draft {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.admin-role-badge.submitted {
+  background: #dcfce7;
+  color: #15803d;
+}
+
 /* Floating header responsiveness overrides */
 @media (max-width: 768px) {
 

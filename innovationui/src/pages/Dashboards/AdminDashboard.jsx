@@ -14,7 +14,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
 
   // Dropdown & Filter States
-  const [userFilter, setUserFilter] = useState('USER');
+  const [userFilter, setUserFilter] = useState('ALL');
   const [appFilter, setAppFilter] = useState('ALL');
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [appDropdownOpen, setAppDropdownOpen] = useState(false);
@@ -260,9 +260,15 @@ export default function AdminDashboard() {
 
   // Filter Registered Users
   const filteredUsers = users.filter(u => {
-    if (u.role?.toUpperCase() === 'ADMIN') return false;
+    if (u.role?.toUpperCase() !== 'USER') return false;
     if (userFilter === 'ALL') return true;
-    return u.role?.toUpperCase() === userFilter;
+    
+    const appStatus = u.applicationStatus ? u.applicationStatus.toUpperCase() : null;
+    if (userFilter === 'NEW') return !appStatus;
+    if (userFilter === 'DRAFT') return appStatus === 'DRAFT';
+    if (userFilter === 'SUBMITTED') return appStatus && appStatus !== 'DRAFT';
+    
+    return true;
   });
 
   // Filter Applications
@@ -292,7 +298,7 @@ export default function AdminDashboard() {
         { label: 'Name', key: 'name', format: (_, row) => `${row.firstName || ''} ${row.lastName || ''}`.trim() },
         { label: 'Email', key: 'email' },
         { label: 'Mobile', key: 'mobile' },
-        { label: 'Role', key: 'role' }
+        { label: 'App Status', key: 'applicationStatus', format: (v) => v ? (v === 'DRAFT' ? 'Draft' : 'Submitted') : 'New' }
       ];
     } else {
       filename = `submitted_applications_${appFilter.toLowerCase()}.csv`;
@@ -550,9 +556,9 @@ export default function AdminDashboard() {
                 {userDropdownOpen && (
                   <div className="dropdown-menu">
                     <button className={userFilter === 'ALL' ? 'active' : ''} onClick={() => { setUserFilter('ALL'); setUserDropdownOpen(false); }}>All</button>
-                    <button className={userFilter === 'VALIDATOR' ? 'active' : ''} onClick={() => { setUserFilter('VALIDATOR'); setUserDropdownOpen(false); }}>Validator</button>
-                    <button className={userFilter === 'JURY' ? 'active' : ''} onClick={() => { setUserFilter('JURY'); setUserDropdownOpen(false); }}>Jury</button>
-                    <button className={userFilter === 'USER' ? 'active' : ''} onClick={() => { setUserFilter('USER'); setUserDropdownOpen(false); }}>User</button>
+                    <button className={userFilter === 'NEW' ? 'active' : ''} onClick={() => { setUserFilter('NEW'); setUserDropdownOpen(false); }}>New</button>
+                    <button className={userFilter === 'DRAFT' ? 'active' : ''} onClick={() => { setUserFilter('DRAFT'); setUserDropdownOpen(false); }}>Draft</button>
+                    <button className={userFilter === 'SUBMITTED' ? 'active' : ''} onClick={() => { setUserFilter('SUBMITTED'); setUserDropdownOpen(false); }}>Submitted</button>
                   </div>
                 )}
               </div>
@@ -570,7 +576,7 @@ export default function AdminDashboard() {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Mobile</th>
-                  <th>Role</th>
+                  <th>App Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -582,8 +588,8 @@ export default function AdminDashboard() {
                     <td>{u.email}</td>
                     <td>{u.mobile || '—'}</td>
                     <td>
-                      <span className={`admin-role-badge ${u.role.toLowerCase()}`}>
-                        {u.role.toLowerCase()}
+                      <span className={`admin-role-badge ${u.applicationStatus ? (u.applicationStatus === 'DRAFT' ? 'draft' : 'submitted') : 'new'}`}>
+                        {u.applicationStatus ? (u.applicationStatus === 'DRAFT' ? 'Draft' : 'Submitted') : 'New'}
                       </span>
                     </td>
                     <td>
