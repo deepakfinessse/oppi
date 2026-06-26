@@ -3,7 +3,7 @@
   position: relative;
   padding: 5rem 0 0 0;
   /* Full section background image */
-  background-image: url('../../assets/eligibility-bg.jpg');
+  background-image: url('../../assets/eligibility-bg.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -18,7 +18,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.65);
+  /* background: rgba(255, 255, 255, 0.65); */
   z-index: 0;
 }
 
