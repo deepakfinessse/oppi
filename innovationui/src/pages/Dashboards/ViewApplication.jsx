@@ -248,13 +248,23 @@ export default function ViewApplication({ isMine }) {
 
       // 1. Generate PDF of the application details
       const element = document.getElementById('application-content');
+      if (element) element.classList.add('print-pdf-mode');
+
       const pdfBlob = await html2pdf().from(element).set({
         margin: [10, 10, 10, 10], // top, left, bottom, right
         filename: `Application_${app.id}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, ignoreElements: (el) => el.classList && el.classList.contains('no-print') },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          width: 794,
+          windowWidth: 794,
+          ignoreElements: (el) => el.classList && el.classList.contains('no-print') 
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       }).outputPdf('blob');
+      
+      if (element) element.classList.remove('print-pdf-mode');
       
       zip.file(`Application_${app.id}.pdf`, pdfBlob);
 

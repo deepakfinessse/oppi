@@ -1594,3 +1594,64 @@
   margin-bottom: 8px !important;
   line-height: 1.4 !important;
 }
+
+/* Print PDF styles to avoid cutoff on the right side */
+.print-pdf-mode {
+  width: 794px !important;
+  max-width: 794px !important;
+  margin: 0 !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+  background: white !important;
+}
+
+.print-pdf-mode .info-cards {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 15px !important;
+}
+
+.print-pdf-mode .table-responsive {
+  overflow: visible !important;
+}
+
+.print-pdf-mode table {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.print-pdf-mode .jury-scores-table th,
+.print-pdf-mode .jury-scores-table td {
+  word-wrap: break-word !important;
+  white-space: normal !important;
+  font-size: 0.75rem !important;
+  padding: 6px 4px !important;
+}
+
+/* Set specific column widths for the printed review tables */
+.print-pdf-mode .jury-scores-table th:nth-child(1),
+.print-pdf-mode .jury-scores-table td:nth-child(1) {
+  width: 15% !important;
+}
+.print-pdf-mode .jury-scores-table th:nth-child(2),
+.print-pdf-mode .jury-scores-table td:nth-child(2),
+.print-pdf-mode .jury-scores-table th:nth-child(3),
+.print-pdf-mode .jury-scores-table td:nth-child(3),
+.print-pdf-mode .jury-scores-table th:nth-child(4),
+.print-pdf-mode .jury-scores-table td:nth-child(4),
+.print-pdf-mode .jury-scores-table th:nth-child(5),
+.print-pdf-mode .jury-scores-table td:nth-child(5) {
+  width: 9% !important;
+}
+.print-pdf-mode .jury-scores-table th:nth-child(6),
+.print-pdf-mode .jury-scores-table td:nth-child(6) {
+  width: 10% !important;
+}
+.print-pdf-mode .jury-scores-table th:nth-child(7),
+.print-pdf-mode .jury-scores-table td:nth-child(7) {
+  width: 25% !important;
+}
+.print-pdf-mode .jury-scores-table th:nth-child(8),
+.print-pdf-mode .jury-scores-table td:nth-child(8) {
+  width: 14% !important;
+}
