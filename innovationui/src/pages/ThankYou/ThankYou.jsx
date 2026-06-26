@@ -4,7 +4,7 @@ import { getSession, clearSession, getApplicationStorageKey, api } from '../../s
 import oppiLogo from '../../assets/OPPI-logo-black.png';
 import '../ApplicationForm/ApplicationForm.css';
 import './ThankYou.css';
-import { ArrowRight } from 'lucide-react';
+import arrowIcon from '../../assets/Vector.png';
 
 export default function ThankYou() {
   const navigate = useNavigate();
@@ -69,7 +69,10 @@ export default function ThankYou() {
               <span className="application-id-badge">Application ID: {applicationId}</span>
             )}
             <button type="button" className="btn-header change-pwd" onClick={handleChangePassword}>CHANGE PASSWORD</button>
-            <button type="button" className="btn-header logout" onClick={handleLogout}>LOG OUT <ArrowRight size={16} /></button>
+            <button type="button" className="btn-header logout" onClick={handleLogout}>
+              LOG OUT
+              <img src={arrowIcon} width={16} height={16} alt="" />
+              </button>
           </div>
         </header>
       </div>

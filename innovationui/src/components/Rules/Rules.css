@@ -44,7 +44,7 @@
   flex: 1;
   min-width: 350px;
   /* Increased from 300px */
-  max-width: 50%;
+  max-width: 60%;
   /* Limit width to leave space for trophy */
   position: relative;
   z-index: 2;
@@ -69,9 +69,9 @@
 }
 
 .rules-title {
-  font-size: 2.8rem;
+  font-size: 60px;
   /* Increased from 2.5rem */
-  font-weight: 800;
+  font-weight: 700;
   color: #1264B9;
   margin-bottom: 2.5rem;
   text-align: center;
@@ -149,7 +149,25 @@
   .rules-title {
     font-size: 2.3rem;
   }
+
 }
+
+/* MacBook Air 13" — 1280×800 */
+@media (min-width: 1280px) and (max-width: 1440px) {
+  .rules-content {
+    max-width: 50%;
+  }
+
+  .rules-image {
+    margin-right: -17rem;
+  }
+}
+
+/* MacBook Air 15" — 1440×900 */
+@media (min-width: 1440px) and (max-width: 1680px) {}
+
+/* Both MacBook Air 13" and 15" */
+@media (min-width: 1280px) and (max-width: 1680px) {}
 
 @media (max-width: 992px) {
   .rules-container {
@@ -176,6 +194,11 @@
   .trophy-image {
     max-width: 350px;
   }
+
+  .rules-content {
+    min-width: 0%;
+  }
+
 }
 
 @media (max-width: 768px) {
@@ -213,7 +236,7 @@
 
 @media (max-width: 480px) {
   .rules-title {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
   }
 
   .trophy-image {

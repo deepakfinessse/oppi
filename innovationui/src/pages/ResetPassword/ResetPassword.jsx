@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Eye, EyeOff, Info, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Info } from 'lucide-react';
 import { api } from '../../services/api';
 import '../Auth/Auth.css'; // Reuse Auth CSS
 import trophyImg from '../../assets/Trophy1.png';
 import oppiLogo from '../../assets/Oppi-logo.png';
+import arrowIcon from '../../assets/Vector.png';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -61,7 +62,8 @@ const ResetPassword = () => {
           <div className="auth-page-header">
             <img src={oppiLogo} alt="OPPI Logo" className="auth-page-logo" />
             <Link to="/" className="btn-back-home">
-              BACK TO HOME <ArrowRight size={16} className="btn-icon" />
+              BACK TO HOME
+              <img src={arrowIcon} width={16} height={16} alt="" />
             </Link>
           </div>
           <div className="auth-card">

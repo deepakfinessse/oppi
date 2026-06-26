@@ -83,7 +83,7 @@
 
 .btn-header {
   border-radius: 50px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 0.6rem 1.25rem;
   border: none;
   font-size: 0.8rem;
@@ -101,7 +101,7 @@
 }
 
 .btn-header.logout {
-  background: #1155cc;
+  background: #165baf;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -113,7 +113,7 @@
 }
 
 .btn-header.logout:hover {
-  background: #0f4bb5;
+  background: linear-gradient(90deg, #6ADAE5 0%, #1264B9 100%);
 }
 
 .btn-header.logout:hover svg {
@@ -226,7 +226,7 @@
 
 .section-nav-item.active,
 .section-nav-item.completed {
-  color: #ffffff;
+  color: #000000;
 }
 
 .step-label {

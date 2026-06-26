@@ -133,4 +133,8 @@
   .jury-subtitle {
     font-size: 1.3rem;
   }
+
+  .jury-card {
+    padding: 0 0rem 1.5rem;
+  }
 }

@@ -82,6 +82,7 @@
 
 .divider-left {
   border-left: 2px dotted #00a2e8;
+  align-self: stretch;
   /* Bright cyan/blue dotted divider */
 }
 

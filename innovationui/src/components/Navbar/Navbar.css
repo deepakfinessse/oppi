@@ -166,7 +166,7 @@
   }
 
   .mobile-toggle {
-    display: block;
+    display: none;
     position: absolute;
     right: 1.5rem;
     top: 50%;
