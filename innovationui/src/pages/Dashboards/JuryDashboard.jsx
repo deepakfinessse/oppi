@@ -18,10 +18,7 @@ export default function JuryDashboard() {
   const [remarks, setRemarks] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Reject Modal State
-  const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [rejectAppId, setRejectAppId] = useState(null);
-  const [rejectRemarks, setRejectRemarks] = useState('');
+
 
   const fetchApps = useCallback(async () => {
     try {
@@ -39,28 +36,22 @@ export default function JuryDashboard() {
     fetchApps();
   }, [fetchApps]);
 
-  const handleAction = async (id, action) => {
-    if (action === 'Approve') {
-      setSelectedAppId(id);
-      const app = apps.find(a => a.id === id);
-      if (app && app.draft_scores) {
-        setScores({
-          innovationIp: app.draft_scores.innovationIpScore || 0,
-          teamStrength: app.draft_scores.teamStrengthScore || 0,
-          businessPlan: app.draft_scores.businessPlanScore || 0,
-          impact: app.draft_scores.impactScore || 0
-        });
-        setRemarks(app.draft_scores.remarks || '');
-      } else {
-        setScores({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
-        setRemarks('');
-      }
-      setShowModal(true);
+  const handleApprove = async (id) => {
+    setSelectedAppId(id);
+    const app = apps.find(a => a.id === id);
+    if (app && app.draft_scores) {
+      setScores({
+        innovationIp: app.draft_scores.innovationIpScore || 0,
+        teamStrength: app.draft_scores.teamStrengthScore || 0,
+        businessPlan: app.draft_scores.businessPlanScore || 0,
+        impact: app.draft_scores.impactScore || 0
+      });
+      setRemarks(app.draft_scores.remarks || '');
     } else {
-      setRejectAppId(id);
-      setRejectRemarks('');
-      setRejectModalOpen(true);
+      setScores({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
+      setRemarks('');
     }
+    setShowModal(true);
   };
 
   const closeModal = () => {
@@ -118,22 +109,6 @@ export default function JuryDashboard() {
     }
   };
 
-  const submitReject = async () => {
-    if (!rejectRemarks.trim()) {
-      alert('Remarks are mandatory for rejection.');
-      return;
-    }
-    try {
-      setSubmitting(true);
-      await api.juryReject(rejectAppId, { remarks: rejectRemarks });
-      setRejectModalOpen(false);
-      fetchApps();
-    } catch (err) {
-      alert(err.message || 'Failed to reject application');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const handleLogout = () => {
     clearSession();
@@ -151,7 +126,7 @@ export default function JuryDashboard() {
       >
         <div className="dashboard-content">
           {error && <div className="dashboard-error">{error}</div>}
-
+          <br />
           <div className="dashboard-section">
             <h3>Applications Pending Final Approval ({apps.length})</h3>
             <div className="table-responsive">
@@ -175,8 +150,7 @@ export default function JuryDashboard() {
                           <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
                             <Eye size={16} />
                           </button>
-                          <button className="btn-action approve" onClick={() => handleAction(a.id, 'Approve')}>Approve</button>
-                          <button className="btn-action reject" onClick={() => handleAction(a.id, 'Reject')}>Reject</button>
+                          <button className="btn-action approve" onClick={() => handleApprove(a.id)}>Approve</button>
                         </div>
                       </td>
                     </tr>
@@ -277,49 +251,6 @@ export default function JuryDashboard() {
         </div>
       )}
 
-      {rejectModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-container jury-modal-compact" style={{ maxWidth: '440px' }}>
-            <div className="modal-header">
-              <h3>Reject Application #{rejectAppId}</h3>
-              <button className="modal-close-btn" onClick={() => setRejectModalOpen(false)}>&times;</button>
-            </div>
-            
-            <div className="jury-remarks-section" style={{ marginTop: '10px', marginBottom: '10px' }}>
-              <label style={{ display: 'block', fontWeight: '500', marginBottom: '5px', fontSize: '0.9rem', color: '#1e293b', textAlign: 'left' }}>
-                Reason for Rejection (Mandatory) *
-              </label>
-              <textarea
-                style={{
-                  width: '100%',
-                  minHeight: '80px',
-                  borderRadius: '6px',
-                  border: '1px solid #cbd5e1',
-                  padding: '8px 12px',
-                  fontSize: '0.9rem',
-                  fontFamily: 'inherit',
-                  resize: 'vertical',
-                  boxSizing: 'border-box'
-                }}
-                value={rejectRemarks}
-                onChange={(e) => setRejectRemarks(e.target.value)}
-                placeholder="Please explain why this application is being rejected..."
-              />
-            </div>
-
-            <div className="modal-actions">
-              <button className="btn-action view" onClick={() => setRejectModalOpen(false)}>Cancel</button>
-              <button
-                className="btn-action reject"
-                onClick={submitReject}
-                disabled={submitting}
-              >
-                {submitting ? 'Submitting...' : 'Reject'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

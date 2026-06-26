@@ -838,7 +838,16 @@ api.MapGet("/admin/users", async (HttpContext ctx, InnovationDbContext db) =>
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var user = await db.Users.FindAsync(uid.Value);
     if (user?.Role != "ADMIN") return Results.Forbid();
-    var users = await db.Users.Select(u => new { u.Id, u.FirstName, u.LastName, u.Email, u.Mobile, u.Role, u.CreatedAt }).ToListAsync();
+    var users = await db.Users.Select(u => new { 
+        u.Id, 
+        u.FirstName, 
+        u.LastName, 
+        u.Email, 
+        u.Mobile, 
+        u.Role, 
+        u.CreatedAt,
+        ApplicationStatus = db.Applications.Where(a => a.UserId == u.Id).Select(a => a.Status).FirstOrDefault()
+    }).ToListAsync();
     return Results.Ok(users);
 });
 
@@ -1181,6 +1190,96 @@ api.MapDelete("/admin/jury/{id}", async (int id, InnovationDbContext db, IStorag
     return Results.Ok(new { message = "Jury member deleted successfully" });
 });
 
+api.MapPut("/admin/application/{id}/remarks", async (int id, AdminRemarksUpdateDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    var app = await db.Applications.FindAsync(id);
+    if (app == null) return Results.NotFound(new { message = "Application not found" });
+
+    app.Remarks = dto.Remarks;
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_UPDATE_APPLICATION_REMARKS", "Application", id, $"Remarks updated to: {dto.Remarks}", GetIp(ctx));
+
+    return Results.Ok(new { message = "Remarks updated successfully" });
+});
+
+api.MapPut("/admin/validator-review/{id}", async (int id, AdminReviewUpdateDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    var review = await db.ValidatorReviews.FindAsync(id);
+    if (review == null) return Results.NotFound(new { message = "Validator review not found" });
+
+    if (dto.InnovationIpScore < 1 || dto.InnovationIpScore > 5 ||
+        dto.TeamStrengthScore < 1 || dto.TeamStrengthScore > 5 ||
+        dto.BusinessPlanScore < 1 || dto.BusinessPlanScore > 5 ||
+        dto.ImpactScore < 1 || dto.ImpactScore > 5)
+    {
+        return Results.BadRequest(new { message = "All scores must be between 1 and 5." });
+    }
+
+    if (string.IsNullOrWhiteSpace(dto.Remarks))
+    {
+        return Results.BadRequest(new { message = "Remarks are mandatory." });
+    }
+
+    double weightedScore = dto.InnovationIpScore * 0.25 + dto.TeamStrengthScore * 0.25 + dto.BusinessPlanScore * 0.25 + dto.ImpactScore * 0.25;
+
+    review.InnovationIpScore = dto.InnovationIpScore;
+    review.TeamStrengthScore = dto.TeamStrengthScore;
+    review.BusinessPlanScore = dto.BusinessPlanScore;
+    review.ImpactScore = dto.ImpactScore;
+    review.WeightedScore = weightedScore;
+    review.Remarks = dto.Remarks;
+
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_UPDATE_VALIDATOR_REVIEW", "ValidatorReview", id, $"Admin updated scores for application {review.ApplicationId}: IP={dto.InnovationIpScore}, Team={dto.TeamStrengthScore}, Biz={dto.BusinessPlanScore}, Impact={dto.ImpactScore}", GetIp(ctx));
+
+    return Results.Ok(new { message = "Validator review updated successfully", weightedScore });
+});
+
+api.MapPut("/admin/jury-review/{id}", async (int id, AdminReviewUpdateDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    var review = await db.JuryReviews.FindAsync(id);
+    if (review == null) return Results.NotFound(new { message = "Jury review not found" });
+
+    if (dto.InnovationIpScore < 1 || dto.InnovationIpScore > 5 ||
+        dto.TeamStrengthScore < 1 || dto.TeamStrengthScore > 5 ||
+        dto.BusinessPlanScore < 1 || dto.BusinessPlanScore > 5 ||
+        dto.ImpactScore < 1 || dto.ImpactScore > 5)
+    {
+        return Results.BadRequest(new { message = "All scores must be between 1 and 5." });
+    }
+
+    if (string.IsNullOrWhiteSpace(dto.Remarks))
+    {
+        return Results.BadRequest(new { message = "Remarks are mandatory." });
+    }
+
+    double weightedScore = (dto.InnovationIpScore + dto.TeamStrengthScore + dto.BusinessPlanScore + dto.ImpactScore) / 4.0;
+
+    review.InnovationIpScore = dto.InnovationIpScore;
+    review.TeamStrengthScore = dto.TeamStrengthScore;
+    review.BusinessPlanScore = dto.BusinessPlanScore;
+    review.ImpactScore = dto.ImpactScore;
+    review.WeightedScore = weightedScore;
+    review.Remarks = dto.Remarks;
+
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_UPDATE_JURY_REVIEW", "JuryReview", id, $"Admin updated scores for application {review.ApplicationId}: IP={dto.InnovationIpScore}, Team={dto.TeamStrengthScore}, Biz={dto.BusinessPlanScore}, Impact={dto.ImpactScore}", GetIp(ctx));
+
+    return Results.Ok(new { message = "Jury review updated successfully", weightedScore });
+});
+
 // ========== VALIDATOR ==========
 api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContext db) =>
 {
@@ -1405,16 +1504,7 @@ api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, Inno
 
 api.MapPost("/jury/reject/{appId}", async (int appId, RejectionDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
-    var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
-    if (string.IsNullOrWhiteSpace(dto.Remarks))
-    {
-        return Results.BadRequest(new { message = "Remarks are mandatory for rejection." });
-    }
-    a.Status = "JURY_REJECTED"; a.JuryId = GetUid(ctx); a.JuryActionAt = DateTime.UtcNow;
-    a.Remarks = dto.Remarks;
-    await db.SaveChangesAsync();
-    await audit.LogAsync(GetUid(ctx), "JURY_REJECT", "Application", appId, $"Remarks: {dto.Remarks}", GetIp(ctx));
-    return Results.Ok(new { message = "Final Rejected" });
+    return Results.BadRequest(new { message = "Jury members are not allowed to reject applications." });
 });
 
 app.MapGet("/jury-members", async (InnovationDbContext db) =>
