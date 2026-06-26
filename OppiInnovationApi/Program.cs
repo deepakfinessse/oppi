@@ -1405,16 +1405,7 @@ api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, Inno
 
 api.MapPost("/jury/reject/{appId}", async (int appId, RejectionDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
-    var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
-    if (string.IsNullOrWhiteSpace(dto.Remarks))
-    {
-        return Results.BadRequest(new { message = "Remarks are mandatory for rejection." });
-    }
-    a.Status = "JURY_REJECTED"; a.JuryId = GetUid(ctx); a.JuryActionAt = DateTime.UtcNow;
-    a.Remarks = dto.Remarks;
-    await db.SaveChangesAsync();
-    await audit.LogAsync(GetUid(ctx), "JURY_REJECT", "Application", appId, $"Remarks: {dto.Remarks}", GetIp(ctx));
-    return Results.Ok(new { message = "Final Rejected" });
+    return Results.BadRequest(new { message = "Jury members are not allowed to reject applications." });
 });
 
 app.MapGet("/jury-members", async (InnovationDbContext db) =>
