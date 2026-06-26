@@ -227,7 +227,7 @@ const Auth = () => {
                         <input
                           type="text"
                           name="firstName"
-                          placeholder="Name"
+                          placeholder="First Name"
                           value={formData.firstName}
                           onChange={handleChange}
                           required
@@ -239,7 +239,7 @@ const Auth = () => {
                         <input
                           type="text"
                           name="lastName"
-                          placeholder="LastName"
+                          placeholder="Last Name"
                           value={formData.lastName}
                           onChange={handleChange}
                           required
@@ -257,6 +257,7 @@ const Auth = () => {
                           </div>
                           <input
                             type="tel"
+                            style={{"border": "0px"}}
                             name="mobileNumber"
                             placeholder="00000 00000"
                             value={formData.mobileNumber}

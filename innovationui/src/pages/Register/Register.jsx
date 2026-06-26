@@ -152,7 +152,7 @@ const Register = () => {
                     <input
                       type="text"
                       name="firstName"
-                      placeholder="Name"
+                      placeholder="First Name"
                       value={formData.firstName}
                       onChange={handleChange}
                       required
@@ -163,7 +163,7 @@ const Register = () => {
                     <label>Last Name <span className="required">*</span></label>
                     <input
                       type="text"
-                      name="lastName"
+                      name="Last Name"
                       placeholder="LastName"
                       value={formData.lastName}
                       onChange={handleChange}
