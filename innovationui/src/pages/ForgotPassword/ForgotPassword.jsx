@@ -59,7 +59,7 @@ const ForgotPassword = () => {
 
                   <form onSubmit={handleSubmit} className="auth-form">
 
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: '0rem' }}>
                       <label>Email Id <span className="required">*</span></label>
                       <input
                         type="email"
