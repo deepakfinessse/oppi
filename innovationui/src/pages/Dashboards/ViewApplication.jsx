@@ -642,7 +642,7 @@ export default function ViewApplication({ isMine }) {
                     value={reviewForm.innovationIpScore}
                     onChange={(e) => setReviewForm(prev => ({ ...prev, innovationIpScore: Number(e.target.value) }))}
                   >
-                    {[1, 2, 3, 4, 5].map(val => (
+                    {[1, 3, 5].map(val => (
                       <option key={val} value={val}>{val}</option>
                     ))}
                   </select>
@@ -654,7 +654,7 @@ export default function ViewApplication({ isMine }) {
                     value={reviewForm.teamStrengthScore}
                     onChange={(e) => setReviewForm(prev => ({ ...prev, teamStrengthScore: Number(e.target.value) }))}
                   >
-                    {[1, 2, 3, 4, 5].map(val => (
+                    {[1, 3, 5].map(val => (
                       <option key={val} value={val}>{val}</option>
                     ))}
                   </select>
@@ -666,7 +666,7 @@ export default function ViewApplication({ isMine }) {
                     value={reviewForm.businessPlanScore}
                     onChange={(e) => setReviewForm(prev => ({ ...prev, businessPlanScore: Number(e.target.value) }))}
                   >
-                    {[1, 2, 3, 4, 5].map(val => (
+                    {[1, 3, 5].map(val => (
                       <option key={val} value={val}>{val}</option>
                     ))}
                   </select>
