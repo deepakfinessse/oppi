@@ -16,13 +16,10 @@ function PreviewNewFile({ file, onRemove, disabled, formatFileSize }) {
   const [previewUrl, setPreviewUrl] = useState(null);
 
   useEffect(() => {
-    let url = null;
-    if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
-      url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
     return () => {
-      if (url) URL.revokeObjectURL(url);
+      URL.revokeObjectURL(url);
     };
   }, [file]);
 
@@ -40,13 +37,18 @@ function PreviewNewFile({ file, onRemove, disabled, formatFileSize }) {
           <video src={previewUrl} className="preview-thumb-video" muted playsInline />
         )}
         {(!previewUrl || (!isImage && !isVideo)) && (
-          <div className="preview-thumb-icon">PDF</div>
+          <div className="preview-thumb-icon">{isVideo ? 'Video' : 'PDF'}</div>
         )}
       </div>
       <div className="file-list-info">
         <span className="file-name" title={name}>{name}</span>
         <span className="file-meta">{formatFileSize(file.size)} · Ready</span>
       </div>
+      {previewUrl && (
+        <a href={previewUrl} target="_blank" rel="noreferrer" className="file-view-link">
+          View
+        </a>
+      )}
       {!disabled && (
         <button
           type="button"
