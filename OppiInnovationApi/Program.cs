@@ -773,10 +773,13 @@ api.MapPost("/application/upload/{appId}/{section}", async (int appId, string se
         var allowed = new[] { ".jpg", ".jpeg", ".jpe", ".png", ".pdf", ".asf", ".asx", ".wmv", ".wmx", ".wm", ".avi", ".divx", ".flv", ".mov", ".qt", ".mpeg", ".mpg", ".mpe", ".mp4", ".m4v", ".ogv", ".webm", ".mkv", ".3gp", ".3gpp", ".3g2", ".3gp2" };
         if (!allowed.Contains(ext)) return Results.BadRequest(new { message = $"File {file.FileName} type not allowed" });
 
-        var uniqueName = $"{Guid.NewGuid()}{ext}";
+        var rawFileName = Path.GetFileNameWithoutExtension(file.FileName);
+        var cleanFileName = string.Concat(rawFileName.Split(Path.GetInvalidFileNameChars())).Replace(" ", "_");
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+        var uniqueName = $"{cleanFileName}_{timestamp}{ext}";
         var fUrl = await storage.UploadFileAsync(file, appId.ToString(), uniqueName);
 
-        var fDb = new FileUpload { ApplicationId = appId, Section = section, FileName = file.FileName, FilePath = fUrl, FileSize = (int)file.Length, FileType = ext, CreatedAt = DateTime.UtcNow };
+        var fDb = new FileUpload { ApplicationId = appId, Section = section, FileName = uniqueName, FilePath = fUrl, FileSize = (int)file.Length, FileType = ext, CreatedAt = DateTime.UtcNow };
         db.FileUploads.Add(fDb);
         await db.SaveChangesAsync();
         uploadedFiles.Add(new { fDb.Id, fDb.FileName, fDb.FilePath });
@@ -996,7 +999,10 @@ api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStor
         var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
         if (!allowed.Contains(ext)) return Results.BadRequest(new { message = "Image format not allowed" });
         
-        var uniqueName = $"{Guid.NewGuid()}{ext}";
+        var rawFileName = Path.GetFileNameWithoutExtension(file.FileName);
+        var cleanFileName = string.Concat(rawFileName.Split(Path.GetInvalidFileNameChars())).Replace(" ", "_");
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+        var uniqueName = $"{cleanFileName}_{timestamp}{ext}";
         imageUrl = await storage.UploadFileAsync(file, "jury", uniqueName);
     }
 
@@ -1134,7 +1140,10 @@ api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbConte
             await storage.DeleteFileAsync(member.ImageUrl);
         }
 
-        var uniqueName = $"{Guid.NewGuid()}{ext}";
+        var rawFileName = Path.GetFileNameWithoutExtension(file.FileName);
+        var cleanFileName = string.Concat(rawFileName.Split(Path.GetInvalidFileNameChars())).Replace(" ", "_");
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+        var uniqueName = $"{cleanFileName}_{timestamp}{ext}";
         member.ImageUrl = await storage.UploadFileAsync(file, "jury", uniqueName);
     }
 
