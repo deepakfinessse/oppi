@@ -1382,7 +1382,7 @@
   max-width: 520px !important;
   border-radius: 16px !important;
   background: white !important;
-  padding: 2rem !important;
+  padding: 1.5rem !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
   border: 1px solid rgba(226, 232, 240, 0.8) !important;
 }
@@ -1397,8 +1397,8 @@
 .user-edit-form {
   display: flex !important;
   flex-direction: column !important;
-  gap: 1.25rem !important;
-  margin-top: 1.25rem !important;
+  gap: 1rem !important;
+  margin-top: 1rem !important;
 }
 
 .form-row {
@@ -1463,7 +1463,7 @@
   gap: 0.75rem !important;
   /* margin-top: 1rem !important; */
   border-top: 1px solid #f1f5f9 !important;
-  padding-top: 1.25rem !important;
+  padding-top: 1rem !important;
 }
 
 .btn-modal-cancel {
@@ -1673,7 +1673,7 @@
   /* Stack form input rows inside edit modals vertically */
   .user-edit-form .form-row {
     flex-direction: column !important;
-    gap: 1.25rem !important;
+    gap: 0.85rem !important;
   }
 
   .user-edit-form .form-row .form-group {
@@ -1685,6 +1685,8 @@
     padding: 1.25rem !important;
     max-width: calc(100% - 2rem) !important;
     width: 90% !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
   }
 
   /* Review & Applicant dashboard overrides */
@@ -1759,6 +1761,7 @@
 
   .file-dropzone {
     width: 100% !important;
+    padding: 1rem !important;
   }
 
   /* Stack info-cards layout as 1-column on small viewports */
