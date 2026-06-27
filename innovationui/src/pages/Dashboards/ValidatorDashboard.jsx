@@ -16,12 +16,14 @@ export default function ValidatorDashboard() {
   const [selectedAppId, setSelectedAppId] = useState(null);
   const [scores, setScores] = useState({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
   const [remarks, setRemarks] = useState('');
+  const [remarksError, setRemarksError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   
   // Reject Modal State
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectAppId, setRejectAppId] = useState(null);
   const [rejectRemarks, setRejectRemarks] = useState('');
+  const [rejectError, setRejectError] = useState('');
 
   const fetchApps = useCallback(async () => {
     try {
@@ -54,10 +56,12 @@ export default function ValidatorDashboard() {
         setScores({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
         setRemarks('');
       }
+      setRemarksError('');
       setShowModal(true);
     } else {
       setRejectAppId(id);
       setRejectRemarks('');
+      setRejectError('');
       setRejectModalOpen(true);
     }
   };
@@ -66,6 +70,7 @@ export default function ValidatorDashboard() {
     setShowModal(false);
     setSelectedAppId(null);
     setRemarks('');
+    setRemarksError('');
   };
 
   const WEIGHTS = {
@@ -87,13 +92,14 @@ export default function ValidatorDashboard() {
   };
 
   const submitScores = async (isDraft = false) => {
+    setRemarksError('');
     if (!isDraft) {
       if (!scores.innovationIp || !scores.teamStrength || !scores.businessPlan || !scores.impact) {
         alert('Please provide all scores before approving.');
         return;
       }
       if (!remarks.trim()) {
-        alert('Remarks are mandatory for approval. Please provide proper remarks before approving.');
+        setRemarksError('Remarks are mandatory for approval. Please provide proper remarks before approving.');
         return;
       }
     }
@@ -118,8 +124,9 @@ export default function ValidatorDashboard() {
   };
 
   const submitReject = async () => {
+    setRejectError('');
     if (!rejectRemarks.trim()) {
-      alert('Remarks are mandatory for rejection.');
+      setRejectError('Remarks are mandatory for rejection.');
       return;
     }
     try {
@@ -244,7 +251,7 @@ export default function ValidatorDashboard() {
                   width: '100%',
                   minHeight: '60px',
                   borderRadius: '6px',
-                  border: '1px solid #cbd5e1',
+                  border: remarksError ? '1px solid #ef4444' : '1px solid #cbd5e1',
                   padding: '8px 12px',
                   fontSize: '0.9rem',
                   fontFamily: 'inherit',
@@ -252,9 +259,19 @@ export default function ValidatorDashboard() {
                   boxSizing: 'border-box'
                 }}
                 value={remarks}
-                onChange={(e) => setRemarks(e.target.value)}
+                onChange={(e) => {
+                  setRemarks(e.target.value);
+                  if (e.target.value.trim() && remarksError) {
+                    setRemarksError('');
+                  }
+                }}
                 placeholder="Enter validation remarks..."
               />
+              {remarksError && (
+                <div style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '5px', textAlign: 'left', fontWeight: '500' }}>
+                  {remarksError}
+                </div>
+              )}
             </div>
 
             <div className="modal-actions">
@@ -295,7 +312,7 @@ export default function ValidatorDashboard() {
                   width: '100%',
                   minHeight: '80px',
                   borderRadius: '6px',
-                  border: '1px solid #cbd5e1',
+                  border: rejectError ? '1px solid #ef4444' : '1px solid #cbd5e1',
                   padding: '8px 12px',
                   fontSize: '0.9rem',
                   fontFamily: 'inherit',
@@ -303,9 +320,19 @@ export default function ValidatorDashboard() {
                   boxSizing: 'border-box'
                 }}
                 value={rejectRemarks}
-                onChange={(e) => setRejectRemarks(e.target.value)}
+                onChange={(e) => {
+                  setRejectRemarks(e.target.value);
+                  if (e.target.value.trim() && rejectError) {
+                    setRejectError('');
+                  }
+                }}
                 placeholder="Please explain why this application is being rejected..."
               />
+              {rejectError && (
+                <div style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '5px', textAlign: 'left', fontWeight: '500' }}>
+                  {rejectError}
+                </div>
+              )}
             </div>
 
             <div className="modal-actions">

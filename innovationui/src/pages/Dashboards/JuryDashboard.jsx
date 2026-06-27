@@ -16,6 +16,7 @@ export default function JuryDashboard() {
   const [selectedAppId, setSelectedAppId] = useState(null);
   const [scores, setScores] = useState({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
   const [remarks, setRemarks] = useState('');
+  const [remarksError, setRemarksError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
 
@@ -51,6 +52,7 @@ export default function JuryDashboard() {
       setScores({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
       setRemarks('');
     }
+    setRemarksError('');
     setShowModal(true);
   };
 
@@ -58,6 +60,7 @@ export default function JuryDashboard() {
     setShowModal(false);
     setSelectedAppId(null);
     setRemarks('');
+    setRemarksError('');
   };
 
   const WEIGHTS = {
@@ -79,13 +82,14 @@ export default function JuryDashboard() {
   };
 
   const submitScores = async (isDraft = false) => {
+    setRemarksError('');
     if (!isDraft) {
       if (!scores.innovationIp || !scores.teamStrength || !scores.businessPlan || !scores.impact) {
         alert('Please provide all scores before approving.');
         return;
       }
       if (!remarks.trim()) {
-        alert('Remarks are mandatory for approval. Please provide proper remarks before approving.');
+        setRemarksError('Remarks are mandatory for approval. Please provide proper remarks before approving.');
         return;
       }
     }
@@ -217,7 +221,7 @@ export default function JuryDashboard() {
                   width: '100%',
                   minHeight: '60px',
                   borderRadius: '6px',
-                  border: '1px solid #cbd5e1',
+                  border: remarksError ? '1px solid #ef4444' : '1px solid #cbd5e1',
                   padding: '8px 12px',
                   fontSize: '0.9rem',
                   fontFamily: 'inherit',
@@ -225,9 +229,19 @@ export default function JuryDashboard() {
                   boxSizing: 'border-box'
                 }}
                 value={remarks}
-                onChange={(e) => setRemarks(e.target.value)}
+                onChange={(e) => {
+                  setRemarks(e.target.value);
+                  if (e.target.value.trim() && remarksError) {
+                    setRemarksError('');
+                  }
+                }}
                 placeholder="Enter jury remarks..."
               />
+              {remarksError && (
+                <div style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '5px', textAlign: 'left', fontWeight: '500' }}>
+                  {remarksError}
+                </div>
+              )}
             </div>
 
             <div className="modal-actions">
