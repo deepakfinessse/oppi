@@ -254,24 +254,24 @@ export default function ViewApplication({ isMine }) {
         margin: [10, 10, 10, 10], // top, left, bottom, right
         filename: `Application_${app.id}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true, 
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
           width: 794,
           windowWidth: 794,
-          ignoreElements: (el) => el.classList && el.classList.contains('no-print') 
+          ignoreElements: (el) => el.classList && el.classList.contains('no-print')
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       }).outputPdf('blob');
-      
+
       if (element) element.classList.remove('print-pdf-mode');
-      
+
       zip.file(`Application_${app.id}.pdf`, pdfBlob);
 
       // 2. Fetch all attached files and add to zip
       if (app.file_uploads && app.file_uploads.length > 0) {
         const attachmentsFolder = zip.folder('Attachments');
-        
+
         const fetchPromises = app.file_uploads.map(async (file, index) => {
           const url = getFileUrl(file.filePath || file.FilePath);
           try {
@@ -281,18 +281,18 @@ export default function ViewApplication({ isMine }) {
               throw new Error(`HTTP Error: ${response.status}`);
             }
             const blob = await response.blob();
-            
+
             // Extract actual extension from filePath
             let ext = (file.filePath || file.FilePath || '').split('.').pop() || '';
             if (ext.includes('/') || ext.length > 5) ext = ''; // Safety check
-            
+
             let saveName = file.fileName || `attachment_${index}`;
-            
+
             // Add extension if missing
             if (ext && !saveName.toLowerCase().endsWith(`.${ext.toLowerCase()}`)) {
               saveName = `${saveName}.${ext}`;
             }
-            
+
             // Add section prefix to avoid duplicates
             const sectionSafe = (file.section || 'Doc').replace(/[^a-z0-9]/gi, '_');
             saveName = `${sectionSafe}_${saveName}`;
@@ -303,14 +303,14 @@ export default function ViewApplication({ isMine }) {
             attachmentsFolder.file(`${file.fileName}_ERROR.txt`, "Failed to download this attachment. It may no longer exist or is restricted.");
           }
         });
-        
+
         await Promise.all(fetchPromises);
       }
 
       // 3. Generate the ZIP file and trigger download
       const zipContent = await zip.generateAsync({ type: 'blob' });
       saveAs(zipContent, `Application_${app.id}_Full.zip`);
-      
+
     } catch (err) {
       console.error('Error generating zip:', err);
       alert('Failed to generate the ZIP file. Please try again.');
@@ -633,7 +633,7 @@ export default function ViewApplication({ isMine }) {
             </div>
             <form onSubmit={handleReviewSubmit}>
               {reviewModalError && <div className="modal-error" style={{ color: '#ef4444', marginBottom: '10px' }}>{reviewModalError}</div>}
-              
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                 <div>
                   <label className="modal-label">Innovation & IP</label>
@@ -678,7 +678,7 @@ export default function ViewApplication({ isMine }) {
                     value={reviewForm.impactScore}
                     onChange={(e) => setReviewForm(prev => ({ ...prev, impactScore: Number(e.target.value) }))}
                   >
-                    {[1, 2, 3, 4, 5].map(val => (
+                    {[1, 3, 5].map(val => (
                       <option key={val} value={val}>{val}</option>
                     ))}
                   </select>
