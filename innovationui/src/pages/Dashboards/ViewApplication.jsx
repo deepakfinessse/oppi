@@ -480,10 +480,10 @@ export default function ViewApplication({ isMine }) {
                   <thead>
                     <tr>
                       <th>Validator</th>
-                      <th>Innovation & IP (25%)</th>
-                      <th>Team Strength (25%)</th>
-                      <th>Business Plan (25%)</th>
-                      <th>Impact (25%)</th>
+                      <th>Innovation & IP</th>
+                      <th>Team Strength</th>
+                      <th>Business Plan</th>
+                      <th>Impact</th>
                       <th>Weighted Score</th>
                       <th>Remarks</th>
                       <th>Reviewed At</th>
@@ -528,10 +528,10 @@ export default function ViewApplication({ isMine }) {
                   <thead>
                     <tr>
                       <th>Jury Member</th>
-                      <th>Innovation & IP (25%)</th>
-                      <th>Team Strength (25%)</th>
-                      <th>Business Plan (25%)</th>
-                      <th>Impact (25%)</th>
+                      <th>Innovation & IP</th>
+                      <th>Team Strength</th>
+                      <th>Business Plan</th>
+                      <th>Impact</th>
                       <th>Weighted Score</th>
                       <th>Remarks</th>
                       <th>Reviewed At</th>

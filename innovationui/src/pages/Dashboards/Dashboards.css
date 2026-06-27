@@ -1655,3 +1655,115 @@
 .print-pdf-mode .jury-scores-table td:nth-child(8) {
   width: 14% !important;
 }
+
+/* Mobile responsiveness overrides for Admin Dashboard without touching Desktop UI */
+@media (max-width: 768px) {
+  /* Make table responsive container scrollable horizontally instead of overflow-x: visible */
+  .admin-dashboard-page .table-responsive {
+    overflow-x: auto !important;
+  }
+
+  /* Make sure the section container has proper padding for small screens */
+  .admin-dashboard-page .dashboard-section {
+    padding: 1.25rem !important;
+    border-radius: 12px !important;
+  }
+
+  /* Stack form input rows inside edit modals vertically */
+  .user-edit-form .form-row {
+    flex-direction: column !important;
+    gap: 1.25rem !important;
+  }
+
+  .user-edit-form .form-row .form-group {
+    width: 100% !important;
+  }
+
+  /* Compact padding for the edit modals */
+  .user-edit-modal {
+    padding: 1.25rem !important;
+    max-width: calc(100% - 2rem) !important;
+    width: 90% !important;
+  }
+
+  /* Review & Applicant dashboard overrides */
+  .review-dashboard .dashboard-content,
+  .applicant-dashboard .dashboard-content {
+    margin: 1rem auto !important;
+    padding: 0 1rem !important;
+    max-width: 100% !important;
+  }
+
+  /* Stack header elements and buttons vertically */
+  .review-dashboard .view-header,
+  .applicant-dashboard .view-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .review-dashboard .view-header h2,
+  .applicant-dashboard .view-header h2 {
+    text-align: center !important;
+  }
+
+  .review-dashboard .view-header > div,
+  .applicant-dashboard .view-header > div {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .review-dashboard .view-header button,
+  .applicant-dashboard .view-header button {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* Rounded, beautifully padded application content card on mobile */
+  #application-content {
+    padding: 1.25rem !important;
+    border-radius: 16px !important;
+  }
+
+  /* Stack label-value pairs vertically for better legibility on mobile */
+  .review-dashboard .data-row,
+  .applicant-dashboard .data-row {
+    flex-direction: column !important;
+    gap: 0.25rem !important;
+    padding: 0.75rem 0 !important;
+  }
+
+  .review-dashboard .data-label,
+  .applicant-dashboard .data-label {
+    flex: none !important;
+    width: 100% !important;
+  }
+
+  /* Ensure review breakdown tables are scrollable on mobile */
+  .review-dashboard .table-responsive,
+  .applicant-dashboard .table-responsive {
+    overflow-x: auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Stack jury board photo preview container items */
+  .jury-image-preview-container {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+
+  .file-dropzone {
+    width: 100% !important;
+  }
+
+  /* Stack info-cards layout as 1-column on small viewports */
+  .review-dashboard .info-cards,
+  .applicant-dashboard .info-cards {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+}
