@@ -49,6 +49,12 @@ export default function AdminDashboard() {
   const [juryModalSubmitting, setJuryModalSubmitting] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
 
+  // Jury delete confirmation states
+  const [showJuryDeleteConfirm, setShowJuryDeleteConfirm] = useState(false);
+  const [juryToDelete, setJuryToDelete] = useState(null);
+  const [juryDeleteSubmitting, setJuryDeleteSubmitting] = useState(false);
+
+
   // Auto cleanup for preview object URL on unmount/change
   useEffect(() => {
     return () => {
@@ -167,13 +173,23 @@ export default function AdminDashboard() {
     setShowJuryModal(false);
   };
 
-  const handleDeleteJuryMember = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to delete ${name}?`)) return;
+  const handleDeleteJuryMember = (id, name) => {
+    setJuryToDelete({ id, name });
+    setShowJuryDeleteConfirm(true);
+  };
+
+  const confirmDeleteJuryMember = async () => {
+    if (!juryToDelete) return;
+    setJuryDeleteSubmitting(true);
     try {
-      await api.deleteJuryMember(id);
+      await api.deleteJuryMember(juryToDelete.id);
+      setShowJuryDeleteConfirm(false);
+      setJuryToDelete(null);
       fetchAdminData();
     } catch (err) {
       alert(err.message || 'Failed to delete jury member.');
+    } finally {
+      setJuryDeleteSubmitting(false);
     }
   };
 
@@ -837,6 +853,41 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showJuryDeleteConfirm && juryToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-container confirm-modal" style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
+              <h3 style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+                Confirm Deletion
+              </h3>
+              <button className="modal-close-btn" onClick={() => { setShowJuryDeleteConfirm(false); setJuryToDelete(null); }}>&times;</button>
+            </div>
+            <div className="confirm-modal-body" style={{ margin: '15px 0', color: '#475569', fontSize: '0.95rem', lineHeight: '1.5' }}>
+              <p>Are you sure you want to remove <strong>{juryToDelete.name}</strong> from the Jury Board?</p>
+              <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '8px' }}>This action is permanent and cannot be undone.</p>
+            </div>
+            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button 
+                type="button" 
+                className="btn-modal-cancel" 
+                onClick={() => { setShowJuryDeleteConfirm(false); setJuryToDelete(null); }}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="btn-modal-save danger" 
+                onClick={confirmDeleteJuryMember}
+                disabled={juryDeleteSubmitting}
+              >
+                {juryDeleteSubmitting ? 'Deleting...' : 'Delete Member'}
+              </button>
+            </div>
           </div>
         </div>
       )}

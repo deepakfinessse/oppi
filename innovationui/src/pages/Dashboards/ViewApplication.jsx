@@ -354,12 +354,12 @@ export default function ViewApplication({ isMine }) {
   return (
     <DashboardLayout
       title={isMine ? 'Applicant Dashboard' : 'Application Review'}
-      headerActions={isMine ? (
+      headerActions={
         <>
-          <button className="btn-action" onClick={handleChangePassword}>Change Password</button>
+          {isMine && <button className="btn-action" onClick={handleChangePassword}>Change Password</button>}
           <button className="btn-logout" onClick={handleLogout}>Log Out <ArrowRight size={16} /></button>
         </>
-      ) : null}
+      }
       className={isMine ? 'applicant-dashboard' : 'review-dashboard'}
     >
       <div className="dashboard-content" style={{ maxWidth: '900px', margin: '40px auto' }}>

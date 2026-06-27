@@ -861,7 +861,9 @@
 
 .admin-dashboard-page .dashboard-header,
 .jury-dashboard-page .dashboard-header,
-.validator-dashboard-page .dashboard-header {
+.validator-dashboard-page .dashboard-header,
+.review-dashboard .dashboard-header,
+.applicant-dashboard .dashboard-header {
   margin: 1.5rem auto 0 auto;
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.95);
@@ -876,14 +878,18 @@
 
 .admin-dashboard-page .dashboard-logo,
 .jury-dashboard-page .dashboard-logo,
-.validator-dashboard-page .dashboard-logo {
+.validator-dashboard-page .dashboard-logo,
+.review-dashboard .dashboard-logo,
+.applicant-dashboard .dashboard-logo {
   display: flex;
   align-items: center;
 }
 
 .admin-dashboard-page .dashboard-logo img,
 .jury-dashboard-page .dashboard-logo img,
-.validator-dashboard-page .dashboard-logo img {
+.validator-dashboard-page .dashboard-logo img,
+.review-dashboard .dashboard-logo img,
+.applicant-dashboard .dashboard-logo img {
   height: 36px;
   width: auto;
   margin-right: 1rem;
@@ -891,7 +897,9 @@
 
 .admin-dashboard-page .dashboard-logo span,
 .jury-dashboard-page .dashboard-logo span,
-.validator-dashboard-page .dashboard-logo span {
+.validator-dashboard-page .dashboard-logo span,
+.review-dashboard .dashboard-logo span,
+.applicant-dashboard .dashboard-logo span {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
   font-size: 1rem;
@@ -1195,7 +1203,9 @@
 
   .admin-dashboard-page .dashboard-header,
   .jury-dashboard-page .dashboard-header,
-  .validator-dashboard-page .dashboard-header {
+  .validator-dashboard-page .dashboard-header,
+  .review-dashboard .dashboard-header,
+  .applicant-dashboard .dashboard-header {
     margin: 1rem 1rem 0 1rem;
     padding: 0.75rem 1.5rem;
     border-radius: 24px;
@@ -1210,7 +1220,7 @@
   background: #5dc6e1 !important;
   position: relative;
   overflow-x: hidden;
-  padding-bottom: 3rem;
+  /* padding-bottom: 3rem; */
 }
 
 .review-dashboard::before,
@@ -1247,7 +1257,9 @@
 
 /* Custom Log Out Button for Jury and Validator */
 .jury-dashboard-page .btn-logout,
-.validator-dashboard-page .btn-logout {
+.validator-dashboard-page .btn-logout,
+.review-dashboard .btn-logout,
+.applicant-dashboard .btn-logout {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1264,14 +1276,18 @@
 }
 
 .jury-dashboard-page .btn-logout:hover,
-.validator-dashboard-page .btn-logout:hover {
+.validator-dashboard-page .btn-logout:hover,
+.review-dashboard .btn-logout:hover,
+.applicant-dashboard .btn-logout:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
   box-shadow: 0 6px 12px -1px rgba(30, 64, 175, 0.3), 0 4px 6px -1px rgba(30, 64, 175, 0.15);
 }
 
 .jury-dashboard-page .btn-logout:active,
-.validator-dashboard-page .btn-logout:active {
+.validator-dashboard-page .btn-logout:active,
+.review-dashboard .btn-logout:active,
+.applicant-dashboard .btn-logout:active {
   transform: translateY(0);
 }
 
@@ -1634,6 +1650,7 @@
 .print-pdf-mode .jury-scores-table td:nth-child(1) {
   width: 15% !important;
 }
+
 .print-pdf-mode .jury-scores-table th:nth-child(2),
 .print-pdf-mode .jury-scores-table td:nth-child(2),
 .print-pdf-mode .jury-scores-table th:nth-child(3),
@@ -1644,14 +1661,17 @@
 .print-pdf-mode .jury-scores-table td:nth-child(5) {
   width: 9% !important;
 }
+
 .print-pdf-mode .jury-scores-table th:nth-child(6),
 .print-pdf-mode .jury-scores-table td:nth-child(6) {
   width: 10% !important;
 }
+
 .print-pdf-mode .jury-scores-table th:nth-child(7),
 .print-pdf-mode .jury-scores-table td:nth-child(7) {
   width: 25% !important;
 }
+
 .print-pdf-mode .jury-scores-table th:nth-child(8),
 .print-pdf-mode .jury-scores-table td:nth-child(8) {
   width: 14% !important;
@@ -1659,6 +1679,7 @@
 
 /* Mobile responsiveness overrides for Admin Dashboard without touching Desktop UI */
 @media (max-width: 768px) {
+
   /* Make table responsive container scrollable horizontally instead of overflow-x: visible */
   .admin-dashboard-page .table-responsive {
     overflow-x: auto !important;
@@ -1711,8 +1732,8 @@
     text-align: center !important;
   }
 
-  .review-dashboard .view-header > div,
-  .applicant-dashboard .view-header > div {
+  .review-dashboard .view-header>div,
+  .applicant-dashboard .view-header>div {
     flex-direction: column !important;
     width: 100% !important;
     gap: 8px !important;
@@ -1752,6 +1773,7 @@
 }
 
 @media (max-width: 480px) {
+
   /* Stack jury board photo preview container items */
   .jury-image-preview-container {
     flex-direction: column !important;
@@ -1770,4 +1792,263 @@
     grid-template-columns: 1fr !important;
     gap: 1rem !important;
   }
+}
+
+/* Additional Mobile Responsiveness Overrides for Admin Lists without touching Desktop UI */
+@media (max-width: 768px) {
+
+  /* Prevent horizontal table scroll container by letting contents flow naturally */
+  .admin-dashboard-page .table-responsive {
+    overflow-x: visible !important;
+  }
+
+  /* Compact section header container on mobile */
+  .admin-dashboard-page .dashboard-section-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .admin-dashboard-page .dashboard-section-header h3 {
+    text-align: left !important;
+    font-size: 1.25rem !important;
+  }
+
+  /* Full-width header actions buttons */
+  .admin-dashboard-page .admin-header-actions {
+    width: 100% !important;
+    display: flex !important;
+    gap: 0.5rem !important;
+  }
+
+  .admin-dashboard-page .admin-header-actions .filter-dropdown-container {
+    flex: 1 !important;
+  }
+
+  .admin-dashboard-page .admin-header-actions .btn-filter {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0.5rem 0.75rem !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-dashboard-page .admin-header-actions .btn-download {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 0.5rem 0.75rem !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-dashboard-page .dropdown-menu {
+    right: 0 !important;
+    left: auto !important;
+    width: 200px !important;
+  }
+
+  /* Card Layout for Tables */
+  .admin-dashboard-page .dashboard-table {
+    display: block !important;
+    width: 100% !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  .admin-dashboard-page .dashboard-table thead {
+    display: none !important;
+  }
+
+  .admin-dashboard-page .dashboard-table tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.25rem !important;
+    width: 100% !important;
+  }
+
+  .admin-dashboard-page .dashboard-table tr {
+    display: flex !important;
+    flex-direction: column !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 1rem !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+    margin-bottom: 0 !important;
+    position: relative !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .admin-dashboard-page .dashboard-table td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.75rem 0.25rem !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    text-align: right !important;
+    font-size: 0.9rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    color: #0f172a !important;
+    font-weight: 500 !important;
+  }
+
+  /* Card Header: First TD */
+  .admin-dashboard-page .dashboard-table td:nth-child(1) {
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    margin: -1rem -1rem 0.5rem -1rem !important;
+    padding: 0.75rem 1.25rem !important;
+    border-top-left-radius: 14px !important;
+    border-top-right-radius: 14px !important;
+    font-weight: 700 !important;
+    color: #1e3a8a !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  /* Card Footer: Last TD */
+  .admin-dashboard-page .dashboard-table td:last-child {
+    border-bottom: none !important;
+    background: #f8fafc !important;
+    margin: 0.5rem -1rem -1rem -1rem !important;
+    padding: 0.75rem 1.25rem !important;
+    border-top: 1px solid #e2e8f0 !important;
+    border-bottom-left-radius: 14px !important;
+    border-bottom-right-radius: 14px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+  }
+
+  /* Hide Actions label in card footer */
+  .admin-dashboard-page .dashboard-table td:last-child::before {
+    display: none !important;
+  }
+
+  /* Long value handling: Email Column (3rd TD) - Inline, override desktop width limit */
+  .admin-dashboard-page .dashboard-table td:nth-child(3) {
+    max-width: none !important;
+    word-break: break-all !important;
+  }
+
+  /* Hide horizontal line on last card body element before footer */
+  .admin-dashboard-page .dashboard-table td:nth-last-child(2) {
+    border-bottom: none !important;
+  }
+
+  /* Row Actions Alignment */
+  .admin-dashboard-page .action-buttons {
+    justify-content: flex-end !important;
+  }
+
+  /* Style column headers as labels on the left */
+  .admin-dashboard-page .dashboard-table td::before {
+    font-weight: 700 !important;
+    color: #64748b !important;
+    text-transform: uppercase !important;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.05em !important;
+    margin-right: 1.5rem !important;
+    text-align: left !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Table 1: Applications */
+  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(1)::before {
+    content: "App ID" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(2)::before {
+    content: "Name" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(3)::before {
+    content: "Email" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(4)::before {
+    content: "Company" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(5)::before {
+    content: "Status" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(6)::before {
+    content: "Validator Score" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(7)::before {
+    content: "Jury Score" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(8)::before {
+    content: "Actions" !important;
+  }
+
+  /* Table 2: Jury Board */
+  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(1)::before {
+    content: "Image" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(2)::before {
+    content: "Name" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(3)::before {
+    content: "Email" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(4)::before {
+    content: "Role" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(5)::before {
+    content: "Type" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(6)::before {
+    content: "Sort Order" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(7)::before {
+    content: "Actions" !important;
+  }
+
+  /* Table 3: Registered Users */
+  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(1)::before {
+    content: "ID" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(2)::before {
+    content: "Name" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(3)::before {
+    content: "Email" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(4)::before {
+    content: "Mobile" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(5)::before {
+    content: "App Status" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(6)::before {
+    content: "Actions" !important;
+  }
+}
+
+/* Danger Modal Actions & Buttons */
+.btn-modal-save.danger {
+  background: #dc2626 !important;
+  box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2) !important;
+}
+
+.btn-modal-save.danger:hover {
+  background: #b91c1c !important;
+  box-shadow: 0 6px 12px -1px rgba(220, 38, 38, 0.3) !important;
 }
