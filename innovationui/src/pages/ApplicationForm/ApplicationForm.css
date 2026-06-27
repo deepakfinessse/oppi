@@ -182,9 +182,9 @@
   content: '';
   position: absolute;
   top: 15px;
-  left: 10%;
-  right: 10%;
-  height: 1px;
+  left: 1%;
+  right: 1%;
+  height: 3px;
   background: rgba(255, 255, 255, 0.6);
   z-index: 1;
 }
@@ -905,4 +905,3 @@
     transform: scale(1);
   }
 }
-
