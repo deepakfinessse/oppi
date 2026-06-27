@@ -1989,30 +1989,34 @@
 
   /* Table 2: Jury Board */
   .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(1)::before {
-    content: "Image" !important;
+    content: "Reorder" !important;
   }
 
   .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(2)::before {
-    content: "Name" !important;
+    content: "Image" !important;
   }
 
   .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(3)::before {
-    content: "Email" !important;
+    content: "Name" !important;
   }
 
   .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(4)::before {
-    content: "Role" !important;
+    content: "Email" !important;
   }
 
   .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(5)::before {
-    content: "Type" !important;
+    content: "Role" !important;
   }
 
   .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(6)::before {
-    content: "Sort Order" !important;
+    content: "Type" !important;
   }
 
   .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(7)::before {
+    content: "Sort Order" !important;
+  }
+
+  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(8)::before {
     content: "Actions" !important;
   }
 
@@ -2051,4 +2055,61 @@
 .btn-modal-save.danger:hover {
   background: #b91c1c !important;
   box-shadow: 0 6px 12px -1px rgba(220, 38, 38, 0.3) !important;
+}
+
+/* Jury Table Reordering Controls */
+.reorder-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drag-handle {
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.drag-handle:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.btn-reorder-arrow {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-reorder-arrow:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.btn-reorder-arrow:disabled {
+  color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* Dragging state styling */
+.dashboard-table tr.dragging {
+  opacity: 0.5;
+  background-color: #f8fafc !important;
+  border: 2px dashed #3b82f6;
 }

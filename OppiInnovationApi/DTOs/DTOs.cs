@@ -117,3 +117,10 @@ public class AdminRemarksUpdateDto
     public string? Remarks { get; set; }
 }
 
+public class JuryReorderDto
+{
+    public int Id { get; set; }
+    public int SortOrder { get; set; }
+}
+
+
