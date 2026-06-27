@@ -6,6 +6,7 @@
 }
 
 .dashboard-header {
+  max-width: 1200px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -861,7 +862,7 @@
 .admin-dashboard-page .dashboard-header,
 .jury-dashboard-page .dashboard-header,
 .validator-dashboard-page .dashboard-header {
-  margin: 1.5rem 2rem 0 2rem;
+  margin: 1.5rem auto 0 auto;
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
