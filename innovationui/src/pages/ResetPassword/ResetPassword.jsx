@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Info } from 'lucide-react';
 import { api } from '../../services/api';
 import '../Auth/Auth.css'; // Reuse Auth CSS
-import trophyImg from '../../assets/Trophy1.png';
+import trophyImg from '../../assets/Trophy4.webp';
 import oppiLogo from '../../assets/Oppi-logo.png';
 import arrowIcon from '../../assets/Vector.png';
 

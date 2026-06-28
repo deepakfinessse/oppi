@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Info } from 'lucide-react';
 import { api, saveSession } from '../../services/api';
 import './Auth.css';
-import trophyImg from '../../assets/trophy-bg.webp';
+import trophyImg from '../../assets/Trophy4.webp';
 import oppiLogo from '../../assets/Oppi-logo.png';
 import arrowIcon from '../../assets/Vector.png';
 
