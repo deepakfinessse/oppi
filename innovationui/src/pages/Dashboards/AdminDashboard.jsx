@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronDown, Download, Eye, Edit } from 'lucide-react';
+import { ArrowRight, ChevronDown, Download, Eye, Edit, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { api, clearSession, getFileUrl, formatIST } from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
@@ -48,6 +48,14 @@ export default function AdminDashboard() {
   const [juryModalError, setJuryModalError] = useState('');
   const [juryModalSubmitting, setJuryModalSubmitting] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+
+  // Jury delete confirmation states
+  const [showJuryDeleteConfirm, setShowJuryDeleteConfirm] = useState(false);
+  const [juryToDelete, setJuryToDelete] = useState(null);
+  const [juryDeleteSubmitting, setJuryDeleteSubmitting] = useState(false);
+
+  const [draggedIndex, setDraggedIndex] = useState(null);
+
 
   // Auto cleanup for preview object URL on unmount/change
   useEffect(() => {
@@ -147,7 +155,7 @@ export default function AdminDashboard() {
       email: '',
       role: '',
       type: 'JURY',
-      sortOrder: 0,
+      sortOrder: juryMembers.length + 1,
       password: '',
       imageFile: null
     });
@@ -167,13 +175,105 @@ export default function AdminDashboard() {
     setShowJuryModal(false);
   };
 
-  const handleDeleteJuryMember = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to delete ${name}?`)) return;
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e, targetIndex) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const reorderedList = [...juryMembers];
+    const draggedItem = reorderedList[draggedIndex];
+    reorderedList.splice(draggedIndex, 1);
+    reorderedList.splice(targetIndex, 0, draggedItem);
+
+    const updatedList = reorderedList.map((item, idx) => ({
+      ...item,
+      sortOrder: idx + 1,
+    }));
+
+    setJuryMembers(updatedList);
+    setDraggedIndex(null);
+
     try {
-      await api.deleteJuryMember(id);
+      await api.reorderJuryMembers(updatedList.map(item => ({ id: item.id, sortOrder: item.sortOrder })));
+    } catch (err) {
+      alert(err.message || 'Failed to update order.');
+      fetchAdminData();
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
+  const handleMoveUp = async (index) => {
+    if (index === 0) return;
+    const reorderedList = [...juryMembers];
+    const item = reorderedList[index];
+    reorderedList.splice(index, 1);
+    reorderedList.splice(index - 1, 0, item);
+
+    const updatedList = reorderedList.map((item, idx) => ({
+      ...item,
+      sortOrder: idx + 1,
+    }));
+
+    setJuryMembers(updatedList);
+
+    try {
+      await api.reorderJuryMembers(updatedList.map(item => ({ id: item.id, sortOrder: item.sortOrder })));
+    } catch (err) {
+      alert(err.message || 'Failed to update order.');
+      fetchAdminData();
+    }
+  };
+
+  const handleMoveDown = async (index) => {
+    if (index === juryMembers.length - 1) return;
+    const reorderedList = [...juryMembers];
+    const item = reorderedList[index];
+    reorderedList.splice(index, 1);
+    reorderedList.splice(index + 1, 0, item);
+
+    const updatedList = reorderedList.map((item, idx) => ({
+      ...item,
+      sortOrder: idx + 1,
+    }));
+
+    setJuryMembers(updatedList);
+
+    try {
+      await api.reorderJuryMembers(updatedList.map(item => ({ id: item.id, sortOrder: item.sortOrder })));
+    } catch (err) {
+      alert(err.message || 'Failed to update order.');
+      fetchAdminData();
+    }
+  };
+
+  const handleDeleteJuryMember = (id, name) => {
+    setJuryToDelete({ id, name });
+    setShowJuryDeleteConfirm(true);
+  };
+
+  const confirmDeleteJuryMember = async () => {
+    if (!juryToDelete) return;
+    setJuryDeleteSubmitting(true);
+    try {
+      await api.deleteJuryMember(juryToDelete.id);
+      setShowJuryDeleteConfirm(false);
+      setJuryToDelete(null);
       fetchAdminData();
     } catch (err) {
       alert(err.message || 'Failed to delete jury member.');
+    } finally {
+      setJuryDeleteSubmitting(false);
     }
   };
 
@@ -209,7 +309,7 @@ export default function AdminDashboard() {
       } else {
         await api.createJuryMember(formData);
       }
-      
+
       // Cleanup preview URL
       if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
         URL.revokeObjectURL(imagePreviewUrl);
@@ -262,12 +362,12 @@ export default function AdminDashboard() {
   const filteredUsers = users.filter(u => {
     if (u.role?.toUpperCase() !== 'USER') return false;
     if (userFilter === 'ALL') return true;
-    
+
     const appStatus = u.applicationStatus ? u.applicationStatus.toUpperCase() : null;
     if (userFilter === 'NEW') return !appStatus;
     if (userFilter === 'DRAFT') return appStatus === 'DRAFT';
     if (userFilter === 'SUBMITTED') return appStatus && appStatus !== 'DRAFT';
-    
+
     return true;
   });
 
@@ -480,6 +580,7 @@ export default function AdminDashboard() {
             <table className="dashboard-table">
               <thead>
                 <tr>
+                  <th>Reorder</th>
                   <th>Image</th>
                   <th>Name</th>
                   <th>Email</th>
@@ -490,8 +591,44 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {juryMembers.map(m => (
-                  <tr key={m.id}>
+                {juryMembers.map((m, index) => (
+                  <tr 
+                    key={m.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={draggedIndex === index ? 'dragging' : ''}
+                  >
+                    <td>
+                      <div className="reorder-controls">
+                        <div 
+                          className="drag-handle" 
+                          title="Drag to reorder"
+                        >
+                          <GripVertical size={16} />
+                        </div>
+                        <button 
+                          className="btn-reorder-arrow" 
+                          onClick={() => handleMoveUp(index)} 
+                          disabled={index === 0}
+                          title="Move Up"
+                          type="button"
+                        >
+                          <ArrowUp size={14} />
+                        </button>
+                        <button 
+                          className="btn-reorder-arrow" 
+                          onClick={() => handleMoveDown(index)} 
+                          disabled={index === juryMembers.length - 1}
+                          title="Move Down"
+                          type="button"
+                        >
+                          <ArrowDown size={14} />
+                        </button>
+                      </div>
+                    </td>
                     <td>
                       {m.imageUrl ? (
                         <img
@@ -533,7 +670,7 @@ export default function AdminDashboard() {
                 ))}
                 {juryMembers.length === 0 && (
                   <tr>
-                    <td colSpan="7" className="text-center">No jury members found.</td>
+                    <td colSpan="8" className="text-center">No jury members found.</td>
                   </tr>
                 )}
               </tbody>
@@ -747,7 +884,7 @@ export default function AdminDashboard() {
                     value={juryForm.password}
                     onChange={(e) => setJuryForm(prev => ({ ...prev, password: e.target.value }))}
                     className="modal-input"
-                    placeholder={selectedJuryMember ? "Leave blank to keep current" : "Enter login password"}
+                    placeholder={selectedJuryMember ? "Leave blank for current Password" : "Enter login password"}
                   />
                 </div>
               </div>
@@ -837,6 +974,41 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showJuryDeleteConfirm && juryToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-container confirm-modal" style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
+              <h3 style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" /></svg>
+                Confirm Deletion
+              </h3>
+              <button className="modal-close-btn" onClick={() => { setShowJuryDeleteConfirm(false); setJuryToDelete(null); }}>&times;</button>
+            </div>
+            <div className="confirm-modal-body" style={{ margin: '15px 0', color: '#475569', fontSize: '0.95rem', lineHeight: '1.5' }}>
+              <p>Are you sure you want to remove <strong>{juryToDelete.name}</strong> from the Jury Board?</p>
+              <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '8px' }}>This action is permanent and cannot be undone.</p>
+            </div>
+            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="btn-modal-cancel"
+                onClick={() => { setShowJuryDeleteConfirm(false); setJuryToDelete(null); }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-modal-save danger"
+                onClick={confirmDeleteJuryMember}
+                disabled={juryDeleteSubmitting}
+              >
+                {juryDeleteSubmitting ? 'Deleting...' : 'Delete Member'}
+              </button>
+            </div>
           </div>
         </div>
       )}

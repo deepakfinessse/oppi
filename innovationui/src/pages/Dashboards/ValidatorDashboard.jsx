@@ -18,7 +18,7 @@ export default function ValidatorDashboard() {
   const [remarks, setRemarks] = useState('');
   const [remarksError, setRemarksError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  
+
   // Reject Modal State
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectAppId, setRejectAppId] = useState(null);
@@ -302,7 +302,7 @@ export default function ValidatorDashboard() {
               <h3>Reject Application #{rejectAppId}</h3>
               <button className="modal-close-btn" onClick={() => setRejectModalOpen(false)}>&times;</button>
             </div>
-            
+
             <div className="jury-remarks-section" style={{ marginTop: '10px', marginBottom: '10px' }}>
               <label style={{ display: 'block', fontWeight: '500', marginBottom: '5px', fontSize: '0.9rem', color: '#1e293b', textAlign: 'left' }}>
                 Reason for Rejection (Mandatory) *

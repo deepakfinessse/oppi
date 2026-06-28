@@ -210,6 +210,7 @@ export const api = {
   getJuryMembers: () => request('/jury-members'),
   createJuryMember: (formData) => request('/admin/jury', { method: 'POST', body: formData }),
   updateJuryMember: (id, formData) => request(`/admin/jury/${id}`, { method: 'PUT', body: formData }),
+  reorderJuryMembers: (items) => request('/admin/jury/reorder', { method: 'PUT', body: items }),
   deleteJuryMember: (id) => request(`/admin/jury/${id}`, { method: 'DELETE' }),
   updateAdminApplicationRemarks: (id, remarks) => request(`/admin/application/${id}/remarks`, { method: 'PUT', body: { Remarks: remarks } }),
   updateAdminValidatorReview: (id, payload) => request(`/admin/validator-review/${id}`, { method: 'PUT', body: payload }),

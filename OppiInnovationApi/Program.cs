@@ -1171,6 +1171,29 @@ api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbConte
     return Results.Ok(member);
 });
 
+api.MapPut("/admin/jury/reorder", async (List<JuryReorderDto> items, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
+{
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "ADMIN") return Results.Forbid();
+
+    if (items == null || !items.Any()) return Results.BadRequest(new { message = "No items provided." });
+
+    foreach (var item in items)
+    {
+        var member = await db.JuryMembers.FindAsync(item.Id);
+        if (member != null)
+        {
+            member.SortOrder = item.SortOrder;
+        }
+    }
+
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "ADMIN_REORDER_JURY", "JuryMember", null, "Reordered jury board members", GetIp(ctx));
+
+    return Results.Ok(new { message = "Jury order updated successfully" });
+});
+
 api.MapDelete("/admin/jury/{id}", async (int id, InnovationDbContext db, IStorageService storage, HttpContext ctx, AuditService audit) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
