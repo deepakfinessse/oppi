@@ -765,6 +765,13 @@ api.MapPost("/application/upload/{appId}/{section}", async (int appId, string se
 
     var uploadedFiles = new List<object>();
 
+    var existingNames = await db.FileUploads
+        .Where(f => f.ApplicationId == appId && f.Section == section)
+        .Select(f => f.FileName)
+        .ToListAsync();
+
+    var processedNames = new List<string>();
+
     foreach (var file in files)
     {
         if (file.Length > 8 * 1024 * 1024) return Results.BadRequest(new { message = $"File {file.FileName} exceeds 8MB limit" });
@@ -775,11 +782,29 @@ api.MapPost("/application/upload/{appId}/{section}", async (int appId, string se
 
         var rawFileName = Path.GetFileNameWithoutExtension(file.FileName);
         var cleanFileName = string.Concat(rawFileName.Split(Path.GetInvalidFileNameChars())).Replace(" ", "_");
-        var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
-        var uniqueName = $"{cleanFileName}_{timestamp}{ext}";
+        if (string.IsNullOrWhiteSpace(cleanFileName))
+        {
+            cleanFileName = "file";
+        }
+
+        var baseDisplayName = $"{cleanFileName}{ext}";
+        var displayName = baseDisplayName;
+        int counter = 1;
+        while (existingNames.Contains(displayName) || processedNames.Contains(displayName))
+        {
+            displayName = $"{cleanFileName} {counter}{ext}";
+            counter++;
+        }
+        processedNames.Add(displayName);
+
+        // Generate a completely unique filename for the physical storage path
+        var storageCleanName = string.Concat(Path.GetFileNameWithoutExtension(displayName).Split(Path.GetInvalidFileNameChars())).Replace(" ", "_");
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmssfff");
+        var uniqueName = $"{storageCleanName}_{timestamp}_{Guid.NewGuid().ToString("N")[..6]}{ext}";
+        
         var fUrl = await storage.UploadFileAsync(file, appId.ToString(), uniqueName);
 
-        var fDb = new FileUpload { ApplicationId = appId, Section = section, FileName = uniqueName, FilePath = fUrl, FileSize = (int)file.Length, FileType = ext, CreatedAt = DateTime.UtcNow };
+        var fDb = new FileUpload { ApplicationId = appId, Section = section, FileName = displayName, FilePath = fUrl, FileSize = (int)file.Length, FileType = ext, CreatedAt = DateTime.UtcNow };
         db.FileUploads.Add(fDb);
         await db.SaveChangesAsync();
         uploadedFiles.Add(new { fDb.Id, fDb.FileName, fDb.FilePath });
