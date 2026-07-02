@@ -216,7 +216,21 @@ export default function ViewApplication({ isMine }) {
 
   const calculateModalWeightedScore = () => {
     const { innovationIpScore, teamStrengthScore, businessPlanScore, impactScore } = reviewForm;
-    return ((Number(innovationIpScore) + Number(teamStrengthScore) + Number(businessPlanScore) + Number(impactScore)) / 4.0).toFixed(2);
+    if (editReviewType === 'validator') {
+      return (
+        Number(innovationIpScore) * 0.25 +
+        Number(teamStrengthScore) * 0.25 +
+        Number(businessPlanScore) * 0.25 +
+        Number(impactScore) * 0.25
+      ).toFixed(2);
+    } else {
+      return (
+        Number(innovationIpScore) * 0.3 +
+        Number(teamStrengthScore) * 0.2 +
+        Number(businessPlanScore) * 0.2 +
+        Number(impactScore) * 0.3
+      ).toFixed(2);
+    }
   };
 
   const handleRemoveExistingFile = async (fileId) => {
@@ -626,7 +640,7 @@ export default function ViewApplication({ isMine }) {
 
       {showEditReviewModal && (
         <div className="modal-overlay">
-          <div className="modal-container user-edit-modal">
+          <div className="modal-container jury-modal-compact">
             <div className="modal-header">
               <h3>Edit {editReviewType === 'validator' ? 'Validator' : 'Jury'} Review</h3>
               <button className="modal-close-btn" onClick={() => setShowEditReviewModal(false)}>&times;</button>
@@ -634,64 +648,47 @@ export default function ViewApplication({ isMine }) {
             <form onSubmit={handleReviewSubmit}>
               {reviewModalError && <div className="modal-error" style={{ color: '#ef4444', marginBottom: '10px' }}>{reviewModalError}</div>}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-                <div>
-                  <label className="modal-label">Innovation & IP</label>
-                  <select
-                    className="modal-select"
-                    value={reviewForm.innovationIpScore}
-                    onChange={(e) => setReviewForm(prev => ({ ...prev, innovationIpScore: Number(e.target.value) }))}
-                  >
-                    {[1, 3, 5].map(val => (
-                      <option key={val} value={val}>{val}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="modal-label">Founding Team</label>
-                  <select
-                    className="modal-select"
-                    value={reviewForm.teamStrengthScore}
-                    onChange={(e) => setReviewForm(prev => ({ ...prev, teamStrengthScore: Number(e.target.value) }))}
-                  >
-                    {[1, 3, 5].map(val => (
-                      <option key={val} value={val}>{val}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="modal-label">Business Plan</label>
-                  <select
-                    className="modal-select"
-                    value={reviewForm.businessPlanScore}
-                    onChange={(e) => setReviewForm(prev => ({ ...prev, businessPlanScore: Number(e.target.value) }))}
-                  >
-                    {[1, 3, 5].map(val => (
-                      <option key={val} value={val}>{val}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="modal-label">Impact</label>
-                  <select
-                    className="modal-select"
-                    value={reviewForm.impactScore}
-                    onChange={(e) => setReviewForm(prev => ({ ...prev, impactScore: Number(e.target.value) }))}
-                  >
-                    {[1, 3, 5].map(val => (
-                      <option key={val} value={val}>{val}</option>
-                    ))}
-                  </select>
-                </div>
+              <div className="jury-criteria-list">
+                {[
+                  { key: 'innovationIpScore', label: 'Innovation & IP', desc: 'Quality and novelty of the innovation and associated IP', weight: editReviewType === 'validator' ? 0.25 : 0.3 },
+                  { key: 'teamStrengthScore', label: 'Founding Team', desc: 'Strength of the founding team', weight: editReviewType === 'validator' ? 0.25 : 0.2 },
+                  { key: 'businessPlanScore', label: 'Business Plan', desc: 'The Business Plan (market potential)', weight: editReviewType === 'validator' ? 0.25 : 0.2 },
+                  { key: 'impactScore', label: 'Impact', desc: 'Impact (short term & long term)', weight: editReviewType === 'validator' ? 0.25 : 0.3 },
+                ].map(c => (
+                  <div className="jury-criterion" key={c.key}>
+                    <div className="jury-criterion-top">
+                      <span className="jury-criterion-label">{c.label}</span>
+                    </div>
+                    <div className="jury-criterion-bottom">
+                      <div className="jury-score-btns">
+                        {[1, 3, 5].map(val => (
+                          <button
+                            key={val}
+                            type="button"
+                            className={`jury-score-btn ${reviewForm[c.key] === val ? 'active' : ''}`}
+                            onClick={() => setReviewForm(prev => ({ ...prev, [c.key]: val }))}
+                          >
+                            {val}
+                          </button>
+                        ))}
+                      </div>
+                      <span className="jury-criterion-result">
+                        {reviewForm[c.key] ? (reviewForm[c.key] * c.weight).toFixed(2) : '—'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              <div style={{ marginBottom: '15px', padding: '10px', background: '#f8fafc', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: '500', color: '#475569' }}>Weighted Total Score</span>
-                <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a' }}>{calculateModalWeightedScore()}</span>
+              <div className="jury-total-row">
+                <span>Weighted Total</span>
+                <span className="jury-total-val">{calculateModalWeightedScore()}</span>
               </div>
 
-              <div style={{ marginBottom: '15px' }}>
-                <label className="modal-label">Remarks *</label>
+              <div className="jury-remarks-section" style={{ marginTop: '10px', marginBottom: '10px' }}>
+                <label style={{ display: 'block', fontWeight: '500', marginBottom: '5px', fontSize: '0.9rem', color: '#1e293b', textAlign: 'left' }}>
+                  Remarks *
+                </label>
                 <textarea
                   className="modal-input"
                   style={{ minHeight: '80px', fontFamily: 'inherit', width: '100%', boxSizing: 'border-box' }}

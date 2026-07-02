@@ -1335,7 +1335,7 @@ api.MapPut("/admin/jury-review/{id}", async (int id, AdminReviewUpdateDto dto, I
         return Results.BadRequest(new { message = "Remarks are mandatory." });
     }
 
-    double weightedScore = (dto.InnovationIpScore + dto.TeamStrengthScore + dto.BusinessPlanScore + dto.ImpactScore) / 4.0;
+    double weightedScore = dto.InnovationIpScore * 0.3 + dto.TeamStrengthScore * 0.2 + dto.BusinessPlanScore * 0.2 + dto.ImpactScore * 0.3;
 
     review.InnovationIpScore = dto.InnovationIpScore;
     review.TeamStrengthScore = dto.TeamStrengthScore;
@@ -1537,7 +1537,7 @@ api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, Inno
         }
     }
  
-    double weightedScore = (dto.InnovationIpScore + dto.TeamStrengthScore + dto.BusinessPlanScore + dto.ImpactScore) / 4.0;
+    double weightedScore = dto.InnovationIpScore * 0.3 + dto.TeamStrengthScore * 0.2 + dto.BusinessPlanScore * 0.2 + dto.ImpactScore * 0.3;
  
     var review = existingReview;
     if (review == null)
