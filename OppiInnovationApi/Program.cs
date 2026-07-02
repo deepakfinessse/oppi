@@ -1344,9 +1344,12 @@ api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContex
     var user = await db.Users.FindAsync(uid.Value);
     if (user?.Role != "VALIDATOR" && user?.Role != "ADMIN") return Results.Forbid();
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
-        .Where(a => a.Status == "SUBMITTED" || (a.Status == "UNDER_VALIDATOR_REVIEW" && a.ValidatorId == uid.Value))
+        .Where(a => a.Status == "SUBMITTED" || 
+                    (a.Status == "UNDER_VALIDATOR_REVIEW" && a.ValidatorId == uid.Value) ||
+                    db.ValidatorReviews.Any(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && !vr.IsDraft))
         .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
+            is_approved = db.ValidatorReviews.Any(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && !vr.IsDraft),
             draft_scores = db.ValidatorReviews
                 .Where(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && vr.IsDraft)
                 .Select(vr => new { vr.InnovationIpScore, vr.TeamStrengthScore, vr.BusinessPlanScore, vr.ImpactScore, vr.Remarks })
@@ -1461,9 +1464,13 @@ api.MapGet("/jury/applications", async (HttpContext ctx, InnovationDbContext db)
         .ToListAsync();
  
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
-        .Where(a => (a.Status == "VALIDATOR_APPROVED" || a.Status == "UNDER_JURY_REVIEW") && !reviewedAppIds.Contains(a.Id))
+        .Where(a => 
+            ((a.Status == "VALIDATOR_APPROVED" || a.Status == "UNDER_JURY_REVIEW") && !reviewedAppIds.Contains(a.Id))
+            || reviewedAppIds.Contains(a.Id)
+        )
         .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
+            is_approved = reviewedAppIds.Contains(a.Id),
             draft_scores = db.JuryReviews
                 .Where(jr => jr.ApplicationId == a.Id && jr.JuryId == uid.Value && jr.IsDraft)
                 .Select(jr => new { jr.InnovationIpScore, jr.TeamStrengthScore, jr.BusinessPlanScore, jr.ImpactScore, jr.Remarks })

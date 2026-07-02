@@ -119,6 +119,9 @@ export default function JuryDashboard() {
     navigate('/auth');
   };
 
+  const pendingApps = apps.filter(a => !a.is_approved);
+  const approvedApps = apps.filter(a => a.is_approved);
+
   if (loading) return <div className="dashboard-loading">Loading Jury Dashboard...</div>;
 
   return (
@@ -132,7 +135,7 @@ export default function JuryDashboard() {
           {error && <div className="dashboard-error">{error}</div>}
           <br />
           <div className="dashboard-section">
-            <h3>Applications Pending Final Approval ({apps.length})</h3>
+            <h3>Applications Pending Final Approval ({pendingApps.length})</h3>
             <div className="table-responsive">
               <table className="dashboard-table">
                 <thead>
@@ -144,7 +147,7 @@ export default function JuryDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {apps.map(a => (
+                  {pendingApps.map(a => (
                     <tr key={a.id}>
                       <td>{a.id}</td>
                       <td>{a.user_name}</td>
@@ -159,7 +162,40 @@ export default function JuryDashboard() {
                       </td>
                     </tr>
                   ))}
-                  {apps.length === 0 && <tr><td colSpan="4" className="text-center">No pending applications.</td></tr>}
+                  {pendingApps.length === 0 && <tr><td colSpan="4" className="text-center">No pending applications.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="dashboard-section" style={{ marginTop: '30px' }}>
+            <h3>Approved Applications ({approvedApps.length})</h3>
+            <div className="table-responsive">
+              <table className="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>App ID</th>
+                    <th>Applicant</th>
+                    <th>Company</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {approvedApps.map(a => (
+                    <tr key={a.id}>
+                      <td>{a.id}</td>
+                      <td>{a.user_name}</td>
+                      <td>{a.company || '—'}</td>
+                      <td>
+                        <div className="action-buttons">
+                          <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
+                            <Eye size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {approvedApps.length === 0 && <tr><td colSpan="4" className="text-center">No approved applications.</td></tr>}
                 </tbody>
               </table>
             </div>
