@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { api, getApplicationStorageKey, getSession, clearSession, getFileUrl } from '../../services/api';
 import oppiLogo from '../../assets/OPPI-logo-black.png';
 import FileUploadField from '../../components/FileUploadField/FileUploadField';
+import { AlertTriangle } from 'lucide-react';
 import './ApplicationForm.css';
 import arrowIcon from '../../assets/Vector.png';
 
@@ -92,7 +93,7 @@ function getFieldError(field, value, allData = {}) {
 
   if (field.required) {
     const isEmpty = trimmedValue == null || trimmedValue === '';
-    if (isEmpty) return 'Required';
+    if (isEmpty) return 'Required field';
   }
 
   if (!trimmedValue) return '';
@@ -206,6 +207,8 @@ function ApplicationForm() {
   const [serverError, setServerError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showSaveExitModal, setShowSaveExitModal] = useState(false);
+  const [showSubmitConfirmModal, setShowSubmitConfirmModal] = useState(false);
+  const [appStatus, setAppStatus] = useState('DRAFT');
   const [applicationId, setApplicationId] = useState(() => {
     if (routeId) return routeId;
     if (!session?.userId) return null;
@@ -242,6 +245,7 @@ function ApplicationForm() {
           }
 
           setApplicationId(String(data.id));
+          setAppStatus(data.status || 'DRAFT');
 
           // Populate existing text data
           setFormData(prev => {
@@ -426,7 +430,7 @@ function ApplicationForm() {
         const hasExistingFiles = existingFiles.some(f => (f.section || f.Section) === targetSection);
 
         if (!hasNewFiles && !hasExistingFiles) {
-          newErrors[field.name] = 'Required';
+          newErrors[field.name] = 'Required field';
         }
       }
 
@@ -570,8 +574,13 @@ function ApplicationForm() {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    setShowSubmitConfirmModal(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setShowSubmitConfirmModal(false);
     setServerError('');
     setIsSaving(true);
 
@@ -782,15 +791,23 @@ function ApplicationForm() {
 
           <div className="progress-tracker-container">
             <nav className="section-nav" aria-label="Application sections">
-              {steps.map((label, idx) => (
-                <div
-                  key={label}
-                  className={`section-nav-item ${activeStep === idx ? 'active' : ''} ${activeStep > idx ? 'completed' : ''}`}
-                >
-                  <div className="step-circle">{idx + 1}</div>
-                  <span className="step-label">{label}</span>
-                </div>
-              ))}
+              {steps.map((label, idx) => {
+                const canJump = !!routeId || (appStatus && appStatus !== 'DRAFT');
+                return (
+                  <div
+                    key={label}
+                    className={`section-nav-item ${activeStep === idx ? 'active' : ''} ${activeStep > idx ? 'completed' : ''} ${canJump ? 'clickable' : ''}`}
+                    onClick={() => {
+                      if (canJump) {
+                        setActiveStep(idx);
+                      }
+                    }}
+                  >
+                    <div className="step-circle">{idx + 1}</div>
+                    <span className="step-label">{label}</span>
+                  </div>
+                );
+              })}
             </nav>
           </div>
 
@@ -836,7 +853,7 @@ function ApplicationForm() {
                   {activeStep < 3 && (
                     <>
                       {!routeId && (
-                        <button type="submit" onClick={() => { actionRef.current = 'exit'; }} disabled={isSaving} className="btn-save-exit">Save & Exit</button>
+                        <button type="submit" onClick={() => { actionRef.current = 'exit'; }} disabled={isSaving} className="btn-save-exit">Save as Draft</button>
                       )}
                       <button
                         type="submit"
@@ -889,6 +906,37 @@ function ApplicationForm() {
             >
               Go Back to Home Page
             </button>
+          </div>
+        </div>
+      )}
+      {showSubmitConfirmModal && (
+        <div className="submit-confirm-modal-overlay">
+          <div className="submit-confirm-modal">
+            <div className="submit-confirm-modal-icon">
+              <AlertTriangle size={28} />
+            </div>
+            <h2>Confirm Submission</h2>
+            <p>
+              Once submitted, you will not be able to make any change to your application.
+            </p>
+            <div className="submit-confirm-modal-actions">
+              <button
+                type="button"
+                onClick={() => setShowSubmitConfirmModal(false)}
+                className="submit-confirm-modal-btn btn-secondary"
+                disabled={isSaving}
+              >
+                Go Back
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSubmit}
+                className="submit-confirm-modal-btn btn-primary"
+                disabled={isSaving}
+              >
+                {isSaving ? 'Submitting...' : 'Submit'}
+              </button>
+            </div>
           </div>
         </div>
       )}

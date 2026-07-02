@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ChevronDown, Download, Eye, Edit, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { api, clearSession, getFileUrl, formatIST } from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
+import * as XLSX from 'xlsx';
 import './Dashboards.css';
 
 export default function AdminDashboard() {
@@ -356,7 +357,8 @@ export default function AdminDashboard() {
     return numStr;
   };
 
-  const totalJuries = juryMembers.filter(m => m.type === 'JURY').length;
+  const juriesList = juryMembers.filter(m => m.type === 'JURY');
+  const totalJuries = juriesList.length;
 
   // Filter Registered Users
   const filteredUsers = users.filter(u => {
@@ -385,6 +387,76 @@ export default function AdminDashboard() {
     if (appFilter === 'JURY_REJECTED') return statusUpper === 'JURY_REJECTED';
     return true;
   });
+
+  const getRankedApplications = () => {
+    const subApps = apps.filter(a => a.status && a.status.toUpperCase() === 'JURY_APPROVED');
+    const sorted = [...subApps].sort((a, b) => {
+      if ((b.average_score || 0) !== (a.average_score || 0)) {
+        return (b.average_score || 0) - (a.average_score || 0);
+      }
+      return (b.validator_score || 0) - (a.validator_score || 0);
+    });
+
+    let currentRank = 1;
+    return sorted.map((app, idx) => {
+      if (idx > 0) {
+        const prevApp = sorted[idx - 1];
+        const sameScore = (app.average_score || 0) === (prevApp.average_score || 0) &&
+                          (app.validator_score || 0) === (prevApp.validator_score || 0);
+        if (!sameScore) {
+          currentRank = idx + 1;
+        }
+      }
+      return { ...app, rank: currentRank };
+    });
+  };
+
+  const handleDownloadFinalSheetExcel = () => {
+    const rankedApps = getRankedApplications();
+    const juriesList = juryMembers.filter(m => m.type === 'JURY');
+
+    const headers = [
+      'Rank', 'Applicant Name', 'Email', 'Company', 
+      'Validator Score',
+      ...juriesList.map(j => `${j.name} Score`),
+      'Jury Average Score (Final Score)'
+    ];
+
+    const rows = rankedApps.map(row => {
+      const juryScores = juriesList.map(j => {
+        const rev = (row.jury_reviews || []).find(r => r.juryId === j.id || r.JuryId === j.id);
+        return rev ? Number(rev.weightedScore.toFixed(2)) : '—';
+      });
+
+      return [
+        row.rank,
+        row.user_name || '',
+        row.user_email || '',
+        row.company || '',
+        row.validator_score ? Number(row.validator_score.toFixed(2)) : '—',
+        ...juryScores,
+        row.average_score ? Number(row.average_score.toFixed(2)) : 0.00
+      ];
+    });
+
+    const sheetData = [headers, ...rows];
+    const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Evaluation Standings');
+
+    // Auto-fit column widths
+    const maxLens = headers.map((h, i) => {
+      let maxLen = h.length;
+      rows.forEach(r => {
+        const valStr = String(r[i] || '');
+        if (valStr.length > maxLen) maxLen = valStr.length;
+      });
+      return { wch: maxLen + 3 };
+    });
+    worksheet['!cols'] = maxLens;
+
+    XLSX.writeFile(workbook, 'final_evaluation_sheet.xlsx');
+  };
 
   // Download filtered data as CSV
   const handleDownloadCSV = (data, type) => {
@@ -463,7 +535,7 @@ export default function AdminDashboard() {
         {/* <h1 className="admin-main-heading">Admin</h1> */}
 
         {/* Applications Section */}
-        <div className="dashboard-section">
+        <div className="dashboard-section applications-section">
           <div className="dashboard-section-header">
             <h3>Applications ({String(filteredApps.length).padStart(2, '0')})</h3>
             <div className="admin-header-actions">
@@ -561,8 +633,9 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+
         {/* Jury Board Members Section */}
-        <div className="dashboard-section">
+        <div className="dashboard-section jury-section">
           <div className="dashboard-section-header">
             <h3>Jury Board ({juryMembers.length})</h3>
             <div className="admin-header-actions">
@@ -679,7 +752,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Registered Users Section */}
-        <div className="dashboard-section">
+        <div className="dashboard-section users-section">
           <div className="dashboard-section-header">
             <h3>Registered Users({String(filteredUsers.length).padStart(2, '0')})</h3>
             <div className="admin-header-actions">
@@ -741,6 +814,75 @@ export default function AdminDashboard() {
                 {filteredUsers.length === 0 && (
                   <tr>
                     <td colSpan="6" className="text-center">No users found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Final Evaluation Sheet & Ranking Section */}
+        <div className="dashboard-section standings-section">
+          <div className="dashboard-section-header">
+            <h3>Final Evaluation Sheet & Ranking</h3>
+            <div className="admin-header-actions">
+              <button className="btn-download" onClick={handleDownloadFinalSheetExcel}>
+                DOWNLOAD EXCEL <Download size={14} />
+              </button>
+            </div>
+          </div>
+
+          <div className="table-responsive">
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Company</th>
+                  <th>Validator Score</th>
+                  {juriesList.map(j => (
+                    <th key={j.id}>{j.name}</th>
+                  ))}
+                  <th>Jury Score (Final)</th>
+                  <th>Jury Approvals</th>
+                </tr>
+              </thead>
+              <tbody>
+                {getRankedApplications().map((a) => (
+                  <tr key={a.id}>
+                    <td><strong>{a.rank}</strong></td>
+                    <td>{a.user_name}</td>
+                    <td>{a.company || '—'}</td>
+                    <td>
+                      {a.validator_score ? (
+                        <strong>{a.validator_score.toFixed(2)}</strong>
+                      ) : (
+                        <span style={{ color: '#94a3b8' }}>—</span>
+                      )}
+                    </td>
+                    {juriesList.map(j => {
+                      const rev = (a.jury_reviews || []).find(r => r.juryId === j.id || r.JuryId === j.id);
+                      return (
+                        <td key={j.id}>
+                          {rev ? <strong>{rev.weightedScore.toFixed(2)}</strong> : <span style={{ color: '#94a3b8' }}>—</span>}
+                        </td>
+                      );
+                    })}
+                    <td>
+                      {a.average_score ? (
+                        <strong>{a.average_score.toFixed(2)}</strong>
+                      ) : (
+                        <span style={{ color: '#94a3b8' }}>—</span>
+                      )}
+                    </td>
+                    <td>
+                      <strong>{a.jury_approval_count}/{totalJuries || 3}</strong>
+                    </td>
+                  </tr>
+                ))}
+                {getRankedApplications().length === 0 && (
+                  <tr>
+                    <td colSpan={6 + juriesList.length} className="text-center">No JURY_APPROVED applications to rank.</td>
                   </tr>
                 )}
               </tbody>

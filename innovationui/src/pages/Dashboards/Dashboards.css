@@ -1953,96 +1953,153 @@
     text-align: left !important;
     flex-shrink: 0 !important;
   }
-
   /* Table 1: Applications */
-  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(1)::before {
+  .admin-dashboard-page .applications-section .dashboard-table td:nth-child(1)::before {
     content: "App ID" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(2)::before {
+  .admin-dashboard-page .applications-section .dashboard-table td:nth-child(2)::before {
     content: "Name" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(3)::before {
+  .admin-dashboard-page .applications-section .dashboard-table td:nth-child(3)::before {
     content: "Email" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(4)::before {
+  .admin-dashboard-page .applications-section .dashboard-table td:nth-child(4)::before {
     content: "Company" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(5)::before {
+  .admin-dashboard-page .applications-section .dashboard-table td:nth-child(5)::before {
     content: "Status" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(6)::before {
+  .admin-dashboard-page .applications-section .dashboard-table td:nth-child(6)::before {
     content: "Validator Score" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(7)::before {
+  .admin-dashboard-page .applications-section .dashboard-table td:nth-child(7)::before {
     content: "Jury Score" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(1) .dashboard-table td:nth-child(8)::before {
+  .admin-dashboard-page .applications-section .dashboard-table td:nth-child(8)::before {
     content: "Actions" !important;
   }
 
   /* Table 2: Jury Board */
-  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(1)::before {
+  .admin-dashboard-page .jury-section .dashboard-table td:nth-child(1)::before {
     content: "Reorder" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(2)::before {
+  .admin-dashboard-page .jury-section .dashboard-table td:nth-child(2)::before {
     content: "Image" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(3)::before {
+  .admin-dashboard-page .jury-section .dashboard-table td:nth-child(3)::before {
     content: "Name" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(4)::before {
+  .admin-dashboard-page .jury-section .dashboard-table td:nth-child(4)::before {
     content: "Email" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(5)::before {
+  .admin-dashboard-page .jury-section .dashboard-table td:nth-child(5)::before {
     content: "Role" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(6)::before {
+  .admin-dashboard-page .jury-section .dashboard-table td:nth-child(6)::before {
     content: "Type" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(7)::before {
+  .admin-dashboard-page .jury-section .dashboard-table td:nth-child(7)::before {
     content: "Sort Order" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(2) .dashboard-table td:nth-child(8)::before {
+  .admin-dashboard-page .jury-section .dashboard-table td:nth-child(8)::before {
     content: "Actions" !important;
   }
 
   /* Table 3: Registered Users */
-  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(1)::before {
+  .admin-dashboard-page .users-section .dashboard-table td:nth-child(1)::before {
     content: "ID" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(2)::before {
+  .admin-dashboard-page .users-section .dashboard-table td:nth-child(2)::before {
     content: "Name" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(3)::before {
+  .admin-dashboard-page .users-section .dashboard-table td:nth-child(3)::before {
     content: "Email" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(4)::before {
+  .admin-dashboard-page .users-section .dashboard-table td:nth-child(4)::before {
     content: "Mobile" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(5)::before {
+  .admin-dashboard-page .users-section .dashboard-table td:nth-child(5)::before {
     content: "App Status" !important;
   }
 
-  .admin-dashboard-page .dashboard-section:nth-of-type(3) .dashboard-table td:nth-child(6)::before {
+  .admin-dashboard-page .users-section .dashboard-table td:nth-child(6)::before {
     content: "Actions" !important;
+  }
+
+  /* Table 4: Final Evaluation Sheet & Ranking (Horizontal Scrollable Table on Mobile) */
+  .admin-dashboard-page .standings-section .table-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+  }
+
+  .admin-dashboard-page .standings-section .dashboard-table {
+    display: table !important;
+    width: 100% !important;
+    min-width: 900px !important;
+    border-collapse: collapse !important;
+  }
+
+  .admin-dashboard-page .standings-section .dashboard-table thead {
+    display: table-header-group !important;
+  }
+
+  .admin-dashboard-page .standings-section .dashboard-table tbody {
+    display: table-row-group !important;
+  }
+
+  .admin-dashboard-page .standings-section .dashboard-table tr {
+    display: table-row !important;
+    background: transparent !important;
+  }
+
+  .admin-dashboard-page .standings-section .dashboard-table tr:hover {
+    background-color: #f8fafc !important;
+  }
+
+  .admin-dashboard-page .standings-section .dashboard-table td,
+  .admin-dashboard-page .standings-section .dashboard-table th {
+    display: table-cell !important;
+    padding: 0.8rem 0.6rem !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    font-size: 0.85rem !important;
+    color: #334155 !important;
+    vertical-align: middle !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .admin-dashboard-page .standings-section .dashboard-table th {
+    background-color: #f1f5f9 !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+  }
+
+  .admin-dashboard-page .standings-section .dashboard-table td::before {
+    display: none !important;
   }
 }
 

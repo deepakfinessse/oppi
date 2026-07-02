@@ -156,13 +156,13 @@ export default function FileUploadField({
 
     const invalidType = fileList.find((file) => !isAllowedFile(file));
     if (invalidType) {
-      setLocalError('Only PDF, PNG, JPEG/JPG, or video files (MP4, MOV, AVI, etc.) are allowed.');
+      setLocalError('File format not compatible, upload approved formats');
       return;
     }
 
     const oversized = fileList.find((file) => file.size > MAX_SIZE);
     if (oversized) {
-      setLocalError('Each file must be less than 8MB.');
+      setLocalError('Reached Maximum upload limit, upload file size upto 8mb');
       return;
     }
 

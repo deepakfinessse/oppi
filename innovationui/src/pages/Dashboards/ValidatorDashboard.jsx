@@ -319,7 +319,7 @@ export default function ValidatorDashboard() {
                 onClick={() => submitScores(true)}
                 disabled={submitting}
               >
-                Save & Exit
+                Save as Draft
               </button>
               <button
                 className="btn-action approve"

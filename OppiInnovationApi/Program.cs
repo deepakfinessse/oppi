@@ -932,7 +932,20 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
             validator_name = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id && !vr.IsDraft)
                 .Select(vr => db.Users.Where(u => u.Id == vr.ValidatorId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault()).FirstOrDefault(),
             jury_approval_count = db.JuryReviews.Count(jr => jr.ApplicationId == a.Id && !jr.IsDraft),
-            average_score = db.JuryReviews.Where(jr => jr.ApplicationId == a.Id && !jr.IsDraft).Average(jr => (double?)jr.WeightedScore) ?? 0.0 })
+            average_score = db.JuryReviews.Where(jr => jr.ApplicationId == a.Id && !jr.IsDraft).Average(jr => (double?)jr.WeightedScore) ?? 0.0,
+            jury_reviews = db.JuryReviews.Where(jr => jr.ApplicationId == a.Id && !jr.IsDraft)
+                .Select(jr => new {
+                    jr.Id,
+                    jr.JuryId,
+                    jury_name = jr.Jury.FirstName + " " + jr.Jury.LastName,
+                    jr.InnovationIpScore,
+                    jr.TeamStrengthScore,
+                    jr.BusinessPlanScore,
+                    jr.ImpactScore,
+                    jr.WeightedScore,
+                    jr.Remarks
+                }).ToList()
+        })
         .ToListAsync();
     return Results.Ok(apps);
 });
