@@ -424,7 +424,9 @@ export default function AdminDashboard() {
 
     const rows = rankedApps.map(row => {
       const juryScores = juriesList.map(j => {
-        const rev = (row.jury_reviews || []).find(r => r.juryId === j.id || r.JuryId === j.id);
+        const rev = (row.jury_reviews || []).find(r => 
+          (r.juryEmail || r.JuryEmail || '').toLowerCase() === (j.email || '').toLowerCase()
+        );
         return rev ? Number(rev.weightedScore.toFixed(2)) : '—';
       });
 
@@ -861,7 +863,9 @@ export default function AdminDashboard() {
                       )}
                     </td>
                     {juriesList.map(j => {
-                      const rev = (a.jury_reviews || []).find(r => r.juryId === j.id || r.JuryId === j.id);
+                      const rev = (a.jury_reviews || []).find(r => 
+                        (r.juryEmail || r.JuryEmail || '').toLowerCase() === (j.email || '').toLowerCase()
+                      );
                       return (
                         <td key={j.id}>
                           {rev ? <strong>{rev.weightedScore.toFixed(2)}</strong> : <span style={{ color: '#94a3b8' }}>—</span>}

@@ -938,6 +938,7 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
                     jr.Id,
                     jr.JuryId,
                     jury_name = jr.Jury.FirstName + " " + jr.Jury.LastName,
+                    jury_email = jr.Jury.Email,
                     jr.InnovationIpScore,
                     jr.TeamStrengthScore,
                     jr.BusinessPlanScore,
