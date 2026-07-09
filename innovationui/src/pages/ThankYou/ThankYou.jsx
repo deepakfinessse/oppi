@@ -23,7 +23,7 @@ export default function ThankYou() {
         if (data?.id) {
           setApplicationId(String(data.id));
         }
-      }).catch(() => {});
+      }).catch(() => { });
     }
   }, [applicationId, session?.token]);
 
@@ -50,7 +50,7 @@ export default function ThankYou() {
 
   const handleLogout = () => {
     clearSession();
-    navigate('/auth');
+    navigate('/');
   };
 
   const handleChangePassword = () => {
@@ -72,7 +72,7 @@ export default function ThankYou() {
             <button type="button" className="btn-header logout" onClick={handleLogout}>
               LOG OUT
               <img src={arrowIcon} width={16} height={16} alt="" />
-              </button>
+            </button>
           </div>
         </header>
       </div>

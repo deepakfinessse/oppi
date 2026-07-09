@@ -28,7 +28,7 @@ export default function ApplicantDashboard() {
 
   const handleLogout = () => {
     clearSession();
-    navigate('/auth');
+    navigate('/');
   };
 
 

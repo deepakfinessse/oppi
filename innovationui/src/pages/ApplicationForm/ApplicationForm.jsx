@@ -202,6 +202,7 @@ function ApplicationForm() {
   const { id: routeId } = useParams();
   const actionRef = useRef('next');
   const [activeStep, setActiveStep] = useState(0);
+  const [maxStepAllowed, setMaxStepAllowed] = useState(0);
   const [files, setFiles] = useState({});
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
@@ -299,6 +300,16 @@ function ApplicationForm() {
           if (data.file_uploads) {
             setExistingFiles(data.file_uploads);
           }
+
+          let dbMaxStep = 0;
+          if (data.company_detail) {
+            dbMaxStep = 3;
+          } else if (data.company_reach) {
+            dbMaxStep = 2;
+          } else if (data.personal_info) {
+            dbMaxStep = 1;
+          }
+          setMaxStepAllowed((prev) => Math.max(prev, dbMaxStep));
         }
         setIsInitializing(false);
       } catch (err) {
@@ -314,8 +325,12 @@ function ApplicationForm() {
     window.scrollTo(0, 0);
   }, [activeStep]);
 
+  useEffect(() => {
+    setMaxStepAllowed((prev) => Math.max(prev, activeStep));
+  }, [activeStep]);
+
   if (!session?.token) {
-    return <Navigate to="/login" replace />;
+    return null;
   }
 
   if (isInitializing) {
@@ -357,7 +372,19 @@ function ApplicationForm() {
 
   const handleLogout = () => {
     clearSession();
-    navigate('/auth');
+    navigate('/');
+  };
+
+  const triggerNextStep = () => {
+    actionRef.current = 'next';
+    const mockEvent = { preventDefault: () => {} };
+    if (activeStep === 0) {
+      handleNextSection1(mockEvent);
+    } else if (activeStep === 1) {
+      handleNextSection2(mockEvent);
+    } else if (activeStep === 2) {
+      handleNextSection3(mockEvent);
+    }
   };
 
   const handleNext = () => setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
@@ -792,14 +819,18 @@ function ApplicationForm() {
           <div className="progress-tracker-container">
             <nav className="section-nav" aria-label="Application sections">
               {steps.map((label, idx) => {
-                const canJump = !!routeId || (appStatus && appStatus !== 'DRAFT');
+                const canJump = !!routeId || (appStatus && appStatus !== 'DRAFT') || idx <= maxStepAllowed || idx === activeStep + 1;
                 return (
                   <div
                     key={label}
                     className={`section-nav-item ${activeStep === idx ? 'active' : ''} ${activeStep > idx ? 'completed' : ''} ${canJump ? 'clickable' : ''}`}
                     onClick={() => {
                       if (canJump) {
-                        setActiveStep(idx);
+                        if (idx === activeStep + 1 && idx > maxStepAllowed) {
+                          triggerNextStep();
+                        } else {
+                          setActiveStep(idx);
+                        }
                       }
                     }}
                   >
@@ -894,18 +925,29 @@ function ApplicationForm() {
             <div className="save-exit-modal-icon">✓</div>
             <h2>Application Saved</h2>
             <p>
-              Thank you for your registration. Your application is saved with us. You can fill up the complete application by 7th August’ 2026.
+              Your application progress has been saved successfully. You can complete and submit the application by 7th August’ 2026.
             </p>
-            <button
-              onClick={() => {
-                setShowSaveExitModal(false);
-                navigate(routeId ? '/admin' : '/');
-                window.scrollTo(0, 0);
-              }}
-              className="save-exit-modal-btn"
-            >
-              Go Back to Home Page
-            </button>
+            <div className="save-exit-modal-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSaveExitModal(false);
+                }}
+                className="save-exit-modal-btn btn-secondary"
+              >
+                Save & Continue
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSaveExitModal(false);
+                  handleLogout();
+                }}
+                className="save-exit-modal-btn btn-primary"
+              >
+                Save & Log off
+              </button>
+            </div>
           </div>
         </div>
       )}

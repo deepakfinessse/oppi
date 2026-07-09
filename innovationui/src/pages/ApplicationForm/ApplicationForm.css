@@ -887,25 +887,56 @@
   margin-bottom: 2rem;
 }
 
-.save-exit-modal-btn {
-  display: inline-block;
-  padding: 0.75rem 2rem;
-  background: #1155cc;
-  color: #ffffff;
-  border-radius: 8px;
-  font-weight: 700;
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(17, 85, 204, 0.2);
-  border: none;
-  cursor: pointer;
+.save-exit-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
 }
 
-.save-exit-modal-btn:hover {
+.save-exit-modal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 1px solid transparent;
+  flex: 1;
+  outline: none;
+  box-shadow: none;
+}
+
+.save-exit-modal-btn.btn-secondary {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+}
+
+.save-exit-modal-btn.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+.save-exit-modal-btn.btn-primary {
+  background: #1155cc;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(17, 85, 204, 0.15);
+}
+
+.save-exit-modal-btn.btn-primary:hover {
   background: #0f4bb5;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(17, 85, 204, 0.3);
+  box-shadow: 0 6px 16px rgba(17, 85, 204, 0.25);
+}
+
+@media (max-width: 480px) {
+  .save-exit-modal-actions {
+    flex-direction: column-reverse;
+  }
 }
 
 @keyframes modalFadeIn {
