@@ -169,6 +169,7 @@ public class JuryMember
     public string? ImageUrl { get; set; }
     public string Type { get; set; } = "JURY"; // Can be "VALIDATOR" or "JURY"
     public int SortOrder { get; set; } = 0;
+    public string? InstagramUrl { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 

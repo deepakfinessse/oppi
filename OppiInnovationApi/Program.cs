@@ -185,6 +185,7 @@ using (var scope = app.Services.CreateScope())
                           `image_url` VARCHAR(1000) NULL,
                           `type` ENUM('VALIDATOR','JURY') NOT NULL DEFAULT 'JURY',
                           `sort_order` INT NOT NULL DEFAULT 0,
+                          `instagram_url` VARCHAR(1000) NULL,
                           `created_at` DATETIME NOT NULL,
                           PRIMARY KEY (`id`)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
@@ -202,6 +203,19 @@ using (var scope = app.Services.CreateScope())
                         using (var cmdAlter = conn.CreateCommand())
                         {
                             cmdAlter.CommandText = "ALTER TABLE `jury_members` ADD COLUMN `email` VARCHAR(255) NOT NULL DEFAULT 'temp@oppi.com'";
+                            await cmdAlter.ExecuteNonQueryAsync();
+                        }
+                    }
+                }
+                using (var cmdCol = conn.CreateCommand())
+                {
+                    cmdCol.CommandText = "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'jury_members' AND column_name = 'instagram_url'";
+                    var colCount = Convert.ToInt32(await cmdCol.ExecuteScalarAsync());
+                    if (colCount == 0)
+                    {
+                        using (var cmdAlter = conn.CreateCommand())
+                        {
+                            cmdAlter.CommandText = "ALTER TABLE `jury_members` ADD COLUMN `instagram_url` VARCHAR(1000) NULL";
                             await cmdAlter.ExecuteNonQueryAsync();
                         }
                     }
@@ -966,6 +980,7 @@ api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStor
     var role = form["role"].ToString();
     var type = form["type"].ToString();
     var sortOrderStr = form["sortOrder"].ToString();
+    var instagramUrl = form["instagramUrl"].ToString();
 
     if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(email))
     {
@@ -1053,6 +1068,7 @@ api.MapPost("/admin/jury", async (HttpRequest req, InnovationDbContext db, IStor
         Type = type,
         SortOrder = sortOrder,
         ImageUrl = imageUrl,
+        InstagramUrl = string.IsNullOrWhiteSpace(instagramUrl) ? null : instagramUrl,
         CreatedAt = DateTime.UtcNow
     };
 
@@ -1096,6 +1112,7 @@ api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbConte
     var role = form["role"].ToString();
     var type = form["type"].ToString();
     var sortOrderStr = form["sortOrder"].ToString();
+    var instagramUrl = form["instagramUrl"].ToString();
 
     if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(email))
     {
@@ -1159,6 +1176,7 @@ api.MapPut("/admin/jury/{id}", async (int id, HttpRequest req, InnovationDbConte
     member.Role = role;
     member.Type = type;
     member.SortOrder = sortOrder;
+    member.InstagramUrl = string.IsNullOrWhiteSpace(instagramUrl) ? null : instagramUrl;
 
     if (form.Files.Count == 0 && string.IsNullOrEmpty(member.ImageUrl))
     {
@@ -1590,7 +1608,7 @@ app.MapGet("/jury-members", async (InnovationDbContext db) =>
     var members = await db.JuryMembers
         .OrderBy(m => m.SortOrder)
         .ThenBy(m => m.Name)
-        .Select(m => new { m.Id, m.Name, m.Email, m.Role, m.ImageUrl, m.Type, m.SortOrder })
+        .Select(m => new { m.Id, m.Name, m.Email, m.Role, m.ImageUrl, m.Type, m.SortOrder, m.InstagramUrl })
         .ToListAsync();
     return Results.Ok(members);
 });
