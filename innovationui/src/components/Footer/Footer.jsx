@@ -2,6 +2,7 @@ import React from 'react';
 import { Mail, Phone, Globe, Send } from 'lucide-react';
 import './Footer.css';
 import oppiLogo from '../../assets/Oppi-logo.png';
+import oppi60 from '../../assets/OPPI-60.png';
 
 const Footer = () => {
   return (
@@ -10,6 +11,9 @@ const Footer = () => {
         <div className="footer-brand">
           <div className="logos-container">
             <img src={oppiLogo} alt="OPPI Logo" className="footer-logo" />
+          </div>
+          <div className="logos-container-60">
+            <img src={oppi60} alt="OPPI Logo" className="footer-logo-60" />
           </div>
         </div>
 
@@ -20,12 +24,8 @@ const Footer = () => {
             <span>indiaoppi.com</span>
           </div>
           <div className="contact-item">
-            <Send size={18} className="icon" />
-            <span>awards.indiaoppi.com</span>
-          </div>
-          <div className="contact-item">
             <Mail size={18} className="icon" />
-            <span>admin@indiaoppi.com</span>
+            <span>Communications@indiaoppi.com</span>
           </div>
           <div className="contact-item">
             <Phone size={18} className="icon" />

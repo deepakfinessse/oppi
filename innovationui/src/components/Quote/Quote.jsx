@@ -4,8 +4,8 @@ import './Quote.css';
 const Quote = () => {
   const statsList = [
     { value: '60+', label: "Years of OPPI's pharmaceutical leadership in India" },
-    { value: '8', label: 'Years of Innovation Award recognising research excellence' },
-    { value: 'Rs 1L', label: 'Cash prize + citation awarded to each category winner' },
+    { value: '6', label: 'Years of Innovation Award recognising research excellence' },
+    { value: 'Rs 1L', label: 'Cash prize + citation awarded to winning company' },
   ];
 
   return (
