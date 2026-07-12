@@ -44,6 +44,7 @@ export default function AdminDashboard() {
     type: 'JURY',
     sortOrder: 0,
     password: '',
+    instagramUrl: '',
     imageFile: null
   });
   const [juryModalError, setJuryModalError] = useState('');
@@ -139,6 +140,7 @@ export default function AdminDashboard() {
       type: member.type || 'USER',
       sortOrder: member.sortOrder || 0,
       password: '',
+      instagramUrl: member.instagramUrl || '',
       imageFile: null
     });
     if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
@@ -158,6 +160,7 @@ export default function AdminDashboard() {
       type: 'JURY',
       sortOrder: juryMembers.length + 1,
       password: '',
+      instagramUrl: '',
       imageFile: null
     });
     if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
@@ -301,6 +304,7 @@ export default function AdminDashboard() {
       formData.append('role', juryForm.role);
       formData.append('type', juryForm.type);
       formData.append('sortOrder', juryForm.sortOrder);
+      formData.append('instagramUrl', juryForm.instagramUrl);
       if (juryForm.imageFile) {
         formData.append('image', juryForm.imageFile);
       }
@@ -1056,6 +1060,20 @@ export default function AdminDashboard() {
                     onChange={(e) => setJuryForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))}
                     className="modal-input"
                     min="0"
+                  />
+                </div>
+              </div>
+
+              {/* Row: Instagram Link */}
+              <div className="form-row">
+                <div className="form-group" style={{ width: '100%' }}>
+                  <label className="modal-label">Instagram Link (optional)</label>
+                  <input
+                    type="url"
+                    value={juryForm.instagramUrl}
+                    onChange={(e) => setJuryForm(prev => ({ ...prev, instagramUrl: e.target.value }))}
+                    className="modal-input"
+                    placeholder="https://instagram.com/username"
                   />
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Instagram } from 'lucide-react';
 import './Jury.css';
 import { api, getFileUrl } from '../../services/api';
 
@@ -51,7 +52,8 @@ const Jury = () => {
             setValidator({
               name: valData[0].name,
               role: valData[0].role,
-              image: getFileUrl(valData[0].imageUrl) || ashutoshImg
+              image: getFileUrl(valData[0].imageUrl) || ashutoshImg,
+              instagramUrl: valData[0].instagramUrl
             });
           } else {
             setValidator(defaultValidator);
@@ -61,7 +63,8 @@ const Jury = () => {
             setJuryMembers(juryData.map(m => ({
               name: m.name,
               role: m.role,
-              image: getFileUrl(m.imageUrl) || meenaImg
+              image: getFileUrl(m.imageUrl) || meenaImg,
+              instagramUrl: m.instagramUrl
             })));
           } else {
             setJuryMembers(defaultJuryMembers);
@@ -101,6 +104,11 @@ const Jury = () => {
             <div className="jury-info">
               <h4>{validator.name}</h4>
               <p>{validator.role}</p>
+              {validator.instagramUrl && (
+                <a href={validator.instagramUrl} target="_blank" rel="noopener noreferrer" className="jury-social-link" title="Instagram">
+                  <Instagram size={18} />
+                </a>
+              )}
             </div>
           </motion.div>
         </div>
@@ -127,6 +135,11 @@ const Jury = () => {
                 <div className="jury-info">
                   <h4>{member.name}</h4>
                   <p>{member.role}</p>
+                  {member.instagramUrl && (
+                    <a href={member.instagramUrl} target="_blank" rel="noopener noreferrer" className="jury-social-link" title="Instagram">
+                      <Instagram size={18} />
+                    </a>
+                  )}
                 </div>
               </motion.div>
             ))}
