@@ -1378,12 +1378,14 @@ api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContex
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
         .Where(a => a.Status == "SUBMITTED" || 
                     (a.Status == "UNDER_VALIDATOR_REVIEW" && a.ValidatorId == uid.Value) ||
+                    (a.Status == "VALIDATOR_REJECTED" && a.ValidatorId == uid.Value) ||
                     db.ValidatorReviews.Any(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && !vr.IsDraft))
         .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
+            remarks = a.Remarks,
             is_approved = db.ValidatorReviews.Any(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && !vr.IsDraft),
             draft_scores = db.ValidatorReviews
-                .Where(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && vr.IsDraft)
+                .Where(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value)
                 .Select(vr => new { vr.InnovationIpScore, vr.TeamStrengthScore, vr.BusinessPlanScore, vr.ImpactScore, vr.Remarks })
                 .FirstOrDefault()
         })
@@ -1502,9 +1504,10 @@ api.MapGet("/jury/applications", async (HttpContext ctx, InnovationDbContext db)
         )
         .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
+            remarks = a.Remarks,
             is_approved = reviewedAppIds.Contains(a.Id),
             draft_scores = db.JuryReviews
-                .Where(jr => jr.ApplicationId == a.Id && jr.JuryId == uid.Value && jr.IsDraft)
+                .Where(jr => jr.ApplicationId == a.Id && jr.JuryId == uid.Value)
                 .Select(jr => new { jr.InnovationIpScore, jr.TeamStrengthScore, jr.BusinessPlanScore, jr.ImpactScore, jr.Remarks })
                 .FirstOrDefault()
         })
@@ -1525,10 +1528,6 @@ api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, Inno
     }
  
     var existingReview = await db.JuryReviews.FirstOrDefaultAsync(jr => jr.ApplicationId == appId && jr.JuryId == uid.Value);
-    if (existingReview != null && !existingReview.IsDraft)
-    {
-        return Results.BadRequest(new { message = "You have already approved/reviewed this application." });
-    }
  
     if (!dto.IsDraft)
     {

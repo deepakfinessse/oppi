@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, clearSession } from '../../services/api';
+import { api, clearSession, getSession } from '../../services/api';
 import { Eye, ArrowRight } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
 export default function JuryDashboard() {
   const navigate = useNavigate();
+  const session = getSession();
+  const userName = session ? `${session.first_name || ''} ${session.last_name || ''}`.trim() : '';
+
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -119,15 +122,17 @@ export default function JuryDashboard() {
     navigate('/auth');
   };
 
+
+
   const pendingApps = apps.filter(a => !a.is_approved);
   const approvedApps = apps.filter(a => a.is_approved);
 
-  if (loading) return <div className="dashboard-loading">Loading Jury Dashboard...</div>;
+  if (loading) return <div className="dashboard-loading">Loading...</div>;
 
   return (
     <>
       <DashboardLayout
-        title="Jury Dashboard"
+        title={userName || "Jury Dashboard"}
         className="jury-dashboard-page"
         headerActions={<button className="btn-logout" onClick={handleLogout}>Log Out <ArrowRight size={16} /></button>}
       >
@@ -157,7 +162,7 @@ export default function JuryDashboard() {
                           <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
                             <Eye size={16} />
                           </button>
-                          <button className="btn-action approve" onClick={() => handleApprove(a.id)}>Approve</button>
+                          <button className="btn-action approve" onClick={() => handleApprove(a.id)}>Scores</button>
                         </div>
                       </td>
                     </tr>
@@ -191,6 +196,7 @@ export default function JuryDashboard() {
                           <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
                             <Eye size={16} />
                           </button>
+                          <button className="btn-action approve" onClick={() => handleApprove(a.id)}>Scores</button>
                         </div>
                       </td>
                     </tr>
@@ -213,10 +219,10 @@ export default function JuryDashboard() {
 
             <div className="jury-criteria-list">
               {[
-                { key: 'innovationIp', label: 'Innovation & IP', desc: 'Quality and novelty of the innovation and associated IP', weight: WEIGHTS.innovationIp },
-                { key: 'teamStrength', label: 'Founding Team', desc: 'Strength of the founding team', weight: WEIGHTS.teamStrength },
-                { key: 'businessPlan', label: 'Business Plan', desc: 'The Business Plan (market potential)', weight: WEIGHTS.businessPlan },
-                { key: 'impact', label: 'Impact', desc: 'Impact (short term & long term)', weight: WEIGHTS.impact },
+                { key: 'innovationIp', label: 'Quality and novelty of the innovation and associated IP', desc: 'Quality and novelty of the innovation and associated IP', weight: WEIGHTS.innovationIp },
+                { key: 'teamStrength', label: 'Strength of the founding team', desc: 'Strength of the founding team', weight: WEIGHTS.teamStrength },
+                { key: 'businessPlan', label: 'The Business Plan (market potential)', desc: 'The Business Plan (market potential)', weight: WEIGHTS.businessPlan },
+                { key: 'impact', label: 'Impact (short term & long term)', desc: 'Impact (short term & long term)', weight: WEIGHTS.impact },
               ].map(c => (
                 <div className="jury-criterion" key={c.key}>
                   <div className="jury-criterion-top">
@@ -300,6 +306,8 @@ export default function JuryDashboard() {
           </div>
         </div>
       )}
+
+
 
     </>
   );

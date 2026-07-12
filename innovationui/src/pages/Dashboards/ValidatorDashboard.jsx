@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, clearSession } from '../../services/api';
+import { api, clearSession, getSession } from '../../services/api';
 import { Eye, ArrowRight } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import './Dashboards.css';
 
 export default function ValidatorDashboard() {
   const navigate = useNavigate();
+  const session = getSession();
+  const userName = session ? `${session.first_name || ''} ${session.last_name || ''}`.trim() : '';
+
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('approved');
 
   // Scoring modal state
   const [showModal, setShowModal] = useState(false);
@@ -146,15 +150,16 @@ export default function ValidatorDashboard() {
     navigate('/auth');
   };
 
-  const pendingApps = apps.filter(a => !a.is_approved);
+  const pendingApps = apps.filter(a => !a.is_approved && a.status?.toUpperCase() !== 'VALIDATOR_REJECTED');
   const approvedApps = apps.filter(a => a.is_approved);
+  const rejectedApps = apps.filter(a => a.status?.toUpperCase() === 'VALIDATOR_REJECTED');
 
-  if (loading) return <div className="dashboard-loading">Loading Validator Dashboard...</div>;
+  if (loading) return <div className="dashboard-loading">Loading...</div>;
 
   return (
     <>
       <DashboardLayout
-        title="Validator Dashboard"
+        title={userName || "Validator Dashboard"}
         className="validator-dashboard-page"
         headerActions={<button className="btn-logout" onClick={handleLogout}>Log Out <ArrowRight size={16} /></button>}
       >
@@ -186,7 +191,7 @@ export default function ValidatorDashboard() {
                           <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
                             <Eye size={16} />
                           </button>
-                          <button className="btn-action approve" onClick={() => handleAction(a.id, 'Approve')}>Approve</button>
+                          <button className="btn-action approve" onClick={() => handleAction(a.id, 'Approve')}>Scores</button>
                           <button className="btn-action reject" onClick={() => handleAction(a.id, 'Reject')}>Reject</button>
                         </div>
                       </td>
@@ -199,38 +204,117 @@ export default function ValidatorDashboard() {
           </div>
 
           <div className="dashboard-section" style={{ marginTop: '30px' }}>
-            <h3>Approved Applications ({approvedApps.length})</h3>
-            <div className="table-responsive">
-              <table className="dashboard-table">
-                <thead>
-                  <tr>
-                    <th>App ID</th>
-                    <th>Applicant</th>
-                    <th>Email</th>
-                    <th>Company</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {approvedApps.map(a => (
-                    <tr key={a.id}>
-                      <td>{a.id}</td>
-                      <td>{a.user_name}</td>
-                      <td>{a.user_email}</td>
-                      <td>{a.company || '—'}</td>
-                      <td>
-                        <div className="action-buttons">
-                          <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
-                            <Eye size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {approvedApps.length === 0 && <tr><td colSpan="5" className="text-center">No approved applications.</td></tr>}
-                </tbody>
-              </table>
+            <div className="dashboard-tabs" style={{ display: 'flex', gap: '15px', borderBottom: '2px solid #e2e8f0', marginBottom: '20px' }}>
+              <button
+                type="button"
+                className={`tab-btn ${activeTab === 'approved' ? 'active' : ''}`}
+                style={{
+                  padding: '10px 20px',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                  border: 'none',
+                  background: 'none',
+                  borderBottom: activeTab === 'approved' ? '2px solid #2563eb' : '2px solid transparent',
+                  color: activeTab === 'approved' ? '#2563eb' : '#64748b',
+                  cursor: 'pointer',
+                  marginBottom: '-2px',
+                  transition: 'all 0.2s'
+                }}
+                onClick={() => setActiveTab('approved')}
+              >
+                Approved Applications ({approvedApps.length})
+              </button>
+              <button
+                type="button"
+                className={`tab-btn ${activeTab === 'rejected' ? 'active' : ''}`}
+                style={{
+                  padding: '10px 20px',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                  border: 'none',
+                  background: 'none',
+                  borderBottom: activeTab === 'rejected' ? '2px solid #ef4444' : '2px solid transparent',
+                  color: activeTab === 'rejected' ? '#ef4444' : '#64748b',
+                  cursor: 'pointer',
+                  marginBottom: '-2px',
+                  transition: 'all 0.2s'
+                }}
+                onClick={() => setActiveTab('rejected')}
+              >
+                Rejected Applications ({rejectedApps.length})
+              </button>
             </div>
+
+            {activeTab === 'approved' ? (
+              <div className="table-responsive">
+                <table className="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>App ID</th>
+                      <th>Applicant</th>
+                      <th>Email</th>
+                      <th>Company</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {approvedApps.map(a => (
+                      <tr key={a.id}>
+                        <td>{a.id}</td>
+                        <td>{a.user_name}</td>
+                        <td>{a.user_email}</td>
+                        <td>{a.company || '—'}</td>
+                        <td>
+                          <div className="action-buttons">
+                            <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
+                              <Eye size={16} />
+                            </button>
+                            <button className="btn-action approve" onClick={() => handleAction(a.id, 'Approve')}>Scores</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {approvedApps.length === 0 && <tr><td colSpan="5" className="text-center">No approved applications.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>App ID</th>
+                      <th>Applicant</th>
+                      <th>Email</th>
+                      <th>Company</th>
+                      <th>Rejection Remarks</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rejectedApps.map(a => (
+                      <tr key={a.id}>
+                        <td>{a.id}</td>
+                        <td>{a.user_name}</td>
+                        <td>{a.user_email}</td>
+                        <td>{a.company || '—'}</td>
+                        <td style={{ color: '#ef4444', fontStyle: 'italic', maxWidth: '300px', wordBreak: 'break-word' }}>
+                          {a.remarks || '—'}
+                        </td>
+                        <td>
+                          <div className="action-buttons">
+                            <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
+                              <Eye size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {rejectedApps.length === 0 && <tr><td colSpan="6" className="text-center">No rejected applications.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </DashboardLayout>
@@ -245,10 +329,10 @@ export default function ValidatorDashboard() {
 
             <div className="jury-criteria-list">
               {[
-                { key: 'innovationIp', label: 'Innovation & IP', desc: 'Quality and novelty of the innovation and associated IP', weight: WEIGHTS.innovationIp },
-                { key: 'teamStrength', label: 'Founding Team', desc: 'Strength of the founding team', weight: WEIGHTS.teamStrength },
-                { key: 'businessPlan', label: 'Business Plan', desc: 'The Business Plan (market potential)', weight: WEIGHTS.businessPlan },
-                { key: 'impact', label: 'Impact', desc: 'Impact (short term & long term)', weight: WEIGHTS.impact },
+                { key: 'innovationIp', label: 'Quality and novelty of the innovation and associated IP', desc: 'Quality and novelty of the innovation and associated IP', weight: WEIGHTS.innovationIp },
+                { key: 'teamStrength', label: 'Strength of the founding team', desc: 'Strength of the founding team', weight: WEIGHTS.teamStrength },
+                { key: 'businessPlan', label: 'The Business Plan (market potential)', desc: 'The Business Plan (market potential)', weight: WEIGHTS.businessPlan },
+                { key: 'impact', label: 'Impact (short term & long term)', desc: 'Impact (short term & long term)', weight: WEIGHTS.impact },
               ].map(c => (
                 <div className="jury-criterion" key={c.key}>
                   <div className="jury-criterion-top">
