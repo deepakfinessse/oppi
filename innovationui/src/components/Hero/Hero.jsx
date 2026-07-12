@@ -55,8 +55,8 @@ const Hero = () => {
       <div className="hero">
         <div className="hero-content">
           <h1 className="hero-title">
-            <span className="hero-title-blue">Excellence in<br />Healthcare</span><br />
-            <span className="hero-title-dark">Innovation Awards</span>
+            <span className="hero-title-blue">Excellence in<br />Innovation Awards</span><br />
+            <span className="hero-title-dark">for Healthcare <br/> Start-up of the year</span>
           </h1>
 
           <Link to="/auth" className="apply-now-btn">
