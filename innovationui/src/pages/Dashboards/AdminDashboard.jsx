@@ -476,7 +476,7 @@ export default function AdminDashboard() {
         { label: 'Name', key: 'name', format: (_, row) => `${row.firstName || ''} ${row.lastName || ''}`.trim() },
         { label: 'Email', key: 'email' },
         { label: 'Mobile', key: 'mobile' },
-        { label: 'App Status', key: 'applicationStatus', format: (v) => v ? (v === 'DRAFT' ? 'Draft' : 'Submitted') : 'New' }
+        { label: 'App Status', key: 'applicationStatus', format: (v) => v ? (v === 'DRAFT' ? 'Draft' : 'Submitted') : 'Registered' }
       ];
     } else {
       filename = `submitted_applications_${appFilter.toLowerCase()}.csv`;
@@ -772,7 +772,7 @@ export default function AdminDashboard() {
                 {userDropdownOpen && (
                   <div className="dropdown-menu">
                     <button className={userFilter === 'ALL' ? 'active' : ''} onClick={() => { setUserFilter('ALL'); setUserDropdownOpen(false); }}>All</button>
-                    <button className={userFilter === 'NEW' ? 'active' : ''} onClick={() => { setUserFilter('NEW'); setUserDropdownOpen(false); }}>New</button>
+                    <button className={userFilter === 'NEW' ? 'active' : ''} onClick={() => { setUserFilter('NEW'); setUserDropdownOpen(false); }}>Registered</button>
                     <button className={userFilter === 'DRAFT' ? 'active' : ''} onClick={() => { setUserFilter('DRAFT'); setUserDropdownOpen(false); }}>Draft</button>
                     <button className={userFilter === 'SUBMITTED' ? 'active' : ''} onClick={() => { setUserFilter('SUBMITTED'); setUserDropdownOpen(false); }}>Submitted</button>
                   </div>
@@ -805,7 +805,7 @@ export default function AdminDashboard() {
                     <td>{u.mobile || '—'}</td>
                     <td>
                       <span className={`admin-role-badge ${u.applicationStatus ? (u.applicationStatus === 'DRAFT' ? 'draft' : 'submitted') : 'new'}`}>
-                        {u.applicationStatus ? (u.applicationStatus === 'DRAFT' ? 'Draft' : 'Submitted') : 'New'}
+                        {u.applicationStatus ? (u.applicationStatus === 'DRAFT' ? 'Draft' : 'Submitted') : 'Registered'}
                       </span>
                     </td>
                     <td>

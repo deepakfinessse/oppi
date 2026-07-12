@@ -196,6 +196,7 @@ export default function JuryDashboard() {
                           <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
                             <Eye size={16} />
                           </button>
+                          <button className="btn-action approve" onClick={() => handleApprove(a.id)}>Scores</button>
                         </div>
                       </td>
                     </tr>
@@ -218,10 +219,10 @@ export default function JuryDashboard() {
 
             <div className="jury-criteria-list">
               {[
-                { key: 'innovationIp', label: 'Innovation & IP – Quality and novelty of the innovation and associated IP', desc: 'Quality and novelty of the innovation and associated IP', weight: WEIGHTS.innovationIp },
-                { key: 'teamStrength', label: 'Team Strength – Strength of the founding team', desc: 'Strength of the founding team', weight: WEIGHTS.teamStrength },
-                { key: 'businessPlan', label: 'Business Plan – The Business Plan (market potential)', desc: 'The Business Plan (market potential)', weight: WEIGHTS.businessPlan },
-                { key: 'impact', label: 'Impact – Impact (short term & long term)', desc: 'Impact (short term & long term)', weight: WEIGHTS.impact },
+                { key: 'innovationIp', label: 'Quality and novelty of the innovation and associated IP', desc: 'Quality and novelty of the innovation and associated IP', weight: WEIGHTS.innovationIp },
+                { key: 'teamStrength', label: 'Strength of the founding team', desc: 'Strength of the founding team', weight: WEIGHTS.teamStrength },
+                { key: 'businessPlan', label: 'The Business Plan (market potential)', desc: 'The Business Plan (market potential)', weight: WEIGHTS.businessPlan },
+                { key: 'impact', label: 'Impact (short term & long term)', desc: 'Impact (short term & long term)', weight: WEIGHTS.impact },
               ].map(c => (
                 <div className="jury-criterion" key={c.key}>
                   <div className="jury-criterion-top">

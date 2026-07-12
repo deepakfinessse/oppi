@@ -650,10 +650,10 @@ export default function ViewApplication({ isMine }) {
 
               <div className="jury-criteria-list">
                 {[
-                  { key: 'innovationIpScore', label: 'Innovation & IP', desc: 'Quality and novelty of the innovation and associated IP', weight: editReviewType === 'validator' ? 0.25 : 0.3 },
-                  { key: 'teamStrengthScore', label: 'Founding Team', desc: 'Strength of the founding team', weight: editReviewType === 'validator' ? 0.25 : 0.2 },
-                  { key: 'businessPlanScore', label: 'Business Plan', desc: 'The Business Plan (market potential)', weight: editReviewType === 'validator' ? 0.25 : 0.2 },
-                  { key: 'impactScore', label: 'Impact', desc: 'Impact (short term & long term)', weight: editReviewType === 'validator' ? 0.25 : 0.3 },
+                  { key: 'innovationIpScore', label: 'Quality and novelty of the innovation and associated IP', desc: 'Quality and novelty of the innovation and associated IP', weight: editReviewType === 'validator' ? 0.25 : 0.3 },
+                  { key: 'teamStrengthScore', label: 'Strength of the founding team', desc: 'Strength of the founding team', weight: editReviewType === 'validator' ? 0.25 : 0.2 },
+                  { key: 'businessPlanScore', label: 'The Business Plan (market potential)', desc: 'The Business Plan (market potential)', weight: editReviewType === 'validator' ? 0.25 : 0.2 },
+                  { key: 'impactScore', label: 'Impact (short term & long term)', desc: 'Impact (short term & long term)', weight: editReviewType === 'validator' ? 0.25 : 0.3 },
                 ].map(c => (
                   <div className="jury-criterion" key={c.key}>
                     <div className="jury-criterion-top">
