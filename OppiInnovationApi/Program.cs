@@ -1378,9 +1378,11 @@ api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContex
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
         .Where(a => a.Status == "SUBMITTED" || 
                     (a.Status == "UNDER_VALIDATOR_REVIEW" && a.ValidatorId == uid.Value) ||
+                    (a.Status == "VALIDATOR_REJECTED" && a.ValidatorId == uid.Value) ||
                     db.ValidatorReviews.Any(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && !vr.IsDraft))
         .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
+            remarks = a.Remarks,
             is_approved = db.ValidatorReviews.Any(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && !vr.IsDraft),
             draft_scores = db.ValidatorReviews
                 .Where(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && vr.IsDraft)
@@ -1499,9 +1501,11 @@ api.MapGet("/jury/applications", async (HttpContext ctx, InnovationDbContext db)
         .Where(a => 
             ((a.Status == "VALIDATOR_APPROVED" || a.Status == "UNDER_JURY_REVIEW") && !reviewedAppIds.Contains(a.Id))
             || reviewedAppIds.Contains(a.Id)
+            || (a.Status == "JURY_REJECTED" && a.JuryId == uid.Value)
         )
         .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
+            remarks = a.Remarks,
             is_approved = reviewedAppIds.Contains(a.Id),
             draft_scores = db.JuryReviews
                 .Where(jr => jr.ApplicationId == a.Id && jr.JuryId == uid.Value && jr.IsDraft)
@@ -1600,7 +1604,29 @@ api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, Inno
 
 api.MapPost("/jury/reject/{appId}", async (int appId, RejectionDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
-    return Results.BadRequest(new { message = "Jury members are not allowed to reject applications." });
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "JURY") return Results.Forbid();
+
+    var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
+    if (a.Status != "VALIDATOR_APPROVED" && a.Status != "UNDER_JURY_REVIEW")
+    {
+        return Results.BadRequest(new { message = "Application is not in a valid state for jury rejection." });
+    }
+
+    if (string.IsNullOrWhiteSpace(dto.Remarks))
+    {
+        return Results.BadRequest(new { message = "Remarks are mandatory for rejection." });
+    }
+
+    a.Status = "JURY_REJECTED";
+    a.JuryId = uid.Value;
+    a.JuryActionAt = DateTime.UtcNow;
+    a.Remarks = dto.Remarks;
+
+    await db.SaveChangesAsync();
+    await audit.LogAsync(uid.Value, "JURY_REJECT", "Application", appId, $"Remarks: {dto.Remarks}", GetIp(ctx));
+    return Results.Ok(new { message = "Rejected" });
 });
 
 app.MapGet("/jury-members", async (InnovationDbContext db) =>

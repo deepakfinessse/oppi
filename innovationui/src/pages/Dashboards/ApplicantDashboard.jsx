@@ -56,12 +56,31 @@ export default function ApplicantDashboard() {
 
           <div style={{ background: '#f8fafc', padding: '30px', borderRadius: '12px', marginBottom: '30px', border: '1px solid #e2e8f0' }}>
             <h3 style={{ color: '#475467', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>Current Application Status</h3>
-            <div style={{ display: 'inline-block', padding: '10px 24px', borderRadius: '30px', fontSize: '1.2rem', fontWeight: 'bold', background: app.status === 'SUBMITTED' ? '#ecfdf3' : '#eff8ff', color: app.status === 'SUBMITTED' ? '#027a48' : '#175cd3', border: `1px solid ${app.status === 'SUBMITTED' ? '#abefc6' : '#b2ddff'}` }}>
-              {app.status.replace('_', ' ')}
+            <div style={{ 
+              display: 'inline-block', 
+              padding: '10px 24px', 
+              borderRadius: '30px', 
+              fontSize: '1.2rem', 
+              fontWeight: 'bold', 
+              background: app.status?.toUpperCase() === 'SUBMITTED' || app.status?.toUpperCase() === 'VALIDATOR_APPROVED' || app.status?.toUpperCase() === 'JURY_APPROVED' ? '#ecfdf3' : (app.status?.toUpperCase().includes('REJECTED') ? '#fef2f2' : '#eff8ff'), 
+              color: app.status?.toUpperCase() === 'SUBMITTED' || app.status?.toUpperCase() === 'VALIDATOR_APPROVED' || app.status?.toUpperCase() === 'JURY_APPROVED' ? '#027a48' : (app.status?.toUpperCase().includes('REJECTED') ? '#b91c1c' : '#175cd3'), 
+              border: `1px solid ${app.status?.toUpperCase() === 'SUBMITTED' || app.status?.toUpperCase() === 'VALIDATOR_APPROVED' || app.status?.toUpperCase() === 'JURY_APPROVED' ? '#abefc6' : (app.status?.toUpperCase().includes('REJECTED') ? '#fecaca' : '#b2ddff')}` 
+            }}>
+              {app.status ? app.status.replace('_', ' ') : ''}
             </div>
-            <p style={{ marginTop: '15px', color: '#666', fontSize: '0.95rem' }}>
-              Submitted on: {formatIST(app.submitted_at)}
-            </p>
+
+            {app.status?.toUpperCase().includes('REJECTED') && app.remarks && (
+              <div style={{ marginTop: '20px', padding: '15px', background: '#fff', borderLeft: '4px solid #ef4444', borderRadius: '4px', textAlign: 'left', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <strong style={{ color: '#b91c1c', display: 'block', marginBottom: '5px' }}>Reason for Rejection:</strong>
+                <p style={{ margin: 0, color: '#475467', fontStyle: 'italic', fontSize: '0.95rem', lineHeight: '1.4' }}>{app.remarks}</p>
+              </div>
+            )}
+
+            {app.submitted_at && (
+              <p style={{ marginTop: '15px', color: '#666', fontSize: '0.95rem' }}>
+                Submitted on: {formatIST(app.submitted_at)}
+              </p>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '400px', margin: '0 auto' }}>
