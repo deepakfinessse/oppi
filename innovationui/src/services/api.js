@@ -113,6 +113,7 @@ export function getApplicationStorageKey(userId) {
 }
 
 export const api = {
+  getCaptcha: () => request('/auth/captcha'),
   register: (payload) => request('/auth/register', {
     method: 'POST',
     body: {
@@ -120,13 +121,22 @@ export const api = {
       Last_Name: payload.lastName,
       Email: payload.emailId,
       Mobile: payload.mobileNumber,
-      Password: payload.password || payload.createPassword
+      Password: payload.password || payload.createPassword,
+      CaptchaId: payload.captchaId,
+      ClickX: payload.clickX,
+      ClickY: payload.clickY
     }
   }),
   login: async (payload) => {
     const data = await request('/auth/login', {
       method: 'POST',
-      body: { Email: payload.emailId, Password: payload.password }
+      body: { 
+        Email: payload.emailId, 
+        Password: payload.password,
+        CaptchaId: payload.captchaId,
+        ClickX: payload.clickX,
+        ClickY: payload.clickY
+      }
     });
     return { token: data.access_token, ...data.user };
   },
@@ -195,17 +205,17 @@ export const api = {
   juryApprove: (id, payload) => request(`/jury/approve/${id}`, { method: 'POST', body: payload }),
   juryReject: (id, payload) => request(`/jury/reject/${id}`, { method: 'POST', body: payload }),
   getAppReview: (id) => request(`/application/review/${id}`),
-  forgotPassword: (email) => request('/auth/forgot-password', {
+  forgotPassword: (email, captchaId, clickX, clickY) => request('/auth/forgot-password', {
     method: 'POST',
-    body: { Email: email }
+    body: { Email: email, CaptchaId: captchaId, ClickX: clickX, ClickY: clickY }
   }),
   resetPassword: (token, password) => request('/auth/reset-password', {
     method: 'POST',
     body: { Token: token, Password: password }
   }),
-  changePassword: (oldPassword, newPassword) => request('/auth/change-password', {
+  changePassword: (oldPassword, newPassword, captchaId, clickX, clickY) => request('/auth/change-password', {
     method: 'POST',
-    body: { Old_Password: oldPassword, New_Password: newPassword }
+    body: { Old_Password: oldPassword, New_Password: newPassword, CaptchaId: captchaId, ClickX: clickX, ClickY: clickY }
   }),
   getJuryMembers: () => request('/jury-members'),
   createJuryMember: (formData) => request('/admin/jury', { method: 'POST', body: formData }),

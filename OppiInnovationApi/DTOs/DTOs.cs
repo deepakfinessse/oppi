@@ -7,23 +7,35 @@ public class RegisterDto
     public string Email { get; set; } = null!;
     public string Mobile { get; set; } = null!;
     public string Password { get; set; } = null!;
+    public string? CaptchaId { get; set; }
+    public double? ClickX { get; set; }
+    public double? ClickY { get; set; }
 }
 
 public class LoginDto
 {
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
+    public string? CaptchaId { get; set; }
+    public double? ClickX { get; set; }
+    public double? ClickY { get; set; }
 }
 
 public class ForgotPasswordDto
 {
     public string Email { get; set; } = null!;
+    public string? CaptchaId { get; set; }
+    public double? ClickX { get; set; }
+    public double? ClickY { get; set; }
 }
 
 public class ChangePasswordDto
 {
     public string Old_Password { get; set; } = null!;
     public string New_Password { get; set; } = null!;
+    public string? CaptchaId { get; set; }
+    public double? ClickX { get; set; }
+    public double? ClickY { get; set; }
 }
 
 public class PersonalInfoDto

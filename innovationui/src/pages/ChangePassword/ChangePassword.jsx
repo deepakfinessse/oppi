@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Info } from 'lucide-react';
 import { api } from '../../services/api';
+import Captcha from '../../components/Captcha/Captcha';
 import '../Auth/Auth.css';
 import trophyImg from '../../assets/Trophy1.png';
 
@@ -18,6 +19,8 @@ const ChangePassword = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
+  const [captchaData, setCaptchaData] = useState({ id: '', clickX: null, clickY: null });
+  const [captchaTrigger, setCaptchaTrigger] = useState(0);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,10 +62,11 @@ const ChangePassword = () => {
     setIsSubmitting(true);
     
     try {
-      await api.changePassword(formData.oldPassword, formData.newPassword);
+      await api.changePassword(formData.oldPassword, formData.newPassword, captchaData.id, captchaData.clickX, captchaData.clickY);
       setMessage('Password changed successfully! Redirecting...');
       setTimeout(() => navigate('/application', { replace: true }), 1500);
     } catch (err) {
+      setCaptchaTrigger(prev => prev + 1);
       setErrors({ form: err.message || 'Failed to change password. Please try again.' });
     } finally {
       setIsSubmitting(false);
@@ -158,6 +162,12 @@ const ChangePassword = () => {
                   </div>
                   {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
                 </div>
+
+                <Captcha
+                  key={`change-${captchaTrigger}`}
+                  onChange={setCaptchaData}
+                  errors={errors}
+                />
 
                 {errors.form && <div className="form-error" style={{ marginBottom: '0.5rem' }}>{errors.form}</div>}
                 <button type="submit" className="submit-btn" disabled={isSubmitting}>

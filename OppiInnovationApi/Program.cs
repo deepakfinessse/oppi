@@ -42,6 +42,8 @@ builder.Services.AddSingleton<ReminderEmailBackgroundService>();
 builder.Services.AddHostedService<ReminderEmailBackgroundService>(p => p.GetRequiredService<ReminderEmailBackgroundService>());
 builder.Services.AddScoped<IValidator<RegisterDto>, RegisterValidator>();
 builder.Services.AddScoped<IValidator<LoginDto>, LoginValidator>();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICaptchaService, CaptchaService>();
 
 var azureStorageConn = builder.Configuration["AzureStorage:ConnectionString"] ?? Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
 if (!string.IsNullOrEmpty(azureStorageConn))
@@ -434,9 +436,20 @@ static string GetIp(HttpContext c) => c.Connection.RemoteIpAddress?.ToString() ?
 // ========== AUTH ==========
 var auth = app.MapGroup("/auth").RequireRateLimiting("auth");
 
-auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
-    JwtService jwt, AuditService audit, IValidator<RegisterDto> v, HttpContext ctx, IServiceScopeFactory scopeFactory) =>
+auth.MapGet("/captcha", (ICaptchaService captchaService) =>
 {
+    var (id, image, instruction) = captchaService.GenerateCaptcha();
+    return Results.Ok(new { captchaId = id, captchaImage = image, instruction = instruction });
+});
+
+auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
+    JwtService jwt, AuditService audit, IValidator<RegisterDto> v, HttpContext ctx, IServiceScopeFactory scopeFactory, ICaptchaService captchaService) =>
+{
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.ClickX, dto.ClickY))
+    {
+        return Results.BadRequest(new { message = "Invalid or expired captcha" });
+    }
+
     var vr = await v.ValidateAsync(dto);
     if (!vr.IsValid) return Results.BadRequest(new { errors = vr.Errors.Select(e => e.ErrorMessage) });
     if (db.Users.Any(x => x.Email == dto.Email)) return Results.BadRequest(new { message = "Email already registered" });
@@ -469,12 +482,17 @@ auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
 
     return Results.Ok(new { access_token = at, refresh_token = rt,
         user = new { id = user.Id, first_name = user.FirstName, last_name = user.LastName,
-            email = user.Email, mobile = user.Mobile } });
+            email = user.Email, mobile = user.Mobile, role = user.Role } });
 });
 
 auth.MapPost("/login", async (LoginDto dto, InnovationDbContext db, JwtService jwt,
-    AuditService audit, IValidator<LoginDto> v, HttpContext ctx) =>
+    AuditService audit, IValidator<LoginDto> v, HttpContext ctx, ICaptchaService captchaService) =>
 {
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.ClickX, dto.ClickY))
+    {
+        return Results.BadRequest(new { message = "Invalid or expired captcha" });
+    }
+
     var vr = await v.ValidateAsync(dto);
     if (!vr.IsValid) return Results.BadRequest(new { errors = vr.Errors.Select(e => e.ErrorMessage) });
     var user = db.Users.FirstOrDefault(x => x.Email == dto.Email);
@@ -491,8 +509,13 @@ auth.MapPost("/login", async (LoginDto dto, InnovationDbContext db, JwtService j
             email = user.Email, mobile = user.Mobile, role = user.Role } });
 });
 
-auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db, JwtService jwt, HttpContext ctx, IServiceScopeFactory scopeFactory) =>
+auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db, JwtService jwt, HttpContext ctx, IServiceScopeFactory scopeFactory, ICaptchaService captchaService) =>
 {
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.ClickX, dto.ClickY))
+    {
+        return Results.BadRequest(new { message = "Invalid or expired captcha" });
+    }
+
     var user = db.Users.FirstOrDefault(x => x.Email == dto.Email);
     if (user == null) return Results.BadRequest(new { message = "Email not found" });
 
@@ -573,8 +596,13 @@ auth.MapPost("/reset-password", async (ResetPasswordDto dto, InnovationDbContext
     return Results.Ok(new { message = "Password has been reset successfully." });
 });
 
-auth.MapPost("/change-password", async (ChangePasswordDto dto, HttpContext ctx, InnovationDbContext db) =>
+auth.MapPost("/change-password", async (ChangePasswordDto dto, HttpContext ctx, InnovationDbContext db, ICaptchaService captchaService) =>
 {
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.ClickX, dto.ClickY))
+    {
+        return Results.BadRequest(new { message = "Invalid or expired captcha" });
+    }
+
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var user = await db.Users.FindAsync(uid.Value); if (user == null) return Results.NotFound();
     if (!BCrypt.Net.BCrypt.Verify(dto.Old_Password, user.PasswordHash))
