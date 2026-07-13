@@ -423,7 +423,7 @@ export default function AdminDashboard() {
       'Rank', 'Applicant Name', 'Email', 'Company', 
       'Validator Score',
       ...juriesList.map(j => `${j.name} Score`),
-      'Jury Average Score (Final Score)'
+      'Final Score'
     ];
 
     const rows = rankedApps.map(row => {
@@ -849,7 +849,7 @@ export default function AdminDashboard() {
                   {juriesList.map(j => (
                     <th key={j.id}>{j.name}</th>
                   ))}
-                  <th>Jury Score (Final)</th>
+                  <th>Final Score</th>
                   <th>Jury Approvals</th>
                 </tr>
               </thead>
