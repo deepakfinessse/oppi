@@ -733,20 +733,26 @@ function ApplicationForm() {
         </div>
         <div className="preview-card-body">
           <ul className="preview-list">
-            {section2Fields.filter((f) => f.type !== 'file').map((field) => (
-              <li key={field.name} className="preview-row">
-                <span className="preview-label">{field.label}:</span>
-                <span className="preview-value">{formData[field.name] || '—'}</span>
-              </li>
-            ))}
-            {section2Fields.filter((f) => f.type === 'file').map((field) => (
-              <li key={field.name} className="preview-file-row">
-                <span className="preview-label">{field.label}:</span>
-                <div className="preview-file-content">
-                  {renderPreviewFiles(field) || <span className="preview-empty">No files attached</span>}
-                </div>
-              </li>
-            ))}
+            {section2Fields.map((field) => {
+              if (field.showIf && !field.showIf(formData)) return null;
+              if (field.type === 'file') {
+                const preview = renderPreviewFiles(field);
+                if (!preview) return null;
+                return (
+                  <li key={field.name} className="preview-file-row">
+                    <div className="preview-file-content">
+                      {preview}
+                    </div>
+                  </li>
+                );
+              }
+              return (
+                <li key={field.name} className="preview-row">
+                  <span className="preview-label">{field.label}:</span>
+                  <span className="preview-value">{formData[field.name] || '—'}</span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>
@@ -761,20 +767,26 @@ function ApplicationForm() {
         </div>
         <div className="preview-card-body">
           <ul className="preview-list">
-            {section3Fields.filter((f) => f.type !== 'file').map((field) => (
-              <li key={field.name} className="preview-row">
-                <span className="preview-label">{field.label}:</span>
-                <span className="preview-value">{formData[field.name] || '—'}</span>
-              </li>
-            ))}
-            {section3Fields.filter((f) => f.type === 'file').map((field) => (
-              <li key={field.name} className="preview-file-row">
-                <span className="preview-label">{field.label}:</span>
-                <div className="preview-file-content">
-                  {renderPreviewFiles(field) || <span className="preview-empty">No files attached</span>}
-                </div>
-              </li>
-            ))}
+            {section3Fields.map((field) => {
+              if (field.showIf && !field.showIf(formData)) return null;
+              if (field.type === 'file') {
+                const preview = renderPreviewFiles(field);
+                if (!preview) return null;
+                return (
+                  <li key={field.name} className="preview-file-row">
+                    <div className="preview-file-content">
+                      {preview}
+                    </div>
+                  </li>
+                );
+              }
+              return (
+                <li key={field.name} className="preview-row">
+                  <span className="preview-label">{field.label}:</span>
+                  <span className="preview-value">{formData[field.name] || '—'}</span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>
