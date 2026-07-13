@@ -207,9 +207,9 @@ export const api = {
     method: 'POST',
     body: { Email: email, CaptchaId: captchaId, CaptchaAnswer: captchaAnswer }
   }),
-  resetPassword: (token, password) => request('/auth/reset-password', {
+  resetPassword: (token, password, captchaId, captchaAnswer) => request('/auth/reset-password', {
     method: 'POST',
-    body: { Token: token, Password: password }
+    body: { Token: token, Password: password, CaptchaId: captchaId, CaptchaAnswer: captchaAnswer }
   }),
   changePassword: (oldPassword, newPassword, captchaId, captchaAnswer) => request('/auth/change-password', {
     method: 'POST',

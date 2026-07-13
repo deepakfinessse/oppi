@@ -557,8 +557,13 @@ auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbConte
     return Results.Ok(new { message = "Password reset link sent to email" });
 });
 
-auth.MapPost("/reset-password", async (ResetPasswordDto dto, InnovationDbContext db, JwtService jwt) =>
+auth.MapPost("/reset-password", async (ResetPasswordDto dto, InnovationDbContext db, JwtService jwt, ICaptchaService captchaService) =>
 {
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.CaptchaAnswer))
+    {
+        return Results.BadRequest(new { message = "Invalid or expired captcha" });
+    }
+
     if (string.IsNullOrWhiteSpace(dto.Token) || string.IsNullOrWhiteSpace(dto.Password))
     {
         return Results.BadRequest(new { message = "Token and password are required." });

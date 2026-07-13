@@ -104,6 +104,8 @@ public class ResetPasswordDto
 {
     public string Token { get; set; } = null!;
     public string Password { get; set; } = null!;
+    public string? CaptchaId { get; set; }
+    public string? CaptchaAnswer { get; set; }
 }
 
 public class RejectionDto

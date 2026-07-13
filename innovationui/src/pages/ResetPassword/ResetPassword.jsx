@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Info } from 'lucide-react';
 import { api } from '../../services/api';
+import Captcha from '../../components/Captcha/Captcha';
 import '../Auth/Auth.css'; // Reuse Auth CSS
 import trophyImg from '../../assets/Trophy4.webp';
 import oppiLogo from '../../assets/Oppi-logo.png';
@@ -18,6 +19,8 @@ const ResetPassword = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [captchaData, setCaptchaData] = useState({ id: '', captchaAnswer: '' });
+  const [captchaTrigger, setCaptchaTrigger] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,9 +49,10 @@ const ResetPassword = () => {
     setIsSubmitting(true);
 
     try {
-      await api.resetPassword(token, password);
+      await api.resetPassword(token, password, captchaData.id, captchaData.captchaAnswer);
       setIsSubmitted(true);
     } catch (err) {
+      setCaptchaTrigger(prev => prev + 1);
       setErrors({ form: err.message || 'Failed to reset password. The link may have expired or is invalid.' });
     } finally {
       setIsSubmitting(false);
@@ -135,6 +139,12 @@ const ResetPassword = () => {
                       </div>
                       {errors.confirmPassword && <div className="field-error-text">{errors.confirmPassword}</div>}
                     </div>
+
+                    <Captcha
+                      key={`reset-${captchaTrigger}`}
+                      onChange={setCaptchaData}
+                      errors={errors}
+                    />
 
                     <button type="submit" className="submit-btn" disabled={isSubmitting || !token}>
                       {isSubmitting ? 'RESETTING...' : 'RESET PASSWORD'}
