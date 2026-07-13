@@ -701,7 +701,12 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
         })
         .ToListAsync();
 
-    double avgScore = juryReviews.Where(r => !r.IsDraft).Any() ? juryReviews.Where(r => !r.IsDraft).Average(r => r.WeightedScore) : 0.0;
+    var activeJuryReviews = juryReviews.Where(r => !r.IsDraft).ToList();
+    var valReview = validatorReviews.FirstOrDefault(r => !r.IsDraft);
+    double valScore = valReview != null ? valReview.WeightedScore : 0.0;
+    double avgScore = activeJuryReviews.Any()
+        ? (valScore + activeJuryReviews.Sum(r => r.WeightedScore)) / (activeJuryReviews.Count + 1)
+        : 0.0;
 
     return Results.Ok(new { id = a.Id, status = a.Status, submitted_at = a.SubmittedAt, remarks = a.Remarks,
         user_name = a.User?.FirstName + " " + a.User?.LastName, user_email = a.User?.Email, user_mobile = a.User?.Mobile,
@@ -946,7 +951,11 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
             validator_name = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id && !vr.IsDraft)
                 .Select(vr => db.Users.Where(u => u.Id == vr.ValidatorId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault()).FirstOrDefault(),
             jury_approval_count = db.JuryReviews.Count(jr => jr.ApplicationId == a.Id && !jr.IsDraft),
-            average_score = db.JuryReviews.Where(jr => jr.ApplicationId == a.Id && !jr.IsDraft).Average(jr => (double?)jr.WeightedScore) ?? 0.0,
+            average_score = db.JuryReviews.Where(jr => jr.ApplicationId == a.Id && !jr.IsDraft).Any()
+                ? ((db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id && !vr.IsDraft).Select(vr => (double?)vr.WeightedScore).FirstOrDefault() ?? 0.0)
+                   + db.JuryReviews.Where(jr => jr.ApplicationId == a.Id && !jr.IsDraft).Sum(jr => jr.WeightedScore))
+                  / (db.JuryReviews.Count(jr => jr.ApplicationId == a.Id && !jr.IsDraft) + 1)
+                : 0.0,
             jury_reviews = db.JuryReviews.Where(jr => jr.ApplicationId == a.Id && !jr.IsDraft)
                 .Select(jr => new {
                     jr.Id,

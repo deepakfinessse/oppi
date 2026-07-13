@@ -365,6 +365,25 @@ export default function ViewApplication({ isMine }) {
 
   const totalJuries = juryMembers.filter(m => m.type === 'JURY').length;
 
+  const getScoreBreakdown = () => {
+    if (!app) return null;
+    const valReview = (app.validator_reviews || []).find(r => !r.isDraft && !r.IsDraft);
+    const valScore = valReview ? valReview.weightedScore : null;
+    const activeJuryReviews = (app.jury_reviews || []).filter(r => !r.isDraft && !r.IsDraft);
+    if (valScore === null && activeJuryReviews.length === 0) return null;
+    const parts = [];
+    if (valScore !== null) {
+      parts.push(valScore.toFixed(2));
+    }
+    activeJuryReviews.forEach(r => {
+      parts.push((r.weightedScore || 0).toFixed(2));
+    });
+    if (parts.length === 0) return null;
+    const sum = (valScore || 0) + activeJuryReviews.reduce((sum, r) => sum + (r.weightedScore || 0), 0);
+    const count = (valScore !== null ? 1 : 0) + activeJuryReviews.length;
+    return `(${parts.join(' + ')}) / ${count} = ${(sum / count).toFixed(2)}`;
+  };
+
   return (
     <DashboardLayout
       title={isMine ? 'Applicant Dashboard' : 'Review Application'}
@@ -433,6 +452,11 @@ export default function ViewApplication({ isMine }) {
                     </div>
                     <div>
                       <strong>Overall Avg Score:</strong> {app.average_score ? app.average_score.toFixed(2) : '—'} / 5.00
+                      {app.average_score && getScoreBreakdown() && (
+                        <span style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginTop: '4px', fontWeight: 'normal' }}>
+                          Breakdown: {getScoreBreakdown()}
+                        </span>
+                      )}
                     </div>
                   </>
                 )}
