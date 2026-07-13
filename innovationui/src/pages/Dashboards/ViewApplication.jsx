@@ -367,7 +367,7 @@ export default function ViewApplication({ isMine }) {
 
   return (
     <DashboardLayout
-      title={isMine ? 'Applicant Dashboard' : 'Application Review'}
+      title={isMine ? 'Applicant Dashboard' : 'Review Application'}
       headerActions={
         <>
           {isMine && <button className="btn-action" onClick={handleChangePassword}>Change Password</button>}
