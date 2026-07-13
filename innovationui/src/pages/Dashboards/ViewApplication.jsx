@@ -451,12 +451,12 @@ export default function ViewApplication({ isMine }) {
                       <strong>Jury Approvals:</strong> {app.jury_approval_count || 0} / {totalJuries || 3}
                     </div>
                     <div>
-                      <strong>Overall Avg Score:</strong> {app.average_score ? app.average_score.toFixed(2) : '—'} / 5.00
-                      {app.average_score && getScoreBreakdown() && (
+                      <strong>Overall Avg Score:</strong> {app.average_score ? app.average_score.toFixed(2) : '—'}
+                      {/* {app.average_score && getScoreBreakdown() && (
                         <span style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginTop: '4px', fontWeight: 'normal' }}>
                           Breakdown: {getScoreBreakdown()}
                         </span>
-                      )}
+                      )} */}
                     </div>
                   </>
                 )}
