@@ -925,7 +925,7 @@ function ApplicationForm() {
             <div className="save-exit-modal-icon">✓</div>
             <h2>Application Saved</h2>
             <p>
-              Your application progress has been saved successfully. You can complete and submit the application by 7th August’ 2026.
+              Your application progress has been saved successfully. You can complete and submit the application by 31st August 2026.
             </p>
             <div className="save-exit-modal-actions">
               <button

@@ -19,7 +19,7 @@ const WhyParticipate = () => {
     },
     {
       icon: newspaperImg,
-      title: "Citation on media release, OPPI website & social media handles.",
+      title: "Citation in the media release, on the OPPI website and Social media handles.",
       alt: 'Citation icon',
     },
   ];
@@ -28,10 +28,10 @@ const WhyParticipate = () => {
     <section className="why-section" id="categories">
       <div className="container">
         <h2 className="section-title">Why Participate in Innovation Awards?</h2>
-        
+
         <div className="reasons-grid">
           {reasons.map((reason, index) => (
-            <motion.div 
+            <motion.div
               key={index}
               className="reason-card"
               initial={{ opacity: 0, y: 30 }}

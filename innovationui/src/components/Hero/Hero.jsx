@@ -13,14 +13,14 @@ const Hero = () => {
     minutes: 0
   });
 
-  // Set target date: 7th August
+  // Set target date: 31st August
   const getTargetDate = () => {
     const now = new Date();
     const currentYear = now.getFullYear();
-    let targetDate = new Date(currentYear, 7, 7);
+    let targetDate = new Date(currentYear, 7, 31);
 
     if (now > targetDate) {
-      targetDate = new Date(currentYear + 1, 7, 7);
+      targetDate = new Date(currentYear + 1, 7, 31);
     }
 
     return targetDate;
@@ -66,7 +66,7 @@ const Hero = () => {
           <div className="deadline-wrapper">
             <div className="deadline-line"></div>
             <p className="deadline-text">
-              Submit the entry before 7th August 2026
+              Submit the entry before 31st August 2026
             </p>
             <div className="deadline-line"></div>
           </div>
