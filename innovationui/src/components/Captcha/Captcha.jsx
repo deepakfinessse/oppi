@@ -37,32 +37,35 @@ const Captcha = ({ onChange, errors }) => {
   return (
     <div className="captcha-container">
       <label className="captcha-label">Verification Code <span className="required">*</span></label>
-      <div className="captcha-image-row">
-        <div className="captcha-image-wrapper">
-          {captchaData ? (
-            <img src={captchaData.captchaImage} alt="Captcha Code" className="captcha-image" />
-          ) : (
-            <div className="captcha-placeholder-box">Loading...</div>
-          )}
+      <div className="captcha-row">
+        <div className="captcha-image-group">
+          <div className="captcha-image-wrapper">
+            {captchaData ? (
+              <img src={captchaData.captchaImage} alt="Captcha Code" className="captcha-image" />
+            ) : (
+              <div className="captcha-placeholder-box">Loading...</div>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={fetchCaptcha}
+            className="captcha-refresh-btn"
+            disabled={loading}
+            title="Refresh Captcha"
+          >
+            <RotateCw size={16} className={loading ? 'spin-animation' : ''} />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={fetchCaptcha}
-          className="captcha-refresh-btn"
-          disabled={loading}
-          title="Refresh Captcha"
-        >
-          <RotateCw size={16} className={loading ? 'spin-animation' : ''} />
-        </button>
+        
+        <input
+          type="text"
+          placeholder="Enter verification code"
+          value={userInput}
+          onChange={handleInputChange}
+          required
+          className="captcha-input-field"
+        />
       </div>
-      <input
-        type="text"
-        placeholder="Enter verification code"
-        value={userInput}
-        onChange={handleInputChange}
-        required
-        className="captcha-input-field"
-      />
       {errors?.captcha && <div className="field-error-text">{errors.captcha}</div>}
     </div>
   );
