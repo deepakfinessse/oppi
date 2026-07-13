@@ -438,14 +438,14 @@ var auth = app.MapGroup("/auth").RequireRateLimiting("auth");
 
 auth.MapGet("/captcha", (ICaptchaService captchaService) =>
 {
-    var (id, image, instruction) = captchaService.GenerateCaptcha();
-    return Results.Ok(new { captchaId = id, captchaImage = image, instruction = instruction });
+    var (id, image) = captchaService.GenerateCaptcha();
+    return Results.Ok(new { captchaId = id, captchaImage = image });
 });
 
 auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
     JwtService jwt, AuditService audit, IValidator<RegisterDto> v, HttpContext ctx, IServiceScopeFactory scopeFactory, ICaptchaService captchaService) =>
 {
-    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.ClickX, dto.ClickY))
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.CaptchaAnswer))
     {
         return Results.BadRequest(new { message = "Invalid or expired captcha" });
     }
@@ -488,7 +488,7 @@ auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
 auth.MapPost("/login", async (LoginDto dto, InnovationDbContext db, JwtService jwt,
     AuditService audit, IValidator<LoginDto> v, HttpContext ctx, ICaptchaService captchaService) =>
 {
-    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.ClickX, dto.ClickY))
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.CaptchaAnswer))
     {
         return Results.BadRequest(new { message = "Invalid or expired captcha" });
     }
@@ -511,7 +511,7 @@ auth.MapPost("/login", async (LoginDto dto, InnovationDbContext db, JwtService j
 
 auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db, JwtService jwt, HttpContext ctx, IServiceScopeFactory scopeFactory, ICaptchaService captchaService) =>
 {
-    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.ClickX, dto.ClickY))
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.CaptchaAnswer))
     {
         return Results.BadRequest(new { message = "Invalid or expired captcha" });
     }
@@ -598,7 +598,7 @@ auth.MapPost("/reset-password", async (ResetPasswordDto dto, InnovationDbContext
 
 auth.MapPost("/change-password", async (ChangePasswordDto dto, HttpContext ctx, InnovationDbContext db, ICaptchaService captchaService) =>
 {
-    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.ClickX, dto.ClickY))
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.CaptchaAnswer))
     {
         return Results.BadRequest(new { message = "Invalid or expired captcha" });
     }

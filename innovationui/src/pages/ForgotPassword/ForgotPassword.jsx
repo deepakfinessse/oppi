@@ -15,7 +15,7 @@ const ForgotPassword = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [tempPassword, setTempPassword] = useState('');
-  const [captchaData, setCaptchaData] = useState({ id: '', clickX: null, clickY: null });
+  const [captchaData, setCaptchaData] = useState({ id: '', captchaAnswer: '' });
   const [captchaTrigger, setCaptchaTrigger] = useState(0);
 
   const handleSubmit = async (e) => {
@@ -24,7 +24,7 @@ const ForgotPassword = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await api.forgotPassword(email, captchaData.id, captchaData.clickX, captchaData.clickY);
+      const response = await api.forgotPassword(email, captchaData.id, captchaData.captchaAnswer);
       if (response && response.temp_password) {
         setTempPassword(response.temp_password);
       }

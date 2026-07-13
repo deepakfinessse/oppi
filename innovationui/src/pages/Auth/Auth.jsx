@@ -59,7 +59,7 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
-  const [captchaData, setCaptchaData] = useState({ id: '', clickX: null, clickY: null });
+  const [captchaData, setCaptchaData] = useState({ id: '', captchaAnswer: '' });
   const [captchaTrigger, setCaptchaTrigger] = useState(0);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -89,7 +89,7 @@ const Auth = () => {
     setMessage('');
     setShowPassword(false);
     setShowConfirmPassword(false);
-    setCaptchaData({ id: '', clickX: null, clickY: null });
+    setCaptchaData({ id: '', captchaAnswer: '' });
     setCaptchaTrigger(prev => prev + 1);
     setFormData({
       firstName: '',
@@ -111,8 +111,7 @@ const Auth = () => {
         emailId: formData.emailId,
         password: formData.password,
         captchaId: captchaData.id,
-        clickX: captchaData.clickX,
-        clickY: captchaData.clickY
+        captchaAnswer: captchaData.captchaAnswer
       });
       saveSession(session);
       if (session.role === 'ADMIN') {
@@ -172,8 +171,7 @@ const Auth = () => {
       const data = await api.register({
         ...formData,
         captchaId: captchaData.id,
-        clickX: captchaData.clickX,
-        clickY: captchaData.clickY
+        captchaAnswer: captchaData.captchaAnswer
       });
       const session = { token: data.access_token, ...data.user, role: data.user.role || 'USER' };
       saveSession(session);

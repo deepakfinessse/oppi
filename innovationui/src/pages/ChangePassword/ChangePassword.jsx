@@ -19,7 +19,7 @@ const ChangePassword = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
-  const [captchaData, setCaptchaData] = useState({ id: '', clickX: null, clickY: null });
+  const [captchaData, setCaptchaData] = useState({ id: '', captchaAnswer: '' });
   const [captchaTrigger, setCaptchaTrigger] = useState(0);
 
   const handleChange = (e) => {
@@ -62,7 +62,7 @@ const ChangePassword = () => {
     setIsSubmitting(true);
     
     try {
-      await api.changePassword(formData.oldPassword, formData.newPassword, captchaData.id, captchaData.clickX, captchaData.clickY);
+      await api.changePassword(formData.oldPassword, formData.newPassword, captchaData.id, captchaData.captchaAnswer);
       setMessage('Password changed successfully! Redirecting...');
       setTimeout(() => navigate('/application', { replace: true }), 1500);
     } catch (err) {
