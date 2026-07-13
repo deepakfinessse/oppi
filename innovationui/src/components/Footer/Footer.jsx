@@ -12,8 +12,8 @@ const Footer = () => {
           <div className="logos-container">
             <img src={oppiLogo} alt="OPPI Logo" className="footer-logo" />
           </div>
-          <div className="logos-container-60">
-            <img src={oppi60} alt="OPPI Logo" className="footer-logo-60" />
+          <div className="logos-container">
+            <img src={oppi60} alt="OPPI Logo" className="footer-logo" />
           </div>
         </div>
 
