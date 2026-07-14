@@ -518,10 +518,10 @@ export default function ViewApplication({ isMine }) {
                   <thead>
                     <tr>
                       <th>Validator</th>
-                      <th>Innovation & IP</th>
-                      <th>Team Strength</th>
-                      <th>Business Plan</th>
-                      <th>Impact</th>
+                      <th>Quality and novelty of the innovation and associated IP</th>
+                      <th>Strength of the founding team</th>
+                      <th>The Business Plan (market potential)</th>
+                      <th>Impact (short term & long term)</th>
                       <th>Weighted Score</th>
                       <th>Remarks</th>
                       <th>Reviewed At</th>
@@ -566,10 +566,10 @@ export default function ViewApplication({ isMine }) {
                   <thead>
                     <tr>
                       <th>Jury Member</th>
-                      <th>Innovation & IP</th>
-                      <th>Team Strength</th>
+                      <th>Quality and novelty of the innovation and associated IP</th>
+                      <th>Strength of the founding team</th>
                       <th>Business Plan</th>
-                      <th>Impact</th>
+                      <th>Impact (short term & long term)</th>
                       <th>Weighted Score</th>
                       <th>Remarks</th>
                       <th>Reviewed At</th>
