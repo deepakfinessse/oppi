@@ -1,6 +1,9 @@
 using System;
+using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 
 namespace OppiInnovationApi.Services;
 
@@ -13,18 +16,85 @@ public interface ICaptchaService
 public class CaptchaService : ICaptchaService
 {
     private readonly IMemoryCache _cache;
+    private readonly IConfiguration _config;
     private static readonly Random _random = new();
     private const string Chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghkmnpqrstuvwxyz23456789"; // Exclude ambiguous chars (0, O, 1, I, l)
 
-    public CaptchaService(IMemoryCache cache)
+    public CaptchaService(IMemoryCache cache, IConfiguration config)
     {
         _cache = cache;
+        _config = config;
+    }
+
+    private string GetEncryptionKey()
+    {
+        return _config["JwtSettings:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY") ?? "FallbackCaptchaSecretKey1234567890";
+    }
+
+    private string Encrypt(string plainText, string key)
+    {
+        byte[] keyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(key));
+        
+        using var aes = Aes.Create();
+        aes.Key = keyBytes;
+        aes.GenerateIV();
+        
+        using var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+        using var ms = new MemoryStream();
+        ms.Write(aes.IV, 0, aes.IV.Length);
+        
+        using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+        using (var sw = new StreamWriter(cs))
+        {
+            sw.Write(plainText);
+        }
+        
+        return Convert.ToBase64String(ms.ToArray())
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .Replace("=", ""); // URL-safe base64
+    }
+
+    private string? Decrypt(string cipherText, string key)
+    {
+        try
+        {
+            string base64 = cipherText.Replace('-', '+').Replace('_', '/');
+            switch (base64.Length % 4)
+            {
+                case 2: base64 += "=="; break;
+                case 3: base64 += "="; break;
+            }
+            
+            byte[] fullCipher = Convert.FromBase64String(base64);
+            byte[] keyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(key));
+            
+            using var aes = Aes.Create();
+            aes.Key = keyBytes;
+            
+            byte[] iv = new byte[aes.BlockSize / 8];
+            byte[] cipherBytes = new byte[fullCipher.Length - iv.Length];
+            
+            Array.Copy(fullCipher, 0, iv, 0, iv.Length);
+            Array.Copy(fullCipher, iv.Length, cipherBytes, 0, cipherBytes.Length);
+            
+            aes.IV = iv;
+            
+            using var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+            using var ms = new MemoryStream(cipherBytes);
+            using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+            using var sr = new StreamReader(cs);
+            
+            return sr.ReadToEnd();
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public (string id, string svgBase64) GenerateCaptcha()
     {
-        var id = Guid.NewGuid().ToString();
-        
         // Generate a 5-character random code
         var codeBuilder = new StringBuilder();
         for (int i = 0; i < 5; i++)
@@ -33,8 +103,12 @@ public class CaptchaService : ICaptchaService
         }
         var code = codeBuilder.ToString();
 
-        // Save to memory cache for 5 minutes
-        _cache.Set($"captcha_{id}", code, TimeSpan.FromMinutes(5));
+        // Expire in 5 minutes
+        var expiration = DateTime.UtcNow.AddMinutes(5).Ticks.ToString();
+        var plainText = $"{code}|{expiration}";
+        
+        var key = GetEncryptionKey();
+        var id = Encrypt(plainText, key);
 
         // Generate SVG
         var width = 160;
@@ -112,13 +186,44 @@ public class CaptchaService : ICaptchaService
             return false;
         }
 
-        var key = $"captcha_{id}";
-        if (_cache.TryGetValue<string>(key, out var cachedCode))
+        var key = GetEncryptionKey();
+        var decrypted = Decrypt(id, key);
+        if (string.IsNullOrWhiteSpace(decrypted))
         {
-            _cache.Remove(key); // Captchas must be one-time use only
-            return string.Equals(cachedCode, answer.Trim(), StringComparison.Ordinal);
+            return false;
         }
 
-        return false;
+        var parts = decrypted.Split('|');
+        if (parts.Length != 2)
+        {
+            return false;
+        }
+
+        var expectedCode = parts[0];
+        if (!long.TryParse(parts[1], out var expirationTicks))
+        {
+            return false;
+        }
+
+        var expiration = new DateTime(expirationTicks, DateTimeKind.Utc);
+        if (DateTime.UtcNow > expiration)
+        {
+            return false; // Expired
+        }
+
+        // Replay attack prevention: track recently verified captcha ids in memory cache for their remaining lifetime
+        var cacheKey = $"used_captcha_{id.GetHashCode()}";
+        if (_cache.TryGetValue(cacheKey, out _))
+        {
+            return false; // Already validated once
+        }
+        
+        var remainingTime = expiration - DateTime.UtcNow;
+        if (remainingTime.TotalSeconds > 0)
+        {
+            _cache.Set(cacheKey, true, remainingTime);
+        }
+
+        return string.Equals(expectedCode, answer.Trim(), StringComparison.Ordinal);
     }
 }
