@@ -116,7 +116,7 @@ public class CaptchaService : ICaptchaService
         if (_cache.TryGetValue<string>(key, out var cachedCode))
         {
             _cache.Remove(key); // Captchas must be one-time use only
-            return string.Equals(cachedCode, answer.Trim(), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(cachedCode, answer.Trim(), StringComparison.Ordinal);
         }
 
         return false;
