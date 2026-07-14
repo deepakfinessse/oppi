@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Info } from 'lucide-react';
 import { api, saveSession } from '../../services/api';
+import Captcha from '../../components/Captcha/Captcha';
 import './Auth.css';
 import trophyImg from '../../assets/Trophy4.webp';
 import oppiLogo from '../../assets/Oppi-logo.png';
@@ -58,6 +59,8 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
+  const [captchaData, setCaptchaData] = useState({ id: '', captchaAnswer: '' });
+  const [captchaTrigger, setCaptchaTrigger] = useState(0);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -86,6 +89,8 @@ const Auth = () => {
     setMessage('');
     setShowPassword(false);
     setShowConfirmPassword(false);
+    setCaptchaData({ id: '', captchaAnswer: '' });
+    setCaptchaTrigger(prev => prev + 1);
     setFormData({
       firstName: '',
       lastName: '',
@@ -104,7 +109,9 @@ const Auth = () => {
     try {
       const session = await api.login({
         emailId: formData.emailId,
-        password: formData.password
+        password: formData.password,
+        captchaId: captchaData.id,
+        captchaAnswer: captchaData.captchaAnswer
       });
       saveSession(session);
       if (session.role === 'ADMIN') {
@@ -117,6 +124,7 @@ const Auth = () => {
         navigate('/application', { replace: true });
       }
     } catch (err) {
+      setCaptchaTrigger(prev => prev + 1);
       const { newErrors, formError } = parseValidationErrors(err);
       setErrors(prev => ({
         ...prev,
@@ -160,17 +168,19 @@ const Auth = () => {
     setIsSubmitting(true);
 
     try {
-      await api.register(formData);
-      const session = await api.login({
-        emailId: formData.emailId,
-        password: formData.password
+      const data = await api.register({
+        ...formData,
+        captchaId: captchaData.id,
+        captchaAnswer: captchaData.captchaAnswer
       });
+      const session = { token: data.access_token, ...data.user, role: data.user.role || 'USER' };
       saveSession(session);
       setMessage('Registration successful! Redirecting to application...');
       setTimeout(() => {
         navigate('/application', { replace: true });
       }, 1500);
     } catch (err) {
+      setCaptchaTrigger(prev => prev + 1);
       const { newErrors, formError } = parseValidationErrors(err);
       setErrors(prev => ({
         ...prev,
@@ -391,20 +401,26 @@ const Auth = () => {
                   </div>
                 )}
 
+                {isLogin && (
+                  <Captcha
+                    key={`login-${captchaTrigger}`}
+                    onChange={setCaptchaData}
+                    errors={errors}
+                  />
+                )}
+
+                {!isLogin && (
+                  <Captcha
+                    key={`register-${captchaTrigger}`}
+                    onChange={setCaptchaData}
+                    errors={errors}
+                  />
+                )}
+
                 {errors.form && <div className="form-error" style={{ marginBottom: '1rem' }}>{errors.form}</div>}
                 
                 {!isLogin ? (
                   <div className="register-actions-row">
-                    <div className="recaptcha">
-                      <label className="checkbox-label">
-                        <input type="checkbox" required />
-                        <span>I'm not a robot</span>
-                      </label>
-                      <div className="recaptcha-brand">
-                        <img src="https://www.gstatic.com/recaptcha/api2/logo_48.png" alt="reCAPTCHA" />
-                        <span>reCAPTCHA</span>
-                      </div>
-                    </div>
                     <button type="submit" className="submit-btn" disabled={isSubmitting}>
                       {isSubmitting ? 'REGISTERING...' : 'REGISTER'}
                     </button>

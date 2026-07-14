@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import { api } from '../../services/api';
+import Captcha from '../../components/Captcha/Captcha';
 import '../Auth/Auth.css'; // Reuse Auth CSS
 import trophyImg from '../../assets/trophy-bg.webp';
 import oppiLogo from '../../assets/Oppi-logo.png';
@@ -14,6 +15,8 @@ const ForgotPassword = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [tempPassword, setTempPassword] = useState('');
+  const [captchaData, setCaptchaData] = useState({ id: '', captchaAnswer: '' });
+  const [captchaTrigger, setCaptchaTrigger] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,12 +24,13 @@ const ForgotPassword = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await api.forgotPassword(email);
+      const response = await api.forgotPassword(email, captchaData.id, captchaData.captchaAnswer);
       if (response && response.temp_password) {
         setTempPassword(response.temp_password);
       }
       setIsSubmitted(true);
     } catch (err) {
+      setCaptchaTrigger(prev => prev + 1);
       setErrors({ email: err.message || 'Failed to send reset link. Please try again.' });
     } finally {
       setIsSubmitting(false);
@@ -74,6 +78,12 @@ const ForgotPassword = () => {
                       />
                     </div>
                     {errors.email && <div className="field-error-text">{errors.email}</div>}
+
+                    <Captcha
+                      key={`forgot-${captchaTrigger}`}
+                      onChange={setCaptchaData}
+                      errors={errors}
+                    />
 
                     <button type="submit" className="submit-btn" disabled={isSubmitting}>
                       {isSubmitting ? 'SENDING...' : 'SEND RESET LINK'}

@@ -16,7 +16,7 @@ public class JwtService
 
     public string GenerateAccessToken(User user)
     {
-        var key = _config["JwtSettings:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY") ?? "INNOVATION_SUPER_SECRET_KEY_FOR_TESTING_1234567890ABCDEF";
+        var key = _config["JwtSettings:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new Exception("JWT_KEY missing");
         var claims = new[] {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
@@ -65,7 +65,7 @@ public class JwtService
 
     public string GeneratePasswordResetToken(User user)
     {
-        var key = _config["JwtSettings:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY") ?? "INNOVATION_SUPER_SECRET_KEY_FOR_TESTING_1234567890ABCDEF";
+        var key = _config["JwtSettings:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new Exception("JWT_KEY missing");
         var claims = new[] {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
@@ -84,7 +84,7 @@ public class JwtService
 
     public ClaimsPrincipal? ValidatePasswordResetToken(string token)
     {
-        var key = _config["JwtSettings:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY") ?? "INNOVATION_SUPER_SECRET_KEY_FOR_TESTING_1234567890ABCDEF";
+        var key = _config["JwtSettings:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new Exception("JWT_KEY missing");
         var tokenHandler = new JwtSecurityTokenHandler();
         try
         {
@@ -151,7 +151,17 @@ public class LocalFileStorageService : IStorageService
 
     public async Task<string> UploadFileAsync(IFormFile file, string subFolder, string uniqueName)
     {
-        var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", subFolder);
+        if (subFolder.Contains("..") || subFolder.Contains(":") || subFolder.Contains("\\") ||
+            uniqueName.Contains("..") || uniqueName.Contains(":") || uniqueName.Contains("\\"))
+        {
+            throw new ArgumentException("Invalid characters or path traversal attempt detected.");
+        }
+        var uploadsDir = Path.GetFullPath(Path.Combine(_env.WebRootPath, "uploads", subFolder));
+        var webRootFullPath = Path.GetFullPath(_env.WebRootPath);
+        if (!uploadsDir.StartsWith(webRootFullPath, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Path traversal attempt detected.");
+        }
         Directory.CreateDirectory(uploadsDir);
         var filePath = Path.Combine(uploadsDir, uniqueName);
         using (var stream = new FileStream(filePath, FileMode.Create))
@@ -163,7 +173,17 @@ public class LocalFileStorageService : IStorageService
 
     public Task DeleteFileAsync(string fileUrl)
     {
-        var localPath = Path.Combine(_env.WebRootPath, fileUrl.TrimStart('/'));
+        if (string.IsNullOrWhiteSpace(fileUrl)) return Task.CompletedTask;
+        if (fileUrl.Contains("..") || fileUrl.Contains(":") || fileUrl.Contains("\\"))
+        {
+            throw new ArgumentException("Invalid path or path traversal attempt detected.");
+        }
+        var localPath = Path.GetFullPath(Path.Combine(_env.WebRootPath, fileUrl.TrimStart('/')));
+        var webRootFullPath = Path.GetFullPath(_env.WebRootPath);
+        if (!localPath.StartsWith(webRootFullPath, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Path traversal attempt detected.");
+        }
         if (File.Exists(localPath)) File.Delete(localPath);
         return Task.CompletedTask;
     }

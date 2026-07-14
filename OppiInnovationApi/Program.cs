@@ -42,6 +42,8 @@ builder.Services.AddSingleton<ReminderEmailBackgroundService>();
 builder.Services.AddHostedService<ReminderEmailBackgroundService>(p => p.GetRequiredService<ReminderEmailBackgroundService>());
 builder.Services.AddScoped<IValidator<RegisterDto>, RegisterValidator>();
 builder.Services.AddScoped<IValidator<LoginDto>, LoginValidator>();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICaptchaService, CaptchaService>();
 
 var azureStorageConn = builder.Configuration["AzureStorage:ConnectionString"] ?? Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
 if (!string.IsNullOrEmpty(azureStorageConn))
@@ -434,9 +436,20 @@ static string GetIp(HttpContext c) => c.Connection.RemoteIpAddress?.ToString() ?
 // ========== AUTH ==========
 var auth = app.MapGroup("/auth").RequireRateLimiting("auth");
 
-auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
-    JwtService jwt, AuditService audit, IValidator<RegisterDto> v, HttpContext ctx, IServiceScopeFactory scopeFactory) =>
+auth.MapGet("/captcha", (ICaptchaService captchaService) =>
 {
+    var (id, image) = captchaService.GenerateCaptcha();
+    return Results.Ok(new { captchaId = id, captchaImage = image });
+});
+
+auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
+    JwtService jwt, AuditService audit, IValidator<RegisterDto> v, HttpContext ctx, IServiceScopeFactory scopeFactory, ICaptchaService captchaService) =>
+{
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.CaptchaAnswer))
+    {
+        return Results.BadRequest(new { message = "Invalid or expired captcha" });
+    }
+
     var vr = await v.ValidateAsync(dto);
     if (!vr.IsValid) return Results.BadRequest(new { errors = vr.Errors.Select(e => e.ErrorMessage) });
     if (db.Users.Any(x => x.Email == dto.Email)) return Results.BadRequest(new { message = "Email already registered" });
@@ -469,12 +482,17 @@ auth.MapPost("/register", async (RegisterDto dto, InnovationDbContext db,
 
     return Results.Ok(new { access_token = at, refresh_token = rt,
         user = new { id = user.Id, first_name = user.FirstName, last_name = user.LastName,
-            email = user.Email, mobile = user.Mobile } });
+            email = user.Email, mobile = user.Mobile, role = user.Role } });
 });
 
 auth.MapPost("/login", async (LoginDto dto, InnovationDbContext db, JwtService jwt,
-    AuditService audit, IValidator<LoginDto> v, HttpContext ctx) =>
+    AuditService audit, IValidator<LoginDto> v, HttpContext ctx, ICaptchaService captchaService) =>
 {
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.CaptchaAnswer))
+    {
+        return Results.BadRequest(new { message = "Invalid or expired captcha" });
+    }
+
     var vr = await v.ValidateAsync(dto);
     if (!vr.IsValid) return Results.BadRequest(new { errors = vr.Errors.Select(e => e.ErrorMessage) });
     var user = db.Users.FirstOrDefault(x => x.Email == dto.Email);
@@ -491,8 +509,13 @@ auth.MapPost("/login", async (LoginDto dto, InnovationDbContext db, JwtService j
             email = user.Email, mobile = user.Mobile, role = user.Role } });
 });
 
-auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db, JwtService jwt, HttpContext ctx, IServiceScopeFactory scopeFactory) =>
+auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbContext db, JwtService jwt, HttpContext ctx, IServiceScopeFactory scopeFactory, ICaptchaService captchaService) =>
 {
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.CaptchaAnswer))
+    {
+        return Results.BadRequest(new { message = "Invalid or expired captcha" });
+    }
+
     var user = db.Users.FirstOrDefault(x => x.Email == dto.Email);
     if (user == null) return Results.BadRequest(new { message = "Email not found" });
 
@@ -534,8 +557,13 @@ auth.MapPost("/forgot-password", async (ForgotPasswordDto dto, InnovationDbConte
     return Results.Ok(new { message = "Password reset link sent to email" });
 });
 
-auth.MapPost("/reset-password", async (ResetPasswordDto dto, InnovationDbContext db, JwtService jwt) =>
+auth.MapPost("/reset-password", async (ResetPasswordDto dto, InnovationDbContext db, JwtService jwt, ICaptchaService captchaService) =>
 {
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.CaptchaAnswer))
+    {
+        return Results.BadRequest(new { message = "Invalid or expired captcha" });
+    }
+
     if (string.IsNullOrWhiteSpace(dto.Token) || string.IsNullOrWhiteSpace(dto.Password))
     {
         return Results.BadRequest(new { message = "Token and password are required." });
@@ -573,8 +601,13 @@ auth.MapPost("/reset-password", async (ResetPasswordDto dto, InnovationDbContext
     return Results.Ok(new { message = "Password has been reset successfully." });
 });
 
-auth.MapPost("/change-password", async (ChangePasswordDto dto, HttpContext ctx, InnovationDbContext db) =>
+auth.MapPost("/change-password", async (ChangePasswordDto dto, HttpContext ctx, InnovationDbContext db, ICaptchaService captchaService) =>
 {
+    if (!captchaService.ValidateCaptcha(dto.CaptchaId, dto.CaptchaAnswer))
+    {
+        return Results.BadRequest(new { message = "Invalid or expired captcha" });
+    }
+
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var user = await db.Users.FindAsync(uid.Value); if (user == null) return Results.NotFound();
     if (!BCrypt.Net.BCrypt.Verify(dto.Old_Password, user.PasswordHash))
@@ -728,8 +761,14 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
 });
 
 // Page 1: Personal Info
-api.MapPost("/application/page1/{appId}", async (int appId, PersonalInfoDto dto, InnovationDbContext db) =>
+api.MapPost("/application/page1/{appId}", async (int appId, PersonalInfoDto dto, InnovationDbContext db, HttpContext ctx) =>
 {
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var a = await db.Applications.FindAsync(appId);
+    if (a == null) return Results.NotFound(new { message = "Application not found" });
+    if (a.UserId != uid.Value) return Results.Forbid();
+    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Application is not in a draft state and cannot be modified." });
+
     var e = await db.PersonalInfos.FirstOrDefaultAsync(x => x.ApplicationId == appId);
     if (e == null) { db.PersonalInfos.Add(new PersonalInfo { ApplicationId = appId, CompanyName = dto.Company_Name,
         Designation = dto.Designation, CategoryOfWork = dto.Category_Of_Work, OtherCategory = dto.Other_Category,
@@ -744,8 +783,14 @@ api.MapPost("/application/page1/{appId}", async (int appId, PersonalInfoDto dto,
 });
 
 // Page 2: Company Reach
-api.MapPost("/application/page2/{appId}", async (int appId, CompanyReachDto dto, InnovationDbContext db) =>
+api.MapPost("/application/page2/{appId}", async (int appId, CompanyReachDto dto, InnovationDbContext db, HttpContext ctx) =>
 {
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var a = await db.Applications.FindAsync(appId);
+    if (a == null) return Results.NotFound(new { message = "Application not found" });
+    if (a.UserId != uid.Value) return Results.Forbid();
+    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Application is not in a draft state and cannot be modified." });
+
     var e = await db.CompanyReaches.FirstOrDefaultAsync(x => x.ApplicationId == appId);
     if (e == null) { db.CompanyReaches.Add(new CompanyReach { ApplicationId = appId, MarketingStrategy = dto.Marketing_Strategy,
         AppDetails = dto.App_Details, WebsiteDetails = dto.Website_Details, SocialMedia = dto.Social_Media,
@@ -757,8 +802,14 @@ api.MapPost("/application/page2/{appId}", async (int appId, CompanyReachDto dto,
 });
 
 // Page 3: Company Details
-api.MapPost("/application/page3/{appId}", async (int appId, CompanyDetailsDto dto, InnovationDbContext db) =>
+api.MapPost("/application/page3/{appId}", async (int appId, CompanyDetailsDto dto, InnovationDbContext db, HttpContext ctx) =>
 {
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var a = await db.Applications.FindAsync(appId);
+    if (a == null) return Results.NotFound(new { message = "Application not found" });
+    if (a.UserId != uid.Value) return Results.Forbid();
+    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Application is not in a draft state and cannot be modified." });
+
     var e = await db.CompanyDetails.FirstOrDefaultAsync(x => x.ApplicationId == appId);
     if (e == null) { db.CompanyDetails.Add(new CompanyDetail { ApplicationId = appId, CustomerBenefit = dto.Customer_Benefit,
         Testimonial = dto.Testimonial, EmployeeCount = dto.Employee_Count, BoardOfDirectors = dto.Board_Of_Directors,
@@ -772,8 +823,14 @@ api.MapPost("/application/page3/{appId}", async (int appId, CompanyDetailsDto dt
 });
 
 // File Uploads
-api.MapPost("/application/upload/{appId}/{section}", async (int appId, string section, HttpRequest req, InnovationDbContext db, IStorageService storage) =>
+api.MapPost("/application/upload/{appId}/{section}", async (int appId, string section, HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx) =>
 {
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var a = await db.Applications.FindAsync(appId);
+    if (a == null) return Results.NotFound(new { message = "Application not found" });
+    if (a.UserId != uid.Value) return Results.Forbid();
+    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Files can only be uploaded to draft applications" });
+
     if (!req.HasFormContentType) return Results.BadRequest(new { message = "Invalid content type" });
     var form = await req.ReadFormAsync();
     var files = form.Files;
@@ -832,10 +889,16 @@ api.MapPost("/application/upload/{appId}/{section}", async (int appId, string se
     return Results.Ok(new { message = "Files uploaded", files = uploadedFiles });
 });
 
-api.MapDelete("/application/upload/{fileId}", async (int fileId, InnovationDbContext db, IStorageService storage) =>
+api.MapDelete("/application/upload/{fileId}", async (int fileId, InnovationDbContext db, IStorageService storage, HttpContext ctx) =>
 {
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var f = await db.FileUploads.FindAsync(fileId);
     if (f == null) return Results.NotFound();
+    
+    var a = await db.Applications.FindAsync(f.ApplicationId);
+    if (a == null) return Results.NotFound();
+    if (a.UserId != uid.Value) return Results.Forbid();
+    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Files can only be deleted from draft applications" });
     
     await storage.DeleteFileAsync(f.FilePath);
     
@@ -847,9 +910,11 @@ api.MapDelete("/application/upload/{fileId}", async (int fileId, InnovationDbCon
 // Submit
 api.MapPost("/application/submit/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit, IServiceScopeFactory scopeFactory) =>
 {
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
     var a = await db.Applications.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == appId);
     if (a == null) return Results.NotFound();
-    if (a.Status == "SUBMITTED") return Results.BadRequest(new { message = "Already submitted" });
+    if (a.UserId != uid.Value) return Results.Forbid();
+    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Only draft applications can be submitted." });
     
     a.Status = "SUBMITTED";
     a.SubmittedAt = DateTime.UtcNow;
@@ -1407,7 +1472,14 @@ api.MapPost("/validator/approve/{appId}", async (int appId, ValidatorApprovalDto
     try
     {
         var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+        var user = await db.Users.FindAsync(uid.Value);
+        if (user?.Role != "VALIDATOR" && user?.Role != "ADMIN") return Results.Forbid();
+
         var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
+        if (a.Status != "SUBMITTED" && a.Status != "UNDER_VALIDATOR_REVIEW" && a.Status != "VALIDATOR_APPROVED" && a.Status != "VALIDATOR_REJECTED")
+        {
+            return Results.BadRequest(new { message = "Application is not in a valid state for validator review." });
+        }
 
         if (!dto.IsDraft)
         {
@@ -1482,15 +1554,24 @@ api.MapPost("/validator/approve/{appId}", async (int appId, ValidatorApprovalDto
 
 api.MapPost("/validator/reject/{appId}", async (int appId, RejectionDto dto, InnovationDbContext db, HttpContext ctx, AuditService audit) =>
 {
+    var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    if (user?.Role != "VALIDATOR" && user?.Role != "ADMIN") return Results.Forbid();
+
     var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
+    if (a.Status != "SUBMITTED" && a.Status != "UNDER_VALIDATOR_REVIEW" && a.Status != "VALIDATOR_APPROVED" && a.Status != "VALIDATOR_REJECTED")
+    {
+        return Results.BadRequest(new { message = "Application is not in a valid state for validator review." });
+    }
+
     if (string.IsNullOrWhiteSpace(dto.Remarks))
     {
         return Results.BadRequest(new { message = "Remarks are mandatory for rejection." });
     }
-    a.Status = "VALIDATOR_REJECTED"; a.ValidatorId = GetUid(ctx); a.ValidatorActionAt = DateTime.UtcNow;
+    a.Status = "VALIDATOR_REJECTED"; a.ValidatorId = uid; a.ValidatorActionAt = DateTime.UtcNow;
     a.Remarks = dto.Remarks;
     await db.SaveChangesAsync();
-    await audit.LogAsync(GetUid(ctx), "VALIDATOR_REJECT", "Application", appId, $"Remarks: {dto.Remarks}", GetIp(ctx));
+    await audit.LogAsync(uid, "VALIDATOR_REJECT", "Application", appId, $"Remarks: {dto.Remarks}", GetIp(ctx));
     return Results.Ok(new { message = "Rejected" });
 });
 
