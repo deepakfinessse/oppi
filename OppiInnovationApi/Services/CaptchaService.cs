@@ -34,7 +34,7 @@ public class CaptchaService : ICaptchaService
         var code = codeBuilder.ToString();
 
         // Save to memory cache for 5 minutes
-        _cache.Set($"captcha_{id}", code.ToLowerInvariant(), TimeSpan.FromMinutes(5));
+        _cache.Set($"captcha_{id}", code, TimeSpan.FromMinutes(5));
 
         // Generate SVG
         var width = 160;
@@ -116,7 +116,7 @@ public class CaptchaService : ICaptchaService
         if (_cache.TryGetValue<string>(key, out var cachedCode))
         {
             _cache.Remove(key); // Captchas must be one-time use only
-            return cachedCode == answer.Trim().ToLowerInvariant();
+            return string.Equals(cachedCode, answer.Trim(), StringComparison.Ordinal);
         }
 
         return false;
