@@ -764,10 +764,12 @@ api.MapGet("/application/review/{id}", async (int id, HttpContext ctx, Innovatio
 api.MapPost("/application/page1/{appId}", async (int appId, PersonalInfoDto dto, InnovationDbContext db, HttpContext ctx) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    var isAdmin = user?.Role == "ADMIN";
     var a = await db.Applications.FindAsync(appId);
     if (a == null) return Results.NotFound(new { message = "Application not found" });
-    if (a.UserId != uid.Value) return Results.Forbid();
-    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Application is not in a draft state and cannot be modified." });
+    if (a.UserId != uid.Value && !isAdmin) return Results.Forbid();
+    if (a.Status != "DRAFT" && !isAdmin) return Results.BadRequest(new { message = "Application is not in a draft state and cannot be modified." });
 
     var e = await db.PersonalInfos.FirstOrDefaultAsync(x => x.ApplicationId == appId);
     if (e == null) { db.PersonalInfos.Add(new PersonalInfo { ApplicationId = appId, CompanyName = dto.Company_Name,
@@ -786,10 +788,12 @@ api.MapPost("/application/page1/{appId}", async (int appId, PersonalInfoDto dto,
 api.MapPost("/application/page2/{appId}", async (int appId, CompanyReachDto dto, InnovationDbContext db, HttpContext ctx) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    var isAdmin = user?.Role == "ADMIN";
     var a = await db.Applications.FindAsync(appId);
     if (a == null) return Results.NotFound(new { message = "Application not found" });
-    if (a.UserId != uid.Value) return Results.Forbid();
-    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Application is not in a draft state and cannot be modified." });
+    if (a.UserId != uid.Value && !isAdmin) return Results.Forbid();
+    if (a.Status != "DRAFT" && !isAdmin) return Results.BadRequest(new { message = "Application is not in a draft state and cannot be modified." });
 
     var e = await db.CompanyReaches.FirstOrDefaultAsync(x => x.ApplicationId == appId);
     if (e == null) { db.CompanyReaches.Add(new CompanyReach { ApplicationId = appId, MarketingStrategy = dto.Marketing_Strategy,
@@ -805,10 +809,12 @@ api.MapPost("/application/page2/{appId}", async (int appId, CompanyReachDto dto,
 api.MapPost("/application/page3/{appId}", async (int appId, CompanyDetailsDto dto, InnovationDbContext db, HttpContext ctx) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    var isAdmin = user?.Role == "ADMIN";
     var a = await db.Applications.FindAsync(appId);
     if (a == null) return Results.NotFound(new { message = "Application not found" });
-    if (a.UserId != uid.Value) return Results.Forbid();
-    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Application is not in a draft state and cannot be modified." });
+    if (a.UserId != uid.Value && !isAdmin) return Results.Forbid();
+    if (a.Status != "DRAFT" && !isAdmin) return Results.BadRequest(new { message = "Application is not in a draft state and cannot be modified." });
 
     var e = await db.CompanyDetails.FirstOrDefaultAsync(x => x.ApplicationId == appId);
     if (e == null) { db.CompanyDetails.Add(new CompanyDetail { ApplicationId = appId, CustomerBenefit = dto.Customer_Benefit,
@@ -826,10 +832,12 @@ api.MapPost("/application/page3/{appId}", async (int appId, CompanyDetailsDto dt
 api.MapPost("/application/upload/{appId}/{section}", async (int appId, string section, HttpRequest req, InnovationDbContext db, IStorageService storage, HttpContext ctx) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    var isAdmin = user?.Role == "ADMIN";
     var a = await db.Applications.FindAsync(appId);
     if (a == null) return Results.NotFound(new { message = "Application not found" });
-    if (a.UserId != uid.Value) return Results.Forbid();
-    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Files can only be uploaded to draft applications" });
+    if (a.UserId != uid.Value && !isAdmin) return Results.Forbid();
+    if (a.Status != "DRAFT" && !isAdmin) return Results.BadRequest(new { message = "Files can only be uploaded to draft applications" });
 
     if (!req.HasFormContentType) return Results.BadRequest(new { message = "Invalid content type" });
     var form = await req.ReadFormAsync();
@@ -892,13 +900,15 @@ api.MapPost("/application/upload/{appId}/{section}", async (int appId, string se
 api.MapDelete("/application/upload/{fileId}", async (int fileId, InnovationDbContext db, IStorageService storage, HttpContext ctx) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    var isAdmin = user?.Role == "ADMIN";
     var f = await db.FileUploads.FindAsync(fileId);
     if (f == null) return Results.NotFound();
     
     var a = await db.Applications.FindAsync(f.ApplicationId);
     if (a == null) return Results.NotFound();
-    if (a.UserId != uid.Value) return Results.Forbid();
-    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Files can only be deleted from draft applications" });
+    if (a.UserId != uid.Value && !isAdmin) return Results.Forbid();
+    if (a.Status != "DRAFT" && !isAdmin) return Results.BadRequest(new { message = "Files can only be deleted from draft applications" });
     
     await storage.DeleteFileAsync(f.FilePath);
     
@@ -911,10 +921,12 @@ api.MapDelete("/application/upload/{fileId}", async (int fileId, InnovationDbCon
 api.MapPost("/application/submit/{appId}", async (int appId, InnovationDbContext db, HttpContext ctx, AuditService audit, IServiceScopeFactory scopeFactory) =>
 {
     var uid = GetUid(ctx); if (uid == null) return Results.Unauthorized();
+    var user = await db.Users.FindAsync(uid.Value);
+    var isAdmin = user?.Role == "ADMIN";
     var a = await db.Applications.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == appId);
     if (a == null) return Results.NotFound();
-    if (a.UserId != uid.Value) return Results.Forbid();
-    if (a.Status != "DRAFT") return Results.BadRequest(new { message = "Only draft applications can be submitted." });
+    if (a.UserId != uid.Value && !isAdmin) return Results.Forbid();
+    if (a.Status != "DRAFT" && !isAdmin) return Results.BadRequest(new { message = "Only draft applications can be submitted." });
     
     a.Status = "SUBMITTED";
     a.SubmittedAt = DateTime.UtcNow;
