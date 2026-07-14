@@ -17,15 +17,11 @@ const Quote = () => {
           <p className="quote-text">
             "Innovation in healthcare is not a luxury — it is the infrastructure of a healthier India."
           </p>
-          <span className="quote-author">— OPPI, Mission Statement</span>
         </div>
 
         <div className="quote-desc">
           <p>
-            The Organization of Pharmaceutical Producers of India (OPPI) works closely with the government and other
-            stakeholders to foster a productive environment for pharmaceutical innovation. As one of OPPI's three core
-            pillars, innovation is consistently prioritized. OPPI and its member companies have been at the forefront
-            of introducing groundbreaking medications to the Indian market.
+            The Organisation of Pharmaceutical Producers of India (OPPI) works closely with the government and other stakeholders to foster a productive environment for pharmaceutical innovation. As one of OPPI's three core pillars, innovation is consistently prioritized. OPPI and its member companies are committed to creating an ecosystem where innovation flourishes, driving progress and shaping the future of healthcare.
           </p>
         </div>
 
