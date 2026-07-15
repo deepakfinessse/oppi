@@ -17,7 +17,6 @@ public class CaptchaService : ICaptchaService
 {
     private readonly IMemoryCache _cache;
     private readonly IConfiguration _config;
-    private static readonly Random _random = new();
     private const string Chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghkmnpqrstuvwxyz23456789"; // Exclude ambiguous chars (0, O, 1, I, l)
 
     public CaptchaService(IMemoryCache cache, IConfiguration config)
@@ -99,7 +98,7 @@ public class CaptchaService : ICaptchaService
         var codeBuilder = new StringBuilder();
         for (int i = 0; i < 5; i++)
         {
-            codeBuilder.Append(Chars[_random.Next(Chars.Length)]);
+            codeBuilder.Append(Chars[Random.Shared.Next(Chars.Length)]);
         }
         var code = codeBuilder.ToString();
 
@@ -128,22 +127,22 @@ public class CaptchaService : ICaptchaService
         // Draw background grid lines for visual noise
         for (int x = 10; x < width; x += 15)
         {
-            svgBuilder.Append($"<line x1=\"{x}\" y1=\"0\" x2=\"{x + _random.Next(-5, 5)}\" y2=\"{height}\" stroke=\"#cbd5e1\" stroke-width=\"0.5\" />");
+            svgBuilder.Append($"<line x1=\"{x}\" y1=\"0\" x2=\"{x + Random.Shared.Next(-5, 5)}\" y2=\"{height}\" stroke=\"#cbd5e1\" stroke-width=\"0.5\" />");
         }
         for (int y = 10; y < height; y += 10)
         {
-            svgBuilder.Append($"<line x1=\"0\" y1=\"{y}\" x2=\"{width}\" y2=\"{y + _random.Next(-5, 5)}\" stroke=\"#cbd5e1\" stroke-width=\"0.5\" />");
+            svgBuilder.Append($"<line x1=\"0\" y1=\"{y}\" x2=\"{width}\" y2=\"{y + Random.Shared.Next(-5, 5)}\" stroke=\"#cbd5e1\" stroke-width=\"0.5\" />");
         }
 
         // Add distinct noise lines
         string[] colors = { "#2563eb", "#16a34a", "#dc2626", "#d97706", "#4b5563", "#7c3aed", "#0891b2" };
         for (int i = 0; i < 4; i++)
         {
-            var x1 = _random.Next(5, width - 5);
-            var y1 = _random.Next(5, height - 5);
-            var x2 = _random.Next(5, width - 5);
-            var y2 = _random.Next(5, height - 5);
-            var color = colors[_random.Next(colors.Length)];
+            var x1 = Random.Shared.Next(5, width - 5);
+            var y1 = Random.Shared.Next(5, height - 5);
+            var x2 = Random.Shared.Next(5, width - 5);
+            var y2 = Random.Shared.Next(5, height - 5);
+            var color = colors[Random.Shared.Next(colors.Length)];
             svgBuilder.Append($"<line x1=\"{x1}\" y1=\"{y1}\" x2=\"{x2}\" y2=\"{y2}\" stroke=\"{color}\" stroke-width=\"1.5\" opacity=\"0.4\" />");
         }
 
@@ -151,11 +150,11 @@ public class CaptchaService : ICaptchaService
         for (int i = 0; i < code.Length; i++)
         {
             var character = code[i];
-            var fontSize = _random.Next(24, 30);
-            var angle = _random.Next(-25, 25);
-            var x = 15 + i * 28 + _random.Next(-3, 3);
-            var y = 35 + _random.Next(-3, 3);
-            var color = colors[_random.Next(colors.Length)];
+            var fontSize = Random.Shared.Next(24, 30);
+            var angle = Random.Shared.Next(-25, 25);
+            var x = 15 + i * 28 + Random.Shared.Next(-3, 3);
+            var y = 35 + Random.Shared.Next(-3, 3);
+            var color = colors[Random.Shared.Next(colors.Length)];
             
             // Render rotated letter in SVG
             svgBuilder.Append($"<text x=\"{x}\" y=\"{y}\" font-family=\"Courier New, monospace\" font-size=\"{fontSize}\" font-weight=\"bold\" fill=\"{color}\" transform=\"rotate({angle} {x} {y})\">{character}</text>");
@@ -164,10 +163,10 @@ public class CaptchaService : ICaptchaService
         // Add subtle background noise dots
         for (int i = 0; i < 20; i++)
         {
-            var cx = _random.Next(0, width);
-            var cy = _random.Next(0, height);
-            var r = _random.Next(1, 3);
-            var color = colors[_random.Next(colors.Length)];
+            var cx = Random.Shared.Next(0, width);
+            var cy = Random.Shared.Next(0, height);
+            var r = Random.Shared.Next(1, 3);
+            var color = colors[Random.Shared.Next(colors.Length)];
             svgBuilder.Append($"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"{r}\" fill=\"{color}\" opacity=\"0.25\" />");
         }
 
@@ -212,7 +211,7 @@ public class CaptchaService : ICaptchaService
         }
 
         // Replay attack prevention: track recently verified captcha ids in memory cache for their remaining lifetime
-        var cacheKey = $"used_captcha_{id.GetHashCode()}";
+        var cacheKey = $"used_captcha_{id}";
         if (_cache.TryGetValue(cacheKey, out _))
         {
             return false; // Already validated once
