@@ -865,7 +865,7 @@ function ApplicationForm() {
             )}
             {activeStep === 3 && (
               <div className="form-instructions">
-                <h3>Review & Submit</h3>
+                <h3>Submit & Review</h3>
                 <p>Please review your details before final submission.</p>
               </div>
             )}
