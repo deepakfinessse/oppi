@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronDown, Download, Eye, Edit, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowRight, ChevronDown, Download, Eye, EyeOff, Edit, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { api, clearSession, getFileUrl, formatIST } from '../../services/api';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import * as XLSX from 'xlsx';
@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   });
   const [userModalError, setUserModalError] = useState('');
   const [userModalSubmitting, setUserModalSubmitting] = useState(false);
+  const [showUserPassword, setShowUserPassword] = useState(false);
 
   // Jury edit modal states
   const [showJuryModal, setShowJuryModal] = useState(false);
@@ -50,6 +51,7 @@ export default function AdminDashboard() {
   const [juryModalError, setJuryModalError] = useState('');
   const [juryModalSubmitting, setJuryModalSubmitting] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+  const [showJuryPassword, setShowJuryPassword] = useState(false);
 
   // Jury delete confirmation states
   const [showJuryDeleteConfirm, setShowJuryDeleteConfirm] = useState(false);
@@ -106,6 +108,7 @@ export default function AdminDashboard() {
       password: ''
     });
     setUserModalError('');
+    setShowUserPassword(false);
     setShowUserModal(true);
   };
 
@@ -123,6 +126,7 @@ export default function AdminDashboard() {
         Password: userForm.password || null
       });
       setShowUserModal(false);
+      setShowUserPassword(false);
       fetchAdminData();
     } catch (err) {
       setUserModalError(err.message || 'Failed to update user.');
@@ -148,6 +152,7 @@ export default function AdminDashboard() {
     }
     setImagePreviewUrl(member.imageUrl ? getFileUrl(member.imageUrl) : '');
     setJuryModalError('');
+    setShowJuryPassword(false);
     setShowJuryModal(true);
   };
 
@@ -168,6 +173,7 @@ export default function AdminDashboard() {
     }
     setImagePreviewUrl('');
     setJuryModalError('');
+    setShowJuryPassword(false);
     setShowJuryModal(true);
   };
 
@@ -176,6 +182,7 @@ export default function AdminDashboard() {
       URL.revokeObjectURL(imagePreviewUrl);
     }
     setImagePreviewUrl('');
+    setShowJuryPassword(false);
     setShowJuryModal(false);
   };
 
@@ -904,7 +911,7 @@ export default function AdminDashboard() {
           <div className="modal-container user-edit-modal">
             <div className="modal-header">
               <h3>Edit User: {selectedUser?.firstName} {selectedUser?.lastName}</h3>
-              <button className="modal-close-btn" onClick={() => setShowUserModal(false)}>&times;</button>
+              <button className="modal-close-btn" onClick={() => { setShowUserModal(false); setShowUserPassword(false); }}>&times;</button>
             </div>
             <form onSubmit={handleUserSubmit} className="user-edit-form">
               {userModalError && <div className="dashboard-error">{userModalError}</div>}
@@ -957,17 +964,27 @@ export default function AdminDashboard() {
 
               <div className="form-group">
                 <label className="modal-label">Password (leave blank to keep unchanged)</label>
-                <input
-                  type="password"
-                  placeholder="New password"
-                  value={userForm.password}
-                  onChange={(e) => setUserForm(prev => ({ ...prev, password: e.target.value }))}
-                  className="modal-input"
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showUserPassword ? "text" : "password"}
+                    placeholder="New password"
+                    value={userForm.password}
+                    onChange={(e) => setUserForm(prev => ({ ...prev, password: e.target.value }))}
+                    className="modal-input"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowUserPassword(!showUserPassword)}
+                    aria-label={showUserPassword ? "Hide password" : "Show password"}
+                  >
+                    {showUserPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="btn-modal-cancel" onClick={() => setShowUserModal(false)}>Cancel</button>
+                <button type="button" className="btn-modal-cancel" onClick={() => { setShowUserModal(false); setShowUserPassword(false); }}>Cancel</button>
                 <button type="submit" className="btn-modal-save" disabled={userModalSubmitting}>
                   {userModalSubmitting ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -1028,14 +1045,24 @@ export default function AdminDashboard() {
                 </div>
                 <div className="form-group">
                   <label className="modal-label">Login Password {selectedJuryMember ? '(optional)' : '*'}</label>
-                  <input
-                    type="password"
-                    required={!selectedJuryMember}
-                    value={juryForm.password}
-                    onChange={(e) => setJuryForm(prev => ({ ...prev, password: e.target.value }))}
-                    className="modal-input"
-                    placeholder={selectedJuryMember ? "Leave blank for current Password" : "Enter login password"}
-                  />
+                  <div className="password-input-wrapper">
+                    <input
+                      type={showJuryPassword ? "text" : "password"}
+                      required={!selectedJuryMember}
+                      value={juryForm.password}
+                      onChange={(e) => setJuryForm(prev => ({ ...prev, password: e.target.value }))}
+                      className="modal-input"
+                      placeholder={selectedJuryMember ? "Leave blank for current Password" : "Enter login password"}
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle-btn"
+                      onClick={() => setShowJuryPassword(!showJuryPassword)}
+                      aria-label={showJuryPassword ? "Hide password" : "Show password"}
+                    >
+                      {showJuryPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
