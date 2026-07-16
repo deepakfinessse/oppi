@@ -992,6 +992,7 @@ api.MapGet("/admin/users", async (HttpContext ctx, InnovationDbContext db) =>
         u.Email, 
         u.Mobile, 
         u.Role, 
+        u.PasswordHash,
         u.CreatedAt,
         ApplicationStatus = db.Applications.Where(a => a.UserId == u.Id).Select(a => a.Status).FirstOrDefault()
     }).ToListAsync();
