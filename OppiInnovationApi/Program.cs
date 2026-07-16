@@ -1046,7 +1046,7 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
     var user = await db.Users.FindAsync(uid.Value);
     if (user?.Role != "ADMIN") return Results.Forbid();
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
-        .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
+        .Select(a => new { a.Id, a.Status, a.PasswordHash, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
             validator_score = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id && !vr.IsDraft).Select(vr => (double?)vr.WeightedScore).FirstOrDefault(),
             validator_name = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id && !vr.IsDraft)
