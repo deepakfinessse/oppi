@@ -1058,6 +1058,8 @@ api.MapGet("/admin/applications", async (HttpContext ctx, InnovationDbContext db
     var user = await db.Users.FindAsync(uid.Value);
     if (user?.Role != "ADMIN") return Results.Forbid();
     var apps = await db.Applications.Include(a => a.User).Include(a => a.PersonalInfo)
+        .OrderByDescending(a => a.JuryActionAt ?? a.ValidatorActionAt ?? a.SubmittedAt ?? a.CreatedAt)
+        .ThenByDescending(a => a.Id)
         .Select(a => new { a.Id, a.Status, a.User.PasswordHash, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
             validator_score = db.ValidatorReviews.Where(vr => vr.ApplicationId == a.Id && !vr.IsDraft).Select(vr => (double?)vr.WeightedScore).FirstOrDefault(),
@@ -1502,6 +1504,8 @@ api.MapGet("/validator/applications", async (HttpContext ctx, InnovationDbContex
                     (a.Status == "UNDER_VALIDATOR_REVIEW" && a.ValidatorId == uid.Value) ||
                     (a.Status == "VALIDATOR_REJECTED" && a.ValidatorId == uid.Value) ||
                     db.ValidatorReviews.Any(vr => vr.ApplicationId == a.Id && vr.ValidatorId == uid.Value && !vr.IsDraft))
+        .OrderByDescending(a => a.JuryActionAt ?? a.ValidatorActionAt ?? a.SubmittedAt ?? a.CreatedAt)
+        .ThenByDescending(a => a.Id)
         .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             user_email = a.User.Email, company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
             remarks = a.Remarks,
@@ -1644,6 +1648,8 @@ api.MapGet("/jury/applications", async (HttpContext ctx, InnovationDbContext db)
             ((a.Status == "VALIDATOR_APPROVED" || a.Status == "UNDER_JURY_REVIEW") && !reviewedAppIds.Contains(a.Id))
             || reviewedAppIds.Contains(a.Id)
         )
+        .OrderByDescending(a => a.JuryActionAt ?? a.ValidatorActionAt ?? a.SubmittedAt ?? a.CreatedAt)
+        .ThenByDescending(a => a.Id)
         .Select(a => new { a.Id, a.Status, submitted_at = a.SubmittedAt, user_name = a.User.FirstName + " " + a.User.LastName,
             company = a.PersonalInfo != null ? a.PersonalInfo.CompanyName : null,
             remarks = a.Remarks,
@@ -1670,6 +1676,10 @@ api.MapPost("/jury/approve/{appId}", async (int appId, JuryApprovalDto dto, Inno
     }
  
     var existingReview = await db.JuryReviews.FirstOrDefaultAsync(jr => jr.ApplicationId == appId && jr.JuryId == uid.Value);
+    if (existingReview != null && !existingReview.IsDraft)
+    {
+        return Results.BadRequest(new { message = "You have already approved this application and cannot modify it." });
+    }
  
     if (!dto.IsDraft)
     {

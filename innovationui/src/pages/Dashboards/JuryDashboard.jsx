@@ -196,7 +196,6 @@ export default function JuryDashboard() {
                           <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
                             <Eye size={16} />
                           </button>
-                          <button className="btn-action approve" onClick={() => handleApprove(a.id)}>Scores</button>
                         </div>
                       </td>
                     </tr>
