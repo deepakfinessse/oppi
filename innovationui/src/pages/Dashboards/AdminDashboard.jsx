@@ -18,6 +18,7 @@ export default function AdminDashboard() {
   const [userFilter, setUserFilter] = useState('ALL');
   const [appFilter, setAppFilter] = useState('ALL');
   const [appPage, setAppPage] = useState(1);
+  const [userPage, setUserPage] = useState(1);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [appDropdownOpen, setAppDropdownOpen] = useState(false);
 
@@ -101,6 +102,10 @@ export default function AdminDashboard() {
   useEffect(() => {
     setAppPage(1);
   }, [appFilter]);
+
+  useEffect(() => {
+    setUserPage(1);
+  }, [userFilter]);
 
   const handleEditUser = (user) => {
     setSelectedUser(user);
@@ -388,6 +393,10 @@ export default function AdminDashboard() {
 
     return true;
   });
+
+  const USER_ITEMS_PER_PAGE = 10;
+  const paginatedUsers = filteredUsers.slice((userPage - 1) * USER_ITEMS_PER_PAGE, userPage * USER_ITEMS_PER_PAGE);
+  const totalUserPages = Math.ceil(filteredUsers.length / USER_ITEMS_PER_PAGE);
 
   // Filter Applications
   const filteredApps = apps.filter(a => {
@@ -835,7 +844,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map(u => (
+                {paginatedUsers.map(u => (
                   <tr key={u.id}>
                     <td>{formatId(u.id)}</td>
                     <td>{u.firstName} {u.lastName}</td>
@@ -863,6 +872,28 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
+
+          {totalUserPages > 1 && (
+            <div className="pagination-container">
+              <button
+                className="btn-pagination"
+                onClick={() => setUserPage(p => Math.max(1, p - 1))}
+                disabled={userPage === 1}
+              >
+                Previous
+              </button>
+              <span className="pagination-info">
+                Page {userPage} of {totalUserPages}
+              </span>
+              <button
+                className="btn-pagination"
+                onClick={() => setUserPage(p => Math.min(totalUserPages, p + 1))}
+                disabled={userPage === totalUserPages}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Final Evaluation Sheet & Ranking Section */}
