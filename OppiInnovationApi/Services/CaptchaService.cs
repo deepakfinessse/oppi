@@ -39,7 +39,7 @@ public class CaptchaService : ICaptchaService
 
         var secretKey = _config["ReCaptcha:SecretKey"] 
                         ?? Environment.GetEnvironmentVariable("RECAPTCHA_SECRET_KEY") 
-                        ?? "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"; // Default fallback to Google's public v2 checkbox test secret key
+                        ?? "6LcGZlgtAAAAAOsIS0MCKTyUDeep3WHVZz-YIi2n"; // Default fallback to Google's public v2 checkbox test secret key
 
         try
         {
