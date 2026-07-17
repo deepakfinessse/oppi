@@ -108,8 +108,14 @@ function getFieldError(field, value, allData = {}) {
     if (digits.length < 10 || digits.length > 15) return 'Enter a valid mobile number';
   }
 
-  if (field.type === 'number' && Number.isNaN(Number(trimmedValue))) {
-    return 'Enter a valid number';
+  if (field.type === 'number') {
+    const num = Number(trimmedValue);
+    if (Number.isNaN(num)) {
+      return 'Enter a valid number';
+    }
+    if (num < 0) {
+      return 'Value cannot be negative';
+    }
   }
 
   if (field.name === 'companyWebsite') {
@@ -646,6 +652,7 @@ function ApplicationForm() {
           required={field.required}
           disabled={field.autoFilled || isSaving}
           autoComplete="off"
+          min={field.type === 'number' ? '0' : undefined}
           className={errors[field.name] ? 'invalid' : ''}
         />
       )}

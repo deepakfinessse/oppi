@@ -519,9 +519,16 @@ auth.MapPost("/login", async (LoginDto dto, InnovationDbContext db, JwtService j
     var vr = await v.ValidateAsync(dto);
     if (!vr.IsValid) return Results.BadRequest(new { errors = vr.Errors.Select(e => e.ErrorMessage) });
     var user = db.Users.FirstOrDefault(x => x.Email == dto.Email);
-    if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-    { await audit.LogAsync(null, "LOGIN_FAILED", null, null, $"Email: {dto.Email}", GetIp(ctx));
-      return Results.BadRequest(new { message = "Invalid credentials" }); }
+    if (user == null)
+    {
+        await audit.LogAsync(null, "LOGIN_FAILED", null, null, $"Email: {dto.Email}", GetIp(ctx));
+        return Results.BadRequest(new { message = "Email is not registered" });
+    }
+    if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+    {
+        await audit.LogAsync(null, "LOGIN_FAILED", null, null, $"Email: {dto.Email}", GetIp(ctx));
+        return Results.BadRequest(new { message = "Incorrect password" });
+    }
 
     var at = jwt.GenerateAccessToken(user);
     var rt = await jwt.GenerateRefreshTokenAsync(user, ctx.Request.Headers.UserAgent);
@@ -838,6 +845,11 @@ api.MapPost("/application/page3/{appId}", async (int appId, CompanyDetailsDto dt
     if (a == null) return Results.NotFound(new { message = "Application not found" });
     if (a.UserId != uid.Value && !isAdmin) return Results.Forbid();
     if (a.Status != "DRAFT" && !isAdmin) return Results.BadRequest(new { message = "Application is not in a draft state and cannot be modified." });
+
+    if (double.TryParse(dto.Employee_Count, out double employeeCount) && employeeCount < 0)
+    {
+        return Results.BadRequest(new { message = "Number of employees cannot be negative." });
+    }
 
     var e = await db.CompanyDetails.FirstOrDefaultAsync(x => x.ApplicationId == appId);
     if (e == null) { db.CompanyDetails.Add(new CompanyDetail { ApplicationId = appId, CustomerBenefit = dto.Customer_Benefit,
@@ -1512,6 +1524,10 @@ api.MapPost("/validator/approve/{appId}", async (int appId, ValidatorApprovalDto
         if (user?.Role != "VALIDATOR" && user?.Role != "ADMIN") return Results.Forbid();
 
         var a = await db.Applications.FindAsync(appId); if (a == null) return Results.NotFound();
+        if (a.Status == "VALIDATOR_APPROVED" || a.Status == "UNDER_JURY_REVIEW" || a.Status == "JURY_APPROVED")
+        {
+            return Results.BadRequest(new { message = "Application has already been approved and cannot be scored again." });
+        }
         if (a.Status != "SUBMITTED" && a.Status != "UNDER_VALIDATOR_REVIEW" && a.Status != "VALIDATOR_APPROVED" && a.Status != "VALIDATOR_REJECTED")
         {
             return Results.BadRequest(new { message = "Application is not in a valid state for validator review." });

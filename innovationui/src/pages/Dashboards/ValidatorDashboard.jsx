@@ -17,6 +17,7 @@ export default function ValidatorDashboard() {
 
   // Scoring modal state
   const [showModal, setShowModal] = useState(false);
+  const [isModalReadOnly, setIsModalReadOnly] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
   const [scores, setScores] = useState({ innovationIp: 0, teamStrength: 0, businessPlan: 0, impact: 0 });
   const [remarks, setRemarks] = useState('');
@@ -48,6 +49,8 @@ export default function ValidatorDashboard() {
     if (action === 'Approve') {
       setSelectedAppId(id);
       const app = apps.find(a => a.id === id);
+      const readOnly = app ? app.is_approved : false;
+      setIsModalReadOnly(readOnly);
       if (app && app.draft_scores) {
         setScores({
           innovationIp: app.draft_scores.innovationIpScore || 0,
@@ -75,6 +78,7 @@ export default function ValidatorDashboard() {
     setSelectedAppId(null);
     setRemarks('');
     setRemarksError('');
+    setIsModalReadOnly(false);
   };
 
   const WEIGHTS = {
@@ -269,7 +273,6 @@ export default function ValidatorDashboard() {
                             <button className="btn-action view" onClick={() => navigate(`/review/${a.id}`)} title="View Application">
                               <Eye size={16} />
                             </button>
-                            <button className="btn-action approve" onClick={() => handleAction(a.id, 'Approve')}>Scores</button>
                           </div>
                         </td>
                       </tr>
@@ -323,7 +326,7 @@ export default function ValidatorDashboard() {
         <div className="modal-overlay">
           <div className="modal-container jury-modal-compact">
             <div className="modal-header">
-              <h3>Score Application #{selectedAppId}</h3>
+              <h3>{isModalReadOnly ? 'View Scores' : 'Score Application'} #{selectedAppId}</h3>
               <button className="modal-close-btn" onClick={closeModal}>&times;</button>
             </div>
 
@@ -345,7 +348,9 @@ export default function ValidatorDashboard() {
                           key={val}
                           type="button"
                           className={`jury-score-btn ${scores[c.key] === val ? 'active' : ''}`}
-                          onClick={() => setScores(prev => ({ ...prev, [c.key]: val }))}
+                          onClick={() => !isModalReadOnly && setScores(prev => ({ ...prev, [c.key]: val }))}
+                          disabled={isModalReadOnly}
+                          style={isModalReadOnly ? { cursor: 'default' } : {}}
                         >
                           {val}
                         </button>
@@ -366,7 +371,7 @@ export default function ValidatorDashboard() {
 
             <div className="jury-remarks-section" style={{ marginTop: '10px', marginBottom: '10px' }}>
               <label style={{ display: 'block', fontWeight: '500', marginBottom: '5px', fontSize: '0.9rem', color: '#1e293b', textAlign: 'left' }}>
-                Remarks / Comments (Mandatory for Approval) *
+                Remarks / Comments {isModalReadOnly ? '' : '(Mandatory for Approval) *'}
               </label>
               <textarea
                 style={{
@@ -378,16 +383,19 @@ export default function ValidatorDashboard() {
                   fontSize: '0.9rem',
                   fontFamily: 'inherit',
                   resize: 'vertical',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  backgroundColor: isModalReadOnly ? '#f1f5f9' : 'transparent'
                 }}
                 value={remarks}
+                disabled={isModalReadOnly}
                 onChange={(e) => {
+                  if (isModalReadOnly) return;
                   setRemarks(e.target.value);
                   if (e.target.value.trim() && remarksError) {
                     setRemarksError('');
                   }
                 }}
-                placeholder="Enter validation remarks..."
+                placeholder={isModalReadOnly ? '' : 'Enter validation remarks...'}
               />
               {remarksError && (
                 <div style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '5px', textAlign: 'left', fontWeight: '500' }}>
@@ -397,21 +405,25 @@ export default function ValidatorDashboard() {
             </div>
 
             <div className="modal-actions">
-              <button className="btn-action view" onClick={closeModal}>Cancel</button>
-              <button
-                className="btn-action save"
-                onClick={() => submitScores(true)}
-                disabled={submitting}
-              >
-                Save as Draft
-              </button>
-              <button
-                className="btn-action approve"
-                onClick={() => submitScores(false)}
-                disabled={submitting}
-              >
-                {submitting ? 'Submitting...' : 'Approve'}
-              </button>
+              <button className="btn-action view" onClick={closeModal}>{isModalReadOnly ? 'Close' : 'Cancel'}</button>
+              {!isModalReadOnly && (
+                <>
+                  <button
+                    className="btn-action save"
+                    onClick={() => submitScores(true)}
+                    disabled={submitting}
+                  >
+                    Save as Draft
+                  </button>
+                  <button
+                    className="btn-action approve"
+                    onClick={() => submitScores(false)}
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Submitting...' : 'Approve'}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
