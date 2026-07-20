@@ -21,7 +21,7 @@ const Navbar = () => {
     { name: 'WHY PARTICIPATE', href: '#categories' },
     { name: 'RULES', href: '#eligibility' },
     { name: 'JURY', href: '#jury' },
-    { name: 'HELP', href: '#help' },
+    { name: 'HELP', href: '/Help_doc.pdf', target: '_blank', rel: 'noopener noreferrer' },
   ];
 
   return (
@@ -35,7 +35,12 @@ const Navbar = () => {
           {navLinks.map((link) => (
             <li key={link.name}>
               {/* Assuming these are anchor links for the homepage */}
-              <a href={link.href.startsWith('/') ? link.href : `/${link.href}`} onClick={() => setIsMobileMenuOpen(false)}>
+              <a 
+                href={link.href.startsWith('/') || link.href.startsWith('http') ? link.href : `/${link.href}`}
+                target={link.target || undefined}
+                rel={link.rel || undefined}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
                 {link.name}
               </a>
             </li>
