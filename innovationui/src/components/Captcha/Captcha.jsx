@@ -35,7 +35,7 @@ const Captcha = ({ onChange, errors }) => {
   useEffect(() => {
     if (!scriptLoaded || !containerRef.current) return;
 
-    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LcGZlgtAAAAACOwSwNIMVFiuem4TIOWc5egrIid";
     
     // Clear container to avoid double render errors
     containerRef.current.innerHTML = '';
