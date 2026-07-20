@@ -1764,6 +1764,23 @@ app.MapGet("/jury-members", async (InnovationDbContext db) =>
     return Results.Ok(members);
 });
 
+app.MapGet("/health", async (InnovationDbContext db) =>
+{
+    try
+    {
+        var canConnect = await db.Database.CanConnectAsync();
+        if (canConnect)
+        {
+            return Results.Ok(new { status = "healthy", database = "connected", timestamp = DateTime.UtcNow });
+        }
+        return Results.Json(new { status = "unhealthy", database = "disconnected", timestamp = DateTime.UtcNow }, statusCode: 503);
+    }
+    catch (Exception ex)
+    {
+        return Results.Json(new { status = "unhealthy", error = ex.Message, timestamp = DateTime.UtcNow }, statusCode: 503);
+    }
+});
+
 app.Run();
 
 } catch (Exception ex) { Log.Fatal(ex, "Fatal"); }

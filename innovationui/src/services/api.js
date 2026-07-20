@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://74.225.167.29/api";
+const API_BASE_URL = "https://innovationawards.indiaoppi.com/api";
 // export const API_BASE_URL = "http://localhost:5233";
 const SESSION_KEY = 'innovationAwardsSession';
 
@@ -129,8 +129,8 @@ export const api = {
   login: async (payload) => {
     const data = await request('/auth/login', {
       method: 'POST',
-      body: { 
-        Email: payload.emailId, 
+      body: {
+        Email: payload.emailId,
         Password: payload.password,
         CaptchaId: payload.captchaId,
         CaptchaAnswer: payload.captchaAnswer
@@ -223,5 +223,6 @@ export const api = {
   updateAdminApplicationRemarks: (id, remarks) => request(`/admin/application/${id}/remarks`, { method: 'PUT', body: { Remarks: remarks } }),
   updateAdminValidatorReview: (id, payload) => request(`/admin/validator-review/${id}`, { method: 'PUT', body: payload }),
   updateAdminJuryReview: (id, payload) => request(`/admin/jury-review/${id}`, { method: 'PUT', body: payload }),
+  checkHealth: () => request('/health'),
 };
 
