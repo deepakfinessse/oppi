@@ -51,7 +51,7 @@ export default function ApplicantDashboard() {
           
           <div className="dashboard-page-heading" style={{ marginBottom: '30px' }}>
             <h2 className="dashboard-page-title">Welcome, {app.user_name || app.personal_info?.companyName || 'Applicant'}!</h2>
-            <p className="dashboard-page-subtitle">Thank you for participating in the OPPI Innovation Awards.</p>
+            <p className="dashboard-page-subtitle">Thank you for participating in the OPPI Innovation Award.</p>
           </div>
 
           <div style={{ background: '#f8fafc', padding: '30px', borderRadius: '12px', marginBottom: '30px', border: '1px solid #e2e8f0' }}>

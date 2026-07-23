@@ -27,7 +27,7 @@ const WhyParticipate = () => {
   return (
     <section className="why-section" id="categories">
       <div className="container">
-        <h2 className="section-title">Why Participate in Innovation Awards?</h2>
+        <h2 className="section-title">Why Participate in Innovation Award?</h2>
 
         <div className="reasons-grid">
           {reasons.map((reason, index) => (
